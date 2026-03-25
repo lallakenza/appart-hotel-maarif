@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Appart'Hôtel Maarif — Analyse Financière</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏨</text></svg>">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700;800&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+:root {
+  --primary:#1e3a5f; --primary-light:#3b7dd8; --gold:#b45309; --green:#16a34a;
+  --red:#dc2626; --amber:#d97706; --bg:#fafaf9; --card:#ffffff;
+  --text:#1a1a2e; --text-sec:#64748b; --border:#e7e5e4;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);line-height:1.6;font-variant-numeric:tabular-nums}
+.hidden{display:none!important}
+
+/* Header */
+.header{background:linear-gradient(135deg,var(--primary) 0%,#2d5a8e 100%);color:#fff;padding:20px 0;position:sticky;top:0;z-index:100;box-shadow:0 4px 20px rgba(0,0,0,.15)}
+.header-inner{max-width:1400px;margin:0 auto;padding:0 24px;display:flex;justify-content:space-between;align-items:center}
+.header h1{font-family:'Instrument Serif',serif;font-size:1.6rem;font-weight:400}
+.header-sub{opacity:.8;font-size:.85rem;margin-top:2px}
+.header-badge{background:var(--gold);color:#fff;padding:8px 16px;border-radius:8px;font-weight:700;font-size:1.1rem}
+
+/* Nav */
+.nav{background:#fff;border-bottom:1px solid var(--border);position:sticky;top:68px;z-index:99;box-shadow:0 2px 8px rgba(0,0,0,.04)}
+.nav-inner{max-width:1400px;margin:0 auto;padding:0 24px;display:flex;gap:0;overflow-x:auto}
+.nav-btn{padding:12px 16px;background:none;border:none;border-bottom:3px solid transparent;cursor:pointer;font-size:.82rem;font-weight:500;color:var(--text-sec);white-space:nowrap;transition:all .2s;font-family:inherit}
+.nav-btn:hover{color:var(--primary);background:#f8fafc}
+.nav-btn.active{color:var(--primary);border-bottom-color:var(--gold);font-weight:600}
+
+/* Main */
+.main{max-width:1400px;margin:0 auto;padding:24px}
+
+/* Scenario */
+.scenario-bar{display:flex;gap:8px;margin-bottom:20px}
+.scenario-btn{padding:8px 20px;border:2px solid var(--border);border-radius:8px;background:#fff;cursor:pointer;font-weight:500;font-family:inherit;font-size:.85rem;transition:all .2s}
+.scenario-btn.active{border-color:var(--primary);background:var(--primary);color:#fff}
+.scenario-btn:hover:not(.active){border-color:var(--primary-light)}
+
+/* Cards */
+.card{background:var(--card);border-radius:12px;padding:20px;box-shadow:0 1px 3px rgba(0,0,0,.06);border:1px solid var(--border);margin-bottom:20px;animation:fadeUp .4s ease both}
+.card-title{font-family:'Instrument Serif',serif;font-size:1.15rem;color:var(--primary);margin-bottom:12px;padding-bottom:10px;border-bottom:2px solid #f0d78c}
+
+/* KPI */
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px}
+.kpi-card{background:#fff;border-radius:12px;padding:16px;border:1px solid var(--border);box-shadow:0 1px 3px rgba(0,0,0,.04);transition:transform .2s,box-shadow .2s;animation:slideDown .4s ease both}
+.kpi-card:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,0,0,.08)}
+.kpi-label{font-size:.7rem;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--text-sec);margin-bottom:4px}
+.kpi-value{font-size:1.4rem;font-weight:800;color:var(--primary)}
+.kpi-green{color:var(--green)!important}
+.kpi-amber{color:var(--amber)!important}
+.kpi-red{color:var(--red)!important}
+.kpi-sub{font-size:.75rem;color:var(--text-sec);margin-top:2px}
+
+/* Grid */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px}
+
+/* Tables */
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:.85rem}
+th{background:var(--primary);color:#fff;padding:8px 12px;text-align:left;font-weight:600;font-size:.75rem;text-transform:uppercase;letter-spacing:.03em}
+td{padding:6px 12px;border-bottom:1px solid var(--border)}
+tr:hover td{background:#f8fafc}
+.total-row td{font-weight:700;background:#f0d78c30;border-top:2px solid var(--gold)}
+.highlight-row td{background:#dbeafe!important}
+.num{text-align:right}
+.neg{color:var(--red)}
+.bold{font-weight:700}
+.small{font-size:.78rem}
+
+/* Badges */
+.badge{display:inline-block;padding:2px 10px;border-radius:20px;font-size:.72rem;font-weight:600}
+.badge-green{background:#d1fae5;color:#065f46}
+.badge-amber{background:#fef3c7;color:#92400e}
+.badge-red{background:#fee2e2;color:#991b1b}
+.badge-blue{background:#dbeafe;color:#1e40af}
+.badge-gray{background:#f1f5f9;color:#475569}
+
+/* Chart */
+.chart-box{height:280px;position:relative}
+
+/* Info / Warning boxes */
+.info-box{background:#eff6ff;border-left:4px solid var(--primary);padding:12px 16px;border-radius:0 8px 8px 0;margin:12px 0;font-size:.88rem}
+.warn-box{background:#fffbeb;border-left:4px solid var(--amber);padding:12px 16px;border-radius:0 8px 8px 0;margin:12px 0;font-size:.88rem}
+
+/* Meter */
+.meter{height:8px;background:#e2e8f0;border-radius:4px;overflow:hidden}
+.meter-fill{height:100%;border-radius:4px;transition:width .5s}
+
+/* Progress bar */
+.progress-bar{height:28px;background:#e2e8f0;border-radius:14px;overflow:hidden;display:flex}
+.progress-seg{height:100%;display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:600;color:#fff;transition:width .5s}
+
+/* SWOT */
+.swot-card{padding:16px;border-radius:8px;font-size:.85rem}
+.swot-card ul{padding-left:18px;margin-top:8px}
+.swot-card li{margin-bottom:4px}
+.swot-green{background:#d1fae5}
+.swot-amber{background:#fef3c7}
+.swot-red{background:#fee2e2}
+
+/* Animations */
+@keyframes slideDown{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* Responsive */
+@media(max-width:900px){.kpi-grid{grid-template-columns:repeat(2,1fr)}.grid-2,.grid-3{grid-template-columns:1fr}}
+@media(max-width:600px){.kpi-grid{grid-template-columns:1fr}.header-inner{flex-direction:column;gap:10px;text-align:center}.nav-inner{padding:0 8px}}
+</style>
+</head>
+<body>
+
+<!-- ==================== HEADER ==================== -->
+<header class="header">
+  <div class="header-inner">
+    <div>
+      <h1>Appart'Hôtel Maarif</h1>
+      <div class="header-sub">Rue des Camélias, Maarif, Casablanca &bull; R+5 &bull; 174 m²</div>
+    </div>
+    <div class="header-badge">7 000 000 MAD</div>
+  </div>
+</header>
+
+<!-- ==================== NAV ==================== -->
+<nav class="nav">
+  <div class="nav-inner">
+    <button class="nav-btn active" data-nav="overview">Vue d'ensemble</button>
+    <button class="nav-btn" data-nav="revenus">Revenus & Occupation</button>
+    <button class="nav-btn" data-nav="charges">Charges & Exploitation</button>
+    <button class="nav-btn" data-nav="financement">Financement MDM</button>
+    <button class="nav-btn" data-nav="cashflow">Cash-Flow & Rentabilité</button>
+    <button class="nav-btn" data-nav="marche">Étude de Marché</button>
+    <button class="nav-btn" data-nav="fiscalite">Fiscalité & TVA</button>
+    <button class="nav-btn" data-nav="risques">Analyse de Risques</button>
+  </div>
+</nav>
+
+<main class="main">
+
+<!-- Scenario bar -->
+<div class="scenario-bar">
+  <button class="scenario-btn" data-scenario="prudent">Prudent (45%)</button>
+  <button class="scenario-btn active" data-scenario="moyen">Moyen (55%)</button>
+  <button class="scenario-btn" data-scenario="optimiste">Optimiste (65%)</button>
+</div>
+
+<!-- ==================== VUE D'ENSEMBLE ==================== -->
+<div data-view="overview">
+  <div class="kpi-grid">
+    <div class="kpi-card" id="kpi-invest"><div class="kpi-label">Investissement Total</div><div class="kpi-value">–</div><div class="kpi-sub">TTC</div></div>
+    <div class="kpi-card" id="kpi-rdt-brut"><div class="kpi-label">Rendement Brut</div><div class="kpi-value">–</div><div class="kpi-sub">Année 1</div></div>
+    <div class="kpi-card" id="kpi-cf-net"><div class="kpi-label">Cash-Flow Net An 1</div><div class="kpi-value">–</div></div>
+    <div class="kpi-card" id="kpi-rdt-apport"><div class="kpi-label">Rendement / Apport</div><div class="kpi-value">–</div><div class="kpi-sub">Effet de levier</div></div>
+    <div class="kpi-card" id="kpi-payback"><div class="kpi-label">Payback</div><div class="kpi-value">–</div><div class="kpi-sub">Sur apport personnel</div></div>
+    <div class="kpi-card" id="kpi-revpar"><div class="kpi-label">RevPAR</div><div class="kpi-value">–</div><div class="kpi-sub">Revenu / chambre disponible</div></div>
+    <div class="kpi-card" id="kpi-unites"><div class="kpi-label">Unités locatives</div><div class="kpi-value">–</div><div class="kpi-sub">Studios + Lofts</div></div>
+    <div class="kpi-card" id="kpi-subvention"><div class="kpi-label">Subvention MDM</div><div class="kpi-value">–</div><div class="kpi-sub">10% du projet</div></div>
+  </div>
+  <div class="grid-2">
+    <div class="card"><div class="card-title">Répartition du Budget</div><div class="chart-box"><canvas id="chart-budget"></canvas></div>
+      <table style="margin-top:12px"><tbody>
+        <tr><td>Prix terrain</td><td class="num" id="budget-terrain-prix">–</td></tr>
+        <tr><td>Frais acquisition (15%)</td><td class="num" id="budget-terrain-frais">–</td></tr>
+        <tr><td><strong>Terrain tout compris</strong></td><td class="num" id="budget-terrain-total">–</td></tr>
+        <tr><td>Construction & aménagement</td><td class="num" id="budget-construction">–</td></tr>
+        <tr class="total-row"><td><strong>Total TTC</strong></td><td class="num" id="budget-total">–</td></tr>
+        <tr><td>Prix / m² terrain</td><td class="num" id="budget-m2">–</td></tr>
+      </tbody></table>
+    </div>
+    <div class="card"><div class="card-title">Montage Financier</div><div class="chart-box"><canvas id="chart-montage"></canvas></div></div>
+  </div>
+  <div class="card"><div class="card-title">Programme Architectural</div>
+    <div class="table-wrap"><table><thead><tr><th>Niveau</th><th>Type</th><th>Surface</th><th>Catégorie</th></tr></thead><tbody id="programme-tbody"></tbody></table></div>
+  </div>
+</div>
+
+<!-- ==================== REVENUS ==================== -->
+<div data-view="revenus" class="hidden">
+  <div class="kpi-grid">
+    <div class="kpi-card"><div class="kpi-label">Revenu Brut Hôtel An 1</div><div class="kpi-value" id="rev-brut-hotel">–</div></div>
+    <div class="kpi-card"><div class="kpi-label">Commissions Plateformes</div><div class="kpi-value" id="rev-commissions">–</div><div class="kpi-sub">15% Booking/Airbnb</div></div>
+    <div class="kpi-card"><div class="kpi-label">Revenu Net Hôtel</div><div class="kpi-value kpi-green" id="rev-net-hotel">–</div></div>
+    <div class="kpi-card"><div class="kpi-label">Loyer Commercial /an</div><div class="kpi-value" id="rev-commercial">–</div></div>
+    <div class="kpi-card"><div class="kpi-label">Revenu Total An 1</div><div class="kpi-value kpi-green" id="rev-total">–</div></div>
+    <div class="kpi-card"><div class="kpi-label">Nuitées / an</div><div class="kpi-value" id="rev-nuitees">–</div><div class="kpi-sub" id="rev-scenario">–</div></div>
+  </div>
+  <div class="grid-2">
+    <div class="card"><div class="card-title">Répartition Revenus An 1</div><div class="chart-box"><canvas id="chart-rev-breakdown"></canvas></div></div>
+    <div class="card"><div class="card-title">Projection Revenus 10 ans</div><div class="chart-box"><canvas id="chart-rev-evolution"></canvas></div></div>
+  </div>
+  <div class="card"><div class="card-title">Détail par Année</div>
+    <div class="table-wrap"><table><thead><tr><th>Année</th><th>Rev. Brut Hôtel</th><th>Commissions</th><th>Rev. Net Hôtel</th><th>Local Commercial</th><th>Total</th></tr></thead><tbody id="rev-table-tbody"></tbody></table></div>
+  </div>
+</div>
+
+<!-- ==================== CHARGES ==================== -->
+<div data-view="charges" class="hidden">
+  <div class="kpi-grid">
+    <div class="kpi-card"><div class="kpi-label">Charges Totales An 1</div><div class="kpi-value" id="ch-total">–</div></div>
+    <div class="kpi-card"><div class="kpi-label">EBITDA An 1</div><div class="kpi-value kpi-green" id="ch-ebitda">–</div></div>
+    <div class="kpi-card"><div class="kpi-label">Marge d'Exploitation</div><div class="kpi-value" id="ch-marge">–</div></div>
+    <div class="kpi-card"><div class="kpi-label">Coût / Nuitée</div><div class="kpi-value" id="ch-nuitee">–</div></div>
+  </div>
+  <div class="grid-2">
+    <div class="card"><div class="card-title">Répartition des Charges</div><div class="chart-box"><canvas id="chart-charges-breakdown"></canvas></div></div>
+    <div class="card"><div class="card-title">Détail des Charges Annuelles</div>
+      <div class="table-wrap"><table><thead><tr><th>Poste</th><th>/ An</th><th>/ Mois</th><th>% Total</th></tr></thead><tbody id="charges-tbody"></tbody></table></div>
+    </div>
+  </div>
+  <div class="card"><div class="card-title">Revenus vs Charges sur 10 ans</div><div class="chart-box"><canvas id="chart-rev-vs-charges"></canvas></div></div>
+</div>
+
+<!-- ==================== FINANCEMENT ==================== -->
+<div data-view="financement" class="hidden">
+  <div class="kpi-grid">
+    <div class="kpi-card"><div class="kpi-label">Subvention MDM Invest</div><div class="kpi-value kpi-green" id="fin-subvention">–</div><div class="kpi-sub">10% du projet, gratuit</div></div>
+    <div class="kpi-card"><div class="kpi-label">Crédit MDM Tamwil</div><div class="kpi-value" id="fin-credit">–</div><div class="kpi-sub">2,5% / an sur 7 ans</div></div>
+    <div class="kpi-card"><div class="kpi-label">Mensualité Tamwil</div><div class="kpi-value" id="fin-mensualite">–</div><div class="kpi-sub">Après différé 2 ans</div></div>
+    <div class="kpi-card"><div class="kpi-label">Apport Personnel</div><div class="kpi-value" id="fin-apport">–</div><div class="kpi-sub" id="fin-pct-apport">–</div></div>
+  </div>
+  <div class="card">
+    <div class="card-title">Programme MDM Invest</div>
+    <div class="info-box"><strong>Subvention de l'État à fonds perdu</strong> égale à 10% du coût du projet, plafonnée à 5 MDH. Géré par Tamwilcom. Condition : apport en devises ≥ 25% du projet (<span id="fin-devises-min">–</span>). <strong style="color:var(--red)">Engagement : pas de désinvestissement pendant 5 ans.</strong></div>
+  </div>
+  <div class="card">
+    <div class="card-title">Crédit MDM Tamwil</div>
+    <div class="info-box">Crédit à taux préférentiel de <strong>2,5% HT / an</strong>, jusqu'à 5 MDH, durée max 7 ans avec 2 ans de différé. Intérêts seuls pendant le différé : <strong id="fin-interets-diff">–</strong>/an. Coût total du crédit : <strong id="fin-cout-credit">–</strong>.</div>
+    <div class="chart-box" style="margin-top:16px"><canvas id="chart-debt"></canvas></div>
+  </div>
+  <div class="card">
+    <div class="card-title">Répartition du Financement</div>
+    <div class="progress-bar" id="fin-progress"></div>
+    <table style="margin-top:16px"><thead><tr><th>Source</th><th>Montant</th><th>% Projet</th></tr></thead><tbody>
+      <tr><td>Apport personnel</td><td class="num" id="fin-pct-apport-2">–</td><td class="num">–</td></tr>
+    </tbody></table>
+  </div>
+</div>
+
+<!-- ==================== CASH-FLOW ==================== -->
+<div data-view="cashflow" class="hidden">
+  <div class="kpi-grid">
+    <div class="kpi-card"><div class="kpi-label">Cash-Flow Net An 1</div><div class="kpi-value kpi-green" id="cf-net-an1">–</div></div>
+    <div class="kpi-card"><div class="kpi-label">Rendement Net / Projet</div><div class="kpi-value" id="cf-rdt-projet">–</div></div>
+    <div class="kpi-card"><div class="kpi-label">Rendement Net / Apport</div><div class="kpi-value" id="cf-rdt-apport">–</div><div class="kpi-sub">Effet de levier</div></div>
+    <div class="kpi-card"><div class="kpi-label">Payback</div><div class="kpi-value" id="cf-payback">–</div><div class="kpi-sub">Sur apport personnel</div></div>
+  </div>
+  <div class="card"><div class="card-title">Cash-Flow Net et Cumul sur 10 ans</div><div class="chart-box"><canvas id="chart-cashflow"></canvas></div></div>
+  <div class="card"><div class="card-title">Compte de Résultat Prévisionnel</div>
+    <div class="table-wrap"><table><thead><tr><th>Année</th><th>Revenus</th><th>Charges</th><th>EBITDA</th><th>Dette</th><th>IS</th><th>Cash-Flow Net</th><th>Cumul</th></tr></thead><tbody id="cf-tbody"></tbody></table></div>
+  </div>
+</div>
+
+<!-- ==================== MARCHÉ ==================== -->
+<div data-view="marche" class="hidden">
+  <div class="kpi-grid">
+    <div class="kpi-card"><div class="kpi-label">Visiteurs Maroc 2024</div><div class="kpi-value kpi-green" id="mkt-visiteurs">–</div><div class="kpi-sub">+20% vs 2023</div></div>
+    <div class="kpi-card"><div class="kpi-label">Nuitées Maroc 2024</div><div class="kpi-value kpi-green" id="mkt-nuitees">–</div><div class="kpi-sub">+12% vs 2023</div></div>
+    <div class="kpi-card"><div class="kpi-label">Croissance Casa S1 2025</div><div class="kpi-value kpi-green" id="mkt-croissance-casa">–</div></div>
+    <div class="kpi-card"><div class="kpi-label">Coupe du Monde</div><div class="kpi-value kpi-amber">2030</div><div class="kpi-sub">Maroc co-organisateur</div></div>
+  </div>
+  <div class="grid-2">
+    <div class="card"><div class="card-title">Taux d'Occupation par Segment</div><div class="chart-box"><canvas id="chart-occupancy"></canvas></div></div>
+    <div class="card"><div class="card-title">Concurrence Appart-Hôtels Maarif</div>
+      <div class="table-wrap"><table><thead><tr><th>Nom</th><th>Type</th><th>Prix / nuit</th><th>Gamme</th></tr></thead><tbody id="mkt-concurrence-tbody"></tbody></table></div>
+    </div>
+  </div>
+  <div class="card"><div class="card-title">Analyse SWOT</div>
+    <div class="grid-3">
+      <div class="swot-card swot-green"><strong style="color:#065f46">Forces</strong><ul><li>Quartier Maarif très demandé</li><li>Tourisme Maroc en forte croissance</li><li>Coupe du Monde 2030</li><li>Tourisme d'affaires Casablanca</li></ul></div>
+      <div class="swot-card swot-amber"><strong style="color:#92400e">Opportunités</strong><ul><li>Offre appart-hôtel limitée à Maarif</li><li>Demande croissante long séjour</li><li>Clientèle MRE en augmentation</li><li>Développement du quartier</li></ul></div>
+      <div class="swot-card swot-red"><strong style="color:#991b1b">Menaces</strong><ul><li>Concurrence Airbnb croissante</li><li>Saisonnalité (Ramadan, été)</li><li>Réglementation évolutive</li><li>Sensibilité économique mondiale</li></ul></div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== FISCALITÉ ==================== -->
+<div data-view="fiscalite" class="hidden">
+  <div class="kpi-grid">
+    <div class="kpi-card"><div class="kpi-label">TVA sur prestations</div><div class="kpi-value" id="fisc-tva-taux">–</div><div class="kpi-sub">Taux réduit hébergement</div></div>
+    <div class="kpi-card"><div class="kpi-label">TVA collectée An 1</div><div class="kpi-value" id="fisc-tva-collectee">–</div></div>
+    <div class="kpi-card"><div class="kpi-label">Exonération équipements</div><div class="kpi-value kpi-green">36 mois</div></div>
+    <div class="kpi-card"><div class="kpi-label">Exo IS devises</div><div class="kpi-value kpi-green">40%</div><div class="kpi-sub">Du CA exonéré d'IS</div></div>
+  </div>
+  <div class="card">
+    <div class="card-title">Régime Fiscal Résidence de Tourisme</div>
+    <div class="table-wrap"><table><thead><tr><th>Avantage</th><th>Détail</th><th>Durée</th></tr></thead><tbody>
+      <tr><td>TVA réduite 10%</td><td>Hébergement et restauration touristiques</td><td><span class="badge badge-green">Permanent</span></td></tr>
+      <tr><td>Exonération TVA équipements</td><td>Biens d'équipement acquis pendant 36 mois</td><td><span class="badge badge-green">3 premières années</span></td></tr>
+      <tr><td>Crédit de TVA</td><td>TVA déductible > TVA collectée = crédit reportable</td><td><span class="badge badge-amber">Premières années</span></td></tr>
+      <tr><td>IS exonéré sur CA devises</td><td>Part du CA réalisé en devises étrangères</td><td><span class="badge badge-green">Permanent</span></td></tr>
+      <tr><td>Exonération taxe professionnelle</td><td>5 premières années nouvelles constructions</td><td><span class="badge badge-green">5 premières années</span></td></tr>
+    </tbody></table></div>
+  </div>
+  <div class="card">
+    <div class="card-title">Crédit de TVA</div>
+    <div class="warn-box">Les premières années, la TVA déductible sur les équipements et la construction sera supérieure à la TVA collectée, générant un <strong>crédit de TVA</strong> reportable. TVA construction (est.) : <strong id="fisc-tva-constr">–</strong>. Crédit TVA An 1 : <strong id="fisc-tva-credit">–</strong>.</div>
+  </div>
+  <div class="card"><div class="card-title">Impact IS sur 10 ans</div><div class="chart-box"><canvas id="chart-is"></canvas></div></div>
+</div>
+
+<!-- ==================== RISQUES ==================== -->
+<div data-view="risques" class="hidden">
+  <div class="card"><div class="card-title">Matrice des Risques</div>
+    <div class="table-wrap"><table><thead><tr><th>Risque</th><th>Probabilité</th><th>Impact</th><th>Score</th><th>Mitigation</th></tr></thead><tbody id="risk-tbody"></tbody></table></div>
+  </div>
+  <div class="card"><div class="card-title">Analyse de Sensibilité — Taux d'Occupation</div>
+    <div class="table-wrap"><table><thead><tr><th>Occupation</th><th>Revenu An 1</th><th>EBITDA</th><th>Cash-Flow Net</th><th>Rendement / Apport</th></tr></thead><tbody id="sens-tbody"></tbody></table></div>
+    <div class="chart-box" style="margin-top:16px"><canvas id="chart-sensitivity"></canvas></div>
+  </div>
+  <div class="card"><div class="card-title">Recommandations Clés</div>
+    <div class="grid-2">
+      <div class="warn-box"><strong>Points de vigilance</strong><ul style="padding-left:18px;margin-top:8px;font-size:.85rem"><li>Vérifier conformité zone B5 pour usage touristique</li><li>Obtenir autorisations avant engagement financier</li><li>Prévoir marge 10-15% sur budget construction</li><li>Anticiper gestion à distance (société de gestion)</li><li>Engagement MDM Invest : 5 ans sans désinvestissement</li></ul></div>
+      <div class="info-box"><strong>Points forts du projet</strong><ul style="padding-left:18px;margin-top:8px;font-size:.85rem"><li>Emplacement premium Maarif, forte demande</li><li>Financement très avantageux (MDM Invest + Tamwil)</li><li>Fiscalité attractive (TVA 10%, exo IS devises)</li><li>Revenus diversifiés (hôtel + local commercial)</li><li>Perspective Coupe du Monde 2030</li></ul></div>
+    </div>
+  </div>
+</div>
+
+</main>
+
+<!-- Scripts — strict order: data → engine → render → charts → app -->
+<script src="js/data.js"></script>
+<script src="js/engine.js"></script>
+<script src="js/render.js"></script>
+<script src="js/charts.js"></script>
+<script src="js/app.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,299 @@
+// ============================================================
+// RENDER LAYER — DOM updates only, reads computed STATE
+// Zero computation here, only formatting + DOM manipulation
+// ============================================================
+
+// --- Formatters ---
+function fmtMAD(n) {
+  if (n == null || isNaN(n)) return "–";
+  return new Intl.NumberFormat("fr-FR", { maximumFractionDigits: 0 }).format(Math.round(n)) + " MAD";
+}
+function fmtK(n) {
+  if (n == null || isNaN(n)) return "–";
+  if (Math.abs(n) >= 1_000_000) return (n / 1_000_000).toFixed(1) + "M";
+  if (Math.abs(n) >= 1_000) return (n / 1_000).toFixed(0) + "K";
+  return Math.round(n).toString();
+}
+function fmtPct(n, decimals = 1) {
+  if (n == null || isNaN(n)) return "–";
+  return (n * 100).toFixed(decimals) + "%";
+}
+function fmtNum(n) {
+  if (n == null || isNaN(n)) return "–";
+  return new Intl.NumberFormat("fr-FR", { maximumFractionDigits: 0 }).format(Math.round(n));
+}
+function fmtM2(n) {
+  return n != null ? n.toFixed(2) + " m²" : "–";
+}
+
+// --- Color helpers ---
+function clrSign(val) { return val >= 0 ? "var(--green)" : "var(--red)"; }
+function badgeClass(type) {
+  const map = { studio: "badge-green", loft: "badge-amber", commercial: "badge-blue", service: "badge-gray" };
+  return map[type] || "badge-gray";
+}
+
+// --- Main render ---
+function render(state) {
+  renderKPIs(state);
+  renderBudget(state);
+  renderProgramme(state);
+  renderRevenus(state);
+  renderCharges(state);
+  renderFinancement(state);
+  renderCashFlow(state);
+  renderMarche();
+  renderFiscalite(state);
+  renderRisques(state);
+  renderSensibilite(state);
+}
+
+// --- KPI Strip ---
+function renderKPIs(S) {
+  const y1 = S.projections[0];
+  setKPI("kpi-invest",     fmtMAD(BUDGET.totalTTC));
+  setKPI("kpi-rdt-brut",   fmtPct(S.kpi.rendementBrut),   S.kpi.rendementBrut > 0.08 ? "kpi-green" : "kpi-amber");
+  setKPI("kpi-cf-net",     fmtMAD(y1.cashFlowNet),         y1.cashFlowNet > 0 ? "kpi-green" : "kpi-red");
+  setKPI("kpi-rdt-apport", fmtPct(S.kpi.rendementNetApport), S.kpi.rendementNetApport > 0.1 ? "kpi-green" : "kpi-amber");
+  setKPI("kpi-payback",    S.kpi.paybackYear ? S.kpi.paybackYear + " ans" : "> 10 ans");
+  setKPI("kpi-revpar",     fmtNum(S.kpi.revpar) + " MAD");
+  setKPI("kpi-unites",     S.units.nbUnites);
+  setKPI("kpi-subvention", fmtMAD(S.financement.subventionMDM), "kpi-green");
+}
+
+function setKPI(id, value, colorClass) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const valEl = el.querySelector(".kpi-value");
+  if (valEl) {
+    valEl.textContent = value;
+    valEl.className = "kpi-value" + (colorClass ? " " + colorClass : "");
+  }
+}
+
+// --- Budget ---
+function renderBudget(S) {
+  setText("budget-terrain-prix", fmtMAD(TERRAIN.prix));
+  setText("budget-terrain-frais", fmtMAD(S.terrain.fraisTerrain));
+  setText("budget-terrain-total", fmtMAD(S.terrain.coutTerrain));
+  setText("budget-construction", fmtMAD(S.terrain.budgetConstruction));
+  setText("budget-total", fmtMAD(BUDGET.totalTTC));
+  setText("budget-m2", fmtNum(S.terrain.coutM2Terrain) + " MAD/m²");
+}
+
+// --- Programme architectural ---
+function renderProgramme(S) {
+  const tbody = document.getElementById("programme-tbody");
+  if (!tbody) return;
+  tbody.innerHTML = "";
+  UNITS.forEach(u => {
+    if (u.category === "service") return;
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${u.floor}</td>
+      <td>${u.type}</td>
+      <td class="num">${u.surface ? fmtM2(u.surface) : "–"}</td>
+      <td><span class="badge ${badgeClass(u.category)}">${u.category}</span></td>
+    `;
+    tbody.appendChild(tr);
+  });
+  // Total row
+  const tr = document.createElement("tr");
+  tr.className = "total-row";
+  tr.innerHTML = `
+    <td colspan="2"><strong>Total surface locative</strong></td>
+    <td class="num"><strong>${fmtM2(S.units.surfaceLocative)}</strong></td>
+    <td><strong>${S.units.nbUnites} unités + 1 commercial</strong></td>
+  `;
+  tbody.appendChild(tr);
+}
+
+// --- Revenus ---
+function renderRevenus(S) {
+  const y1 = S.projections[0];
+  setText("rev-brut-hotel",  fmtMAD(y1.revBrutHotel));
+  setText("rev-commissions", fmtMAD(y1.commissions));
+  setText("rev-net-hotel",   fmtMAD(y1.revNetHotel));
+  setText("rev-commercial",  fmtMAD(y1.revCommercial));
+  setText("rev-total",       fmtMAD(y1.revTotal));
+  setText("rev-nuitees",     fmtNum(S.kpi.nuiteesParAn));
+  setText("rev-scenario",    SCENARIOS[S.scenario].label);
+
+  const tbody = document.getElementById("rev-table-tbody");
+  if (!tbody) return;
+  tbody.innerHTML = "";
+  S.projections.forEach(p => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>An ${p.year}</td>
+      <td class="num">${fmtMAD(p.revBrutHotel)}</td>
+      <td class="num neg">(${fmtMAD(p.commissions)})</td>
+      <td class="num">${fmtMAD(p.revNetHotel)}</td>
+      <td class="num">${fmtMAD(p.revCommercial)}</td>
+      <td class="num bold">${fmtMAD(p.revTotal)}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+// --- Charges ---
+function renderCharges(S) {
+  const y1 = S.projections[0];
+  const ch = y1.chargesDetail;
+  setText("ch-total",  fmtMAD(y1.chargesTotal));
+  setText("ch-ebitda", fmtMAD(y1.ebitda));
+  setText("ch-marge",  fmtPct(y1.margeExploitation));
+  setText("ch-nuitee", fmtNum(S.kpi.coutParNuitee) + " MAD");
+
+  const items = [
+    { name: "Ménage & Linge",    val: ch.menage },
+    { name: "Eau + Électricité + Internet", val: ch.utilities },
+    { name: "Salaires (charges incluses)", val: ch.salaires },
+    { name: "Assurance",          val: ch.assurance },
+    { name: "Entretien",          val: ch.entretien },
+    { name: "Taxes professionnelles", val: ch.taxesPro },
+    { name: "Divers & imprévus",  val: ch.divers },
+  ];
+  const tbody = document.getElementById("charges-tbody");
+  if (!tbody) return;
+  tbody.innerHTML = "";
+  items.forEach(item => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${item.name}</td>
+      <td class="num">${fmtMAD(item.val)}</td>
+      <td class="num">${fmtMAD(item.val / 12)}</td>
+      <td class="num">${fmtPct(item.val / y1.chargesTotal)}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+  const trTotal = document.createElement("tr");
+  trTotal.className = "total-row";
+  trTotal.innerHTML = `<td><strong>Total</strong></td><td class="num"><strong>${fmtMAD(y1.chargesTotal)}</strong></td><td class="num"><strong>${fmtMAD(y1.chargesTotal / 12)}</strong></td><td class="num"><strong>100%</strong></td>`;
+  tbody.appendChild(trTotal);
+}
+
+// --- Financement ---
+function renderFinancement(S) {
+  const F = S.financement;
+  setText("fin-subvention",     fmtMAD(F.subventionMDM));
+  setText("fin-credit",         fmtMAD(MDM_TAMWIL.montant));
+  setText("fin-mensualite",     fmtMAD(F.mensualite));
+  setText("fin-apport",         fmtMAD(F.apportPersonnel));
+  setText("fin-pct-apport",     fmtPct(F.pctApport));
+  setText("fin-pct-credit",     fmtPct(F.pctCredit));
+  setText("fin-pct-subvention", fmtPct(F.pctSubvention));
+  setText("fin-interets-diff",  fmtMAD(F.interetsDiffere));
+  setText("fin-devises-min",    fmtMAD(F.apportDevisesMin));
+  setText("fin-cout-credit",    fmtMAD(F.coutTotalCredit));
+
+  // Progress bar
+  const bar = document.getElementById("fin-progress");
+  if (bar) {
+    bar.innerHTML = `
+      <div class="progress-seg" style="width:${F.pctApport * 100}%;background:var(--primary)">Apport ${fmtPct(F.pctApport, 0)}</div>
+      <div class="progress-seg" style="width:${F.pctCredit * 100}%;background:var(--primary-light)">Tamwil ${fmtPct(F.pctCredit, 0)}</div>
+      <div class="progress-seg" style="width:${F.pctSubvention * 100}%;background:var(--green)">MDM ${fmtPct(F.pctSubvention, 0)}</div>
+    `;
+  }
+}
+
+// --- Cash-Flow ---
+function renderCashFlow(S) {
+  const y1 = S.projections[0];
+  setText("cf-net-an1",     fmtMAD(y1.cashFlowNet));
+  setText("cf-rdt-projet",  fmtPct(S.kpi.rendementNet));
+  setText("cf-rdt-apport",  fmtPct(S.kpi.rendementNetApport));
+  setText("cf-payback",     S.kpi.paybackYear ? S.kpi.paybackYear + " ans" : "> 10 ans");
+
+  const tbody = document.getElementById("cf-tbody");
+  if (!tbody) return;
+  tbody.innerHTML = "";
+  S.projections.forEach(p => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>An ${p.year}</td>
+      <td class="num bold">${fmtMAD(p.revTotal)}</td>
+      <td class="num neg">(${fmtMAD(p.chargesTotal)})</td>
+      <td class="num" style="background:#e8f5e9"><strong>${fmtMAD(p.ebitda)}</strong></td>
+      <td class="num neg">(${fmtMAD(p.debtServiceEffective)})</td>
+      <td class="num neg">(${fmtMAD(p.is)})</td>
+      <td class="num bold" style="color:${clrSign(p.cashFlowNet)}">${fmtMAD(p.cashFlowNet)}</td>
+      <td class="num bold" style="color:${clrSign(p.cumulCashFlow)}">${fmtMAD(p.cumulCashFlow)}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+// --- Marché ---
+function renderMarche() {
+  setText("mkt-visiteurs", fmtNum(MARKET_DATA.visiteurs2024));
+  setText("mkt-nuitees",   fmtNum(MARKET_DATA.nuitees2024));
+  setText("mkt-croissance-casa", fmtPct(MARKET_DATA.croissanceCasaS1_2025, 0));
+
+  const tbody = document.getElementById("mkt-concurrence-tbody");
+  if (!tbody) return;
+  tbody.innerHTML = "";
+  MARKET_DATA.concurrence.forEach(c => {
+    const gammeClass = c.gamme === "Haut" ? "badge-green" : c.gamme === "Milieu" ? "badge-blue" : "badge-amber";
+    const tr = document.createElement("tr");
+    tr.innerHTML = `<td>${c.nom}</td><td>${c.type}</td><td>${c.prix}</td><td><span class="badge ${gammeClass}">${c.gamme}</span></td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+// --- Fiscalité ---
+function renderFiscalite(S) {
+  setText("fisc-tva-taux",      fmtPct(FISCALITE.tvaTaux, 0));
+  setText("fisc-tva-collectee", fmtMAD(S.tva.tvaCollecteeAn1));
+  setText("fisc-tva-credit",    fmtMAD(S.tva.creditTVA));
+  setText("fisc-tva-constr",    fmtMAD(S.tva.tvaConstruction));
+}
+
+// --- Risques ---
+function renderRisques(S) {
+  const tbody = document.getElementById("risk-tbody");
+  if (!tbody) return;
+  tbody.innerHTML = "";
+  const sorted = [...RISKS].sort((a, b) => (b.prob * b.impact) - (a.prob * a.impact));
+  sorted.forEach(r => {
+    const score = r.prob * r.impact;
+    const level = score > 0.3 ? "badge-red" : score > 0.15 ? "badge-amber" : "badge-green";
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${r.name}</td>
+      <td><div class="meter"><div class="meter-fill" style="width:${r.prob * 100}%;background:var(--amber)"></div></div></td>
+      <td><div class="meter"><div class="meter-fill" style="width:${r.impact * 100}%;background:var(--red)"></div></div></td>
+      <td><span class="badge ${level}">${(score * 100).toFixed(0)}%</span></td>
+      <td class="small">${r.mitigation}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+// --- Sensibilité ---
+function renderSensibilite(S) {
+  const tbody = document.getElementById("sens-tbody");
+  if (!tbody) return;
+  tbody.innerHTML = "";
+  const currentOcc = SCENARIOS[S.scenario].tauxOccupation;
+  S.sensitivity.forEach(s => {
+    const isCurrent = Math.abs(s.occ - currentOcc) < 0.01;
+    const tr = document.createElement("tr");
+    if (isCurrent) tr.className = "highlight-row";
+    tr.innerHTML = `
+      <td class="${isCurrent ? 'bold' : ''}">${fmtPct(s.occ, 0)}</td>
+      <td class="num">${fmtMAD(s.revenu)}</td>
+      <td class="num">${fmtMAD(s.ebitda)}</td>
+      <td class="num" style="color:${clrSign(s.cashFlow)}">${fmtMAD(s.cashFlow)}</td>
+      <td class="num">${fmtPct(s.rendement)}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+// --- Utility ---
+function setText(id, text) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = text;
+}
