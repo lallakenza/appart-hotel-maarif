@@ -1,6 +1,7 @@
 // ============================================================
 // DATA LAYER — Raw project data, zero computation
 // All amounts in MAD, all rates as decimals
+// Sources citées pour chaque hypothèse
 // ============================================================
 
 const PROJECT = {
@@ -9,23 +10,34 @@ const PROJECT = {
   zone: "Zone B - Secteur B5",
   titreFoncier: "17527/d",
   structure: "R+5",
-  architect: "Nour Architects",
+  architect: "Jad (Nour Architects)",
   coords: { lat: 33.5741, lng: -7.6437 },
   mapsUrl: "https://maps.app.goo.gl/zbgcXaV5d1qjkkYG7",
+  residenceFiscale: "UAE",
 };
 
+// ======= PLANNING =======
+const PLANNING = {
+  delaiAutorisationsPret: 6,   // mois — obtention permis + déblocage prêt
+  delaiConstruction: 16,       // mois
+  get delaiTotal() { return this.delaiAutorisationsPret + this.delaiConstruction; }, // 22 mois
+};
+
+// ======= TERRAIN =======
 const TERRAIN = {
   surface: 174,           // m²
   prix: 2_300_000,        // MAD hors frais (prix ferme)
   fraisAcquisition: 0.065, // enregistrement 4% + conservation 1.5% + notaire ~1%
 };
 
+// ======= BUDGET =======
 const BUDGET = {
-  totalTTC: 7_000_000,           // terrain + frais + construction
+  totalTTC: 7_000_000,           // terrain + frais + construction + ameublement
   ameublementParUnite: 40_000,   // MAD par unité locative (achat en gros 11 unités)
 };
 
-// Programme architectural — surfaces estimées d'après plans architecte Jad
+// ======= PROGRAMME ARCHITECTURAL =======
+// Surfaces estimées d'après plans provisoires architecte Jad (à affiner)
 const UNITS = [
   { floor: "Sous-sol", type: "Services",          surface: null,  category: "service",    label: "Buanderie / Vestiaires / Réfectoire" },
   { floor: "RDC",      type: "Local commercial",  surface: 40.00, category: "commercial", label: "Local commercial (~40 m² + extension sous-sol)" },
@@ -43,56 +55,99 @@ const UNITS = [
   { floor: "Étage 5",  type: "Studio",            surface: 22.63, category: "studio",     label: "Studio — 22,63 m²" },
 ];
 
-// Hypothèses de revenus (à valider)
+// ======= HYPOTHÈSES DE REVENUS =======
+// Basées sur données AirDNA, Airbtics, AirROI, SandsOfWealth (2025-2026)
+// Maarif ADR médiane : ~627 MAD (tout confondu)
+// Range Maarif : 450 – 850 MAD/nuit
+// Nos studios (25-37 m²) : positionnés segment éco-milieu de gamme
+// Nos lofts (40-46 m²) : positionnés milieu de gamme
+
 const REVENUE_ASSUMPTIONS = {
-  prixNuitStudio: 450,        // MAD / nuit (à confirmer)
-  prixNuitLoft: 380,          // MAD / nuit (à confirmer)
   loyerCommercial: 8_000,     // MAD / mois (à confirmer)
-  commissionPlatformes: 0.15, // Booking / Airbnb (à confirmer)
-  croissanceTarifs: 0.03,     // annuelle (à confirmer)
+  commissionPlatformes: 0.15, // Booking 15-18%, Airbnb ~14%, moyenne 15%
+  croissanceTarifs: 0.03,     // annuelle
 };
 
-// Scénarios d'occupation
+// ======= SCÉNARIOS =======
+// Chaque scénario a ses propres prix ET taux d'occupation
+// Sources : AirDNA Casablanca 2026, Airbtics, AirROI, SandsOfWealth
+//
+// Occupancy Casablanca (AirROI 2026) :
+//   Médiane : 35.8%  |  Top 25% : 58%+  |  Top 10% : 76%+
+// Occupancy Casablanca (Airbtics) :
+//   Médiane : 49%
+// Occupancy Casablanca (SandsOfWealth) :
+//   Moyenne : 45%  |  Top performers : 55-65%
+// ADR Maarif (Airbtics) : 627 MAD (tout type confondu)
+// ADR Range Maarif (SandsOfWealth) : 450 – 850 MAD
+
 const SCENARIOS = {
-  prudent:   { tauxOccupation: 0.45, label: "Prudent (45%)" },
-  moyen:     { tauxOccupation: 0.55, label: "Moyen (55%)" },
-  optimiste: { tauxOccupation: 0.65, label: "Optimiste (65%)" },
+  prudent: {
+    label: "Pessimiste",
+    tauxOccupation: 0.35,      // en dessous médiane (nouvel entrant, marché saturé)
+    prixNuitStudio: 380,       // bas de la fourchette Maarif, pricing agressif pour remplir
+    prixNuitLoft: 480,         // lofts plus grands = léger premium
+    loyerCommercial: 6_000,    // hypothèse basse
+    source: "Sous médiane AirROI (35.8%) — scénario nouvel entrant, offre en hausse +50%/an",
+  },
+  moyen: {
+    label: "Réaliste",
+    tauxOccupation: 0.48,      // entre médiane Airbtics (49%) et moyenne SandsOfWealth (45%)
+    prixNuitStudio: 450,       // milieu de gamme, cohérent avec Le 22 Appart'Hôtel (450-600)
+    prixNuitLoft: 580,         // premium loft, cohérent avec Maarif Home (530-670)
+    loyerCommercial: 8_000,    // marché Maarif
+    source: "Médiane marché Airbtics/SandsOfWealth — gestion professionnelle, bon positionnement",
+  },
+  optimiste: {
+    label: "Optimiste",
+    tauxOccupation: 0.58,      // top 25% AirROI, cohérent avec top performers SandsOfWealth (55-65%)
+    prixNuitStudio: 520,       // pricing premium, bonne réputation acquise
+    prixNuitLoft: 650,         // aligné haut de gamme Maarif (Loft Residence GoodMove 500-700)
+    loyerCommercial: 10_000,   // prime emplacement
+    source: "Top 25% AirROI — établi, bonnes notes, clientèle fidèle, pricing dynamique",
+  },
 };
 
-// Charges d'exploitation
+// ======= CHARGES D'EXPLOITATION =======
+// (à confirmer avec le propriétaire)
 const CHARGES = {
-  menageLinge: 80,           // MAD / nuitée occupée (à confirmer)
-  eauElectricite: 8_000,     // MAD / mois (à confirmer)
-  internetTv: 2_000,         // MAD / mois (à confirmer)
-  assurance: 15_000,         // MAD / an (à confirmer)
-  entretien: 30_000,         // MAD / an (à confirmer)
+  menageLinge: 80,           // MAD / nuitée occupée
+  eauElectricite: 8_000,     // MAD / mois
+  internetTv: 2_000,         // MAD / mois
+  assurance: 15_000,         // MAD / an
+  entretien: 30_000,         // MAD / an
   salaireEmploye: 4_000,     // MAD / mois (concierge)
-  nbEmployes: 1,             // 1 concierge
+  nbEmployes: 1,
   chargesSociales: 0.26,     // CNSS + AMO
   taxesPro: 20_000,          // MAD / an (exo 5 ans nouvelle construction)
-  divers: 20_000,            // MAD / an (à confirmer)
+  divers: 20_000,            // MAD / an
 };
 
 // ======= FINANCEMENT =======
+// Structure : Apport = Terrain | Reste financé 50% Tamwilkom + 50% Banque classique
 
-// MDM Invest — subvention (10% du projet, plafonné 5 MDH)
-// Condition : apport en devises ≥ 25% du projet
-// Engagement : 5 ans sans désinvestissement
-// Secteur : hébergement touristique = éligible
+// MDM Invest — subvention étatique via Tamwilcom
+// Source : tamwilcom.ma, finances.gov.ma
+// Condition OBLIGATOIRE : apport en devises ≥ 25% du projet
+// Engagement : 5 ans sans désinvestissement, sinon remboursement intégral
+// Secteur hébergement touristique = éligible
+// Délai réponse banque : 21 jours ouvrables, versement sous 5 jours après validation
 const MDM_INVEST = {
   tauxSubvention: 0.10,
   plafond: 5_000_000,
-  apportDevisesMin: 0.25,    // 25% du projet en devises obligatoire
+  apportDevisesMin: 0.25,    // 25% du projet en devises — CONFIRMÉ par propriétaire
   engagementAnnees: 5,
 };
 
-// Tamwilkom (MDM Tamwil) — prêt complémentaire
-// Source : tamwilcom.ma — conditions MRE
-// Taux : 2,5% HT/an, durée max 7 ans, différé max 2 ans
-// Plafond : 5 MDH, ne peut excéder la part banque
-// Montant projet min : 2,5 MDH
+// Tamwilkom (MDM Tamwil) — cofinancement avec banque
+// Source : tamwilcom.ma — programme MDM Tamwil
+// Taux : 2,5% HT/an (confirmé par propriétaire)
+// Durée max : 7 ans
+// Différé max : 2 ans sur principal
+// Plafond : 5 MDH, max 40% du coût projet, ne peut excéder la part banque
+// Min projet : 2,5 MDH (OK — notre projet = 7 MDH)
 const TAMWILKOM = {
-  tauxAnnuel: 0.025,         // HT
+  tauxAnnuel: 0.025,         // HT (confirmé)
   dureeAns: 7,
   differeAns: 2,
   plafond: 5_000_000,
@@ -100,41 +155,77 @@ const TAMWILKOM = {
 };
 
 // Banque classique — crédit investissement
-// Source : Médias24, taux marché 2025
-// Taux moyen : 4,25% pour 7-15 ans
+// Source : Médias24 jan 2026 — TAEG moyen crédits immo : 5.50% (en baisse -17bps/an)
+// Taux directeur BAM : 2.25% (maintenu mars 2026)
+// Fourchette marché : 3.90% – 5.50% selon profil
+// MRE bénéficient de conditions préférentielles
+// Durée : 7-25 ans pour investissement
 const BANQUE_CLASSIQUE = {
-  tauxAnnuel: 0.0425,        // taux fixe estimé
+  tauxAnnuel: 0.045,         // estimation prudente MRE investissement
   dureeAns: 15,
-  differeAns: 0,             // pas de différé
+  differeAns: 0,
 };
 
-// Fiscalité
+// ======= FISCALITÉ =======
+// Résidence fiscale UAE — pas d'IS sur revenu des personnes au Maroc
+// Mais IS sur la société marocaine si SCI ou SARL
 const FISCALITE = {
   tvaTaux: 0.10,             // taux réduit hébergement touristique
-  isTaux: 0.20,
+  isTaux: 0.20,              // IS société marocaine
   caDevisesPct: 0.40,        // part du CA en devises (exonérée IS) — à confirmer
   exoEquipementsMois: 36,    // exonération TVA équipements
   exoTaxeProAns: 5,          // exonération taxe pro nouvelles constructions
+  residenceFiscale: "UAE",   // pas d'impôt sur le revenu aux UAE
 };
 
-// Données marché (sources: ANIT, Observatoire du Tourisme, Medias24)
+// ======= DONNÉES MARCHÉ =======
+// Sources : AirDNA, Airbtics, AirROI, SandsOfWealth, ANIT, Observatoire du Tourisme
 const MARKET_DATA = {
+  // Tourisme national
   visiteurs2024: 17_400_000,
   nuitees2024: 28_700_000,
   croissanceNuitees: 0.12,
   croissanceCasaS1_2025: 0.20,
+
+  // Données Airbnb Casablanca (multi-sources 2025-2026)
+  airbnbData: {
+    source: "AirDNA, Airbtics (fév 2025 – jan 2026), AirROI 2026, SandsOfWealth 2026",
+    totalListingsCasa: 5_209,          // AirDNA (+47.1% YoY)
+    listingsMaarif: 1_348,             // Airbtics — quartier le plus saturé
+    croissanceListings: 0.50,          // +50% YoY — forte pression concurrentielle
+    adrMaarifMAD: 627,                 // Airbtics — ADR médiane Maarif
+    adrRangeMaarif: { min: 450, max: 850 },  // SandsOfWealth
+    occupancyMedianeCasa: 0.49,        // Airbtics
+    occupancyMedianeAirROI: 0.358,     // AirROI (plus conservateur)
+    occupancyTop25: 0.58,              // AirROI
+    occupancyTop10: 0.76,              // AirROI
+    revenueMedianMensuel: 7_500,       // SandsOfWealth — MAD/mois
+    revenueTop: 16_000,                // SandsOfWealth — top performers MAD/mois
+    saisonHaute: { mois: "Juin-Sept", boost: 0.40 },     // +40% revenu
+    saisonBasse: { mois: "Nov-Fév", baisse: -0.25 },     // -25% revenu
+    clienteleInternationale: 0.83,     // 83% international (AirROI)
+    origineTop: "France (29.5%)",
+    dureeSejourMoyenne: 3.8,           // nuits
+  },
+
+  // Occupancy par segment hôtelier (Observatoire du Tourisme)
   occupancyBySegment: [
     { segment: "Luxe / Haut de gamme",      taux: 0.623 },
     { segment: "Milieu de gamme (4*)",       taux: 0.50  },
     { segment: "Économique (3-4* B)",        taux: 0.45  },
-    { segment: "Appart-hôtel Maarif (est.)", taux: 0.55  },
+    { segment: "Airbnb médiane Casa",        taux: 0.49  },
+    { segment: "Airbnb top 25% Casa",        taux: 0.58  },
   ],
+
+  // Positionnement tarifaire
   prixNuiteeRange: {
-    bas: 370,
-    moyen: 550,
-    haut: 670,
-    notreHypothese: 450,
+    bas: 380,
+    moyen: 530,
+    haut: 700,
+    maarifMediane: 627,
   },
+
+  // Concurrence directe Maarif
   concurrence: [
     { nom: "Maarif Home",              type: "Appart-hôtel",     prix: "530 – 670 MAD", gamme: "Milieu" },
     { nom: "Le 22 Appart' Hôtel",     type: "Appart-hôtel",     prix: "450 – 600 MAD", gamme: "Milieu" },
@@ -143,16 +234,17 @@ const MARKET_DATA = {
   ],
 };
 
-// Risques identifiés
+// ======= RISQUES =======
 const RISKS = [
-  { name: "Taux d'occupation < prévisions",     prob: 0.4, impact: 0.7, mitigation: "Diversifier canaux (Booking, Airbnb, direct), offres long séjour, corporate" },
+  { name: "Taux d'occupation < prévisions",     prob: 0.5, impact: 0.8, mitigation: "Diversifier canaux (Booking, Airbnb, direct), offres long séjour, corporate" },
+  { name: "Saturation offre Maarif (+50%/an)",   prob: 0.6, impact: 0.6, mitigation: "Différenciation qualité, service appart-hôtel vs Airbnb indépendant" },
   { name: "Retard de construction",              prob: 0.5, impact: 0.5, mitigation: "Contrat clé en main, pénalités retard, suivi hebdomadaire" },
   { name: "Dépassement budget construction",     prob: 0.5, impact: 0.6, mitigation: "Marge 10-15%, devis fermés, maîtrise d'oeuvre rigoureuse" },
   { name: "Vacance local commercial",            prob: 0.3, impact: 0.2, mitigation: "Emplacement Maarif très attractif, bail long terme" },
   { name: "Réglementation (licence tourisme)",   prob: 0.3, impact: 0.8, mitigation: "Vérifier conformité zone B5, autorisations préalables" },
-  { name: "Taux de change (revenus devises)",    prob: 0.3, impact: 0.3, mitigation: "Avantage fiscal compense partiellement" },
-  { name: "Saisonnalité marquée",                prob: 0.6, impact: 0.4, mitigation: "Clientèle d'affaires régulière, pricing dynamique" },
-  { name: "Gestion à distance (MRE)",            prob: 0.5, impact: 0.5, mitigation: "Société gestion locale, outils digitaux, caméras" },
+  { name: "Saisonnalité marquée",                prob: 0.6, impact: 0.4, mitigation: "Clientèle d'affaires régulière, pricing dynamique, long séjour basse saison" },
+  { name: "Gestion à distance (UAE)",            prob: 0.5, impact: 0.5, mitigation: "Société gestion locale, outils digitaux, caméras" },
+  { name: "Pression tarifaire (offre x2 en 3 ans)", prob: 0.5, impact: 0.5, mitigation: "Qualité supérieure, avis clients, fidélisation" },
 ];
 
 const PROJECTION_YEARS = 10;

@@ -35,6 +35,7 @@ function badgeClass(type) {
 
 // --- Main render ---
 function render(state) {
+  renderScenarioButtons(state);
   renderKPIs(state);
   renderBudget(state);
   renderProgramme(state);
@@ -42,10 +43,21 @@ function render(state) {
   renderCharges(state);
   renderFinancement(state);
   renderCashFlow(state);
-  renderMarche();
+  renderMarche(state);
   renderFiscalite(state);
   renderRisques(state);
   renderSensibilite(state);
+}
+
+// --- Scenario buttons: show label + occ + prix ---
+function renderScenarioButtons(S) {
+  Object.keys(SCENARIOS).forEach(key => {
+    const sc = SCENARIOS[key];
+    const btn = document.getElementById("btn-" + key);
+    if (btn) {
+      btn.innerHTML = `${sc.label}<br><small style="font-weight:400;opacity:.7">${fmtPct(sc.tauxOccupation, 0)} · ${sc.prixNuitStudio} MAD/n</small>`;
+    }
+  });
 }
 
 // --- KPI Strip ---
@@ -78,7 +90,7 @@ function renderBudget(S) {
   setText("budget-terrain-total", fmtMAD(S.terrain.coutTerrain));
   setText("budget-construction", fmtMAD(S.terrain.budgetConstruction));
   setText("budget-ameublement", fmtMAD(S.budget.ameublement));
-  setText("budget-total", fmtMAD(S.budget.totalProjet));
+  setText("budget-total", fmtMAD(BUDGET.totalTTC));
   setText("budget-m2", fmtNum(S.terrain.coutM2Terrain) + " MAD/m²");
 }
 
@@ -110,6 +122,7 @@ function renderProgramme(S) {
 
 // --- Revenus ---
 function renderRevenus(S) {
+  const sc = SCENARIOS[S.scenario];
   const y1 = S.projections[0];
   setText("rev-brut-hotel",  fmtMAD(y1.revBrutHotel));
   setText("rev-commissions", fmtMAD(y1.commissions));
@@ -117,7 +130,7 @@ function renderRevenus(S) {
   setText("rev-commercial",  fmtMAD(y1.revCommercial));
   setText("rev-total",       fmtMAD(y1.revTotal));
   setText("rev-nuitees",     fmtNum(S.kpi.nuiteesParAn));
-  setText("rev-scenario",    SCENARIOS[S.scenario].label);
+  setText("rev-scenario",    sc.label + " — " + fmtPct(sc.tauxOccupation, 0) + " · Studios " + sc.prixNuitStudio + " MAD · Lofts " + sc.prixNuitLoft + " MAD");
 
   const tbody = document.getElementById("rev-table-tbody");
   if (!tbody) return;
@@ -242,10 +255,17 @@ function renderCashFlow(S) {
 }
 
 // --- Marché ---
-function renderMarche() {
+function renderMarche(S) {
   setText("mkt-visiteurs", fmtNum(MARKET_DATA.visiteurs2024));
   setText("mkt-nuitees",   fmtNum(MARKET_DATA.nuitees2024));
   setText("mkt-croissance-casa", fmtPct(MARKET_DATA.croissanceCasaS1_2025, 0));
+  // Airbnb data
+  setText("mkt-listings-casa", fmtNum(MARKET_DATA.airbnbData.totalListingsCasa));
+  setText("mkt-listings-maarif", fmtNum(MARKET_DATA.airbnbData.listingsMaarif));
+  setText("mkt-adr-maarif", fmtNum(MARKET_DATA.airbnbData.adrMaarifMAD) + " MAD");
+  setText("mkt-occ-mediane", fmtPct(MARKET_DATA.airbnbData.occupancyMedianeCasa, 0));
+  setText("mkt-occ-top25", fmtPct(MARKET_DATA.airbnbData.occupancyTop25, 0));
+  setText("mkt-croissance-listings", "+" + fmtPct(MARKET_DATA.airbnbData.croissanceListings, 0));
 
   const tbody = document.getElementById("mkt-concurrence-tbody");
   if (!tbody) return;

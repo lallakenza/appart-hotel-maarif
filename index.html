@@ -51,7 +51,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);lin
 
 /* Scenario */
 .scenario-bar{display:flex;gap:8px;margin-bottom:20px}
-.scenario-btn{padding:8px 20px;border:2px solid var(--border);border-radius:8px;background:#fff;cursor:pointer;font-weight:500;font-family:inherit;font-size:.85rem;transition:all .2s}
+.scenario-btn{padding:10px 20px;border:2px solid var(--border);border-radius:8px;background:#fff;cursor:pointer;font-weight:600;font-family:inherit;font-size:.85rem;transition:all .2s;text-align:center;line-height:1.4}
 .scenario-btn.active{border-color:var(--primary);background:var(--primary);color:#fff}
 .scenario-btn:hover:not(.active){border-color:var(--primary-light)}
 
@@ -158,9 +158,9 @@ tr:hover td{background:#f8fafc}
 
 <!-- Scenario bar -->
 <div class="scenario-bar">
-  <button class="scenario-btn" data-scenario="prudent">Prudent (45%)</button>
-  <button class="scenario-btn active" data-scenario="moyen">Moyen (55%)</button>
-  <button class="scenario-btn" data-scenario="optimiste">Optimiste (65%)</button>
+  <button class="scenario-btn" data-scenario="prudent" id="btn-prudent">Pessimiste</button>
+  <button class="scenario-btn active" data-scenario="moyen" id="btn-moyen">Réaliste</button>
+  <button class="scenario-btn" data-scenario="optimiste" id="btn-optimiste">Optimiste</button>
 </div>
 
 <!-- ==================== VUE D'ENSEMBLE ==================== -->
@@ -181,9 +181,9 @@ tr:hover td{background:#f8fafc}
         <tr><td>Prix terrain</td><td class="num" id="budget-terrain-prix">–</td></tr>
         <tr><td>Frais acquisition (~6.5%)</td><td class="num" id="budget-terrain-frais">–</td></tr>
         <tr><td><strong>Terrain tout compris</strong></td><td class="num" id="budget-terrain-total">–</td></tr>
-        <tr><td>Construction & aménagement</td><td class="num" id="budget-construction">–</td></tr>
-        <tr><td>Ameublement (11 unités × 40K)</td><td class="num" id="budget-ameublement">–</td></tr>
-        <tr class="total-row"><td><strong>Total Projet</strong></td><td class="num" id="budget-total">–</td></tr>
+        <tr><td>Construction & aménagement (incl. ameublement)</td><td class="num" id="budget-construction">–</td></tr>
+        <tr><td><em>dont ameublement (11 × 40K)</em></td><td class="num" id="budget-ameublement">–</td></tr>
+        <tr class="total-row"><td><strong>Total TTC</strong></td><td class="num" id="budget-total">–</td></tr>
         <tr><td>Prix / m² terrain</td><td class="num" id="budget-m2">–</td></tr>
       </tbody></table>
     </div>
@@ -302,6 +302,23 @@ tr:hover td{background:#f8fafc}
     <div class="kpi-card"><div class="kpi-label">Croissance Casa S1 2025</div><div class="kpi-value kpi-green" id="mkt-croissance-casa">–</div></div>
     <div class="kpi-card"><div class="kpi-label">Coupe du Monde</div><div class="kpi-value kpi-amber">2030</div><div class="kpi-sub">Maroc co-organisateur</div></div>
   </div>
+
+  <!-- Airbnb Market Data -->
+  <div class="card">
+    <div class="card-title">Données Airbnb Casablanca — Sources : AirDNA, Airbtics, AirROI (2025-2026)</div>
+    <div class="kpi-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:0">
+      <div class="kpi-card"><div class="kpi-label">Listings Casablanca</div><div class="kpi-value" id="mkt-listings-casa">–</div><div class="kpi-sub" id="mkt-croissance-listings">–</div></div>
+      <div class="kpi-card"><div class="kpi-label">Listings Maarif</div><div class="kpi-value kpi-amber" id="mkt-listings-maarif">–</div><div class="kpi-sub">Quartier le plus saturé</div></div>
+      <div class="kpi-card"><div class="kpi-label">ADR Maarif</div><div class="kpi-value" id="mkt-adr-maarif">–</div><div class="kpi-sub">Médiane Airbtics</div></div>
+      <div class="kpi-card"><div class="kpi-label">Occupancy Médiane</div><div class="kpi-value kpi-amber" id="mkt-occ-mediane">–</div><div class="kpi-sub">Casablanca — Airbtics</div></div>
+      <div class="kpi-card"><div class="kpi-label">Occupancy Top 25%</div><div class="kpi-value kpi-green" id="mkt-occ-top25">–</div><div class="kpi-sub">AirROI — objectif réaliste</div></div>
+      <div class="kpi-card"><div class="kpi-label">Clientèle Internationale</div><div class="kpi-value">83%</div><div class="kpi-sub">Top : France (29.5%)</div></div>
+    </div>
+    <div class="info-box" style="margin-top:12px;font-size:.8rem">
+      <strong>Alerte saturation :</strong> +50% de listings/an à Casablanca. Maarif concentre 1 348 annonces sur 5 209. Différenciation qualité et service professionnel indispensables.
+    </div>
+  </div>
+
   <div class="grid-2">
     <div class="card"><div class="card-title">Taux d'Occupation par Segment</div><div class="chart-box"><canvas id="chart-occupancy"></canvas></div></div>
     <div class="card"><div class="card-title">Concurrence Appart-Hôtels Maarif</div>

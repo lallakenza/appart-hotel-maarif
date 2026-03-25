@@ -9,7 +9,8 @@ function pmt(rate, nper, pv) {
 }
 
 function compute(scenario) {
-  const occ = SCENARIOS[scenario].tauxOccupation;
+  const sc = SCENARIOS[scenario];
+  const occ = sc.tauxOccupation;
 
   // --- Terrain ---
   const fraisTerrain = TERRAIN.prix * TERRAIN.fraisAcquisition;
@@ -27,9 +28,9 @@ function compute(scenario) {
   const surfaceLocative = locatifs.reduce((s, u) => s + u.surface, 0);
   const surfaceCommerciale = UNITS.find(u => u.category === "commercial")?.surface || 0;
 
-  // --- Budget total avec ameublement ---
+  // --- Budget total (ameublement inclus dans totalTTC) ---
   const ameublement = BUDGET.ameublementParUnite * nbUnites;
-  const totalProjet = BUDGET.totalTTC + ameublement;
+  const totalProjet = BUDGET.totalTTC; // 7M TTC tout compris
 
   // --- MDM Invest ---
   const subventionMDM = Math.min(totalProjet * MDM_INVEST.tauxSubvention, MDM_INVEST.plafond);
@@ -79,8 +80,8 @@ function compute(scenario) {
 
   for (let y = 0; y < PROJECTION_YEARS; y++) {
     const growth = Math.pow(1 + REVENUE_ASSUMPTIONS.croissanceTarifs, y);
-    const prixStudio = REVENUE_ASSUMPTIONS.prixNuitStudio * growth;
-    const prixLoft = REVENUE_ASSUMPTIONS.prixNuitLoft * growth;
+    const prixStudio = sc.prixNuitStudio * growth;
+    const prixLoft = sc.prixNuitLoft * growth;
 
     // Revenus
     const revStudios = nbStudios * prixStudio * 365 * occ;
@@ -88,7 +89,7 @@ function compute(scenario) {
     const revBrutHotel = revStudios + revLofts;
     const commissions = revBrutHotel * REVENUE_ASSUMPTIONS.commissionPlatformes;
     const revNetHotel = revBrutHotel - commissions;
-    const revCommercial = REVENUE_ASSUMPTIONS.loyerCommercial * 12;
+    const revCommercial = sc.loyerCommercial * 12;
     const revTotal = revNetHotel + revCommercial;
 
     // Charges
@@ -159,10 +160,10 @@ function compute(scenario) {
   const creditTVA = Math.max(0, tvaConstruction - tvaCollecteeAn1);
 
   // Sensibilité
-  const sensitivity = [0.35, 0.40, 0.45, 0.50, 0.55, 0.60, 0.65, 0.70, 0.75].map(occRate => {
+  const sensitivity = [0.25, 0.30, 0.35, 0.40, 0.45, 0.50, 0.55, 0.60, 0.65, 0.70, 0.75].map(occRate => {
     const nuitees = nbUnites * 365 * occRate;
-    const revH = (nbStudios * REVENUE_ASSUMPTIONS.prixNuitStudio + nbLofts * REVENUE_ASSUMPTIONS.prixNuitLoft) * 365 * occRate;
-    const revN = revH * (1 - REVENUE_ASSUMPTIONS.commissionPlatformes) + REVENUE_ASSUMPTIONS.loyerCommercial * 12;
+    const revH = (nbStudios * sc.prixNuitStudio + nbLofts * sc.prixNuitLoft) * 365 * occRate;
+    const revN = revH * (1 - REVENUE_ASSUMPTIONS.commissionPlatformes) + sc.loyerCommercial * 12;
     const ch = CHARGES.menageLinge * nuitees + (CHARGES.eauElectricite + CHARGES.internetTv) * 12 +
                CHARGES.salaireEmploye * CHARGES.nbEmployes * 12 * (1 + CHARGES.chargesSociales) +
                CHARGES.assurance + CHARGES.entretien + CHARGES.taxesPro + CHARGES.divers;
