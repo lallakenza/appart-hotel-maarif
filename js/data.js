@@ -17,7 +17,7 @@ const PROJECT = {
 const TERRAIN = {
   surface: 174,           // m²
   prix: 2_300_000,        // MAD hors frais
-  fraisAcquisition: 0.15, // notaire + conservation + enregistrement
+  fraisAcquisition: 0.065, // enregistrement 4% + conservation 1.5% + notaire ~1%
 };
 
 const BUDGET = {
