@@ -16,39 +16,40 @@ const PROJECT = {
 
 const TERRAIN = {
   surface: 174,           // m²
-  prix: 2_300_000,        // MAD hors frais
+  prix: 2_300_000,        // MAD hors frais (prix ferme)
   fraisAcquisition: 0.065, // enregistrement 4% + conservation 1.5% + notaire ~1%
 };
 
 const BUDGET = {
-  totalTTC: 7_000_000,
+  totalTTC: 7_000_000,           // terrain + frais + construction
+  ameublementParUnite: 40_000,   // MAD par unité locative (achat en gros 11 unités)
 };
 
-// Programme architectural — chaque unité
+// Programme architectural — surfaces estimées d'après plans architecte Jad
 const UNITS = [
   { floor: "Sous-sol", type: "Services",          surface: null,  category: "service",    label: "Buanderie / Vestiaires / Réfectoire" },
-  { floor: "RDC",      type: "Local commercial",  surface: 46.10, category: "commercial", label: "Local commercial (remplacement pente parking)" },
-  { floor: "RDC",      type: "Studio",            surface: 32.75, category: "studio",     label: "Studio RDC — 32,75 m²" },
+  { floor: "RDC",      type: "Local commercial",  surface: 40.00, category: "commercial", label: "Local commercial (~40 m² + extension sous-sol)" },
+  { floor: "RDC",      type: "Studio",            surface: 37.41, category: "studio",     label: "Studio RDC — 37,41 m²" },
   { floor: "RDC",      type: "Réception",         surface: null,  category: "service",    label: "Hall & réception" },
-  { floor: "Étage 1",  type: "Studio A",          surface: 37.41, category: "studio",     label: "Studio A — 37,41 m²" },
-  { floor: "Étage 1",  type: "Studio B",          surface: 32.75, category: "studio",     label: "Studio B — 32,75 m²" },
-  { floor: "Étage 2",  type: "Studio A",          surface: 37.41, category: "studio",     label: "Studio A — 37,41 m²" },
+  { floor: "Étage 1",  type: "Studio A",          surface: 32.75, category: "studio",     label: "Studio A — 32,75 m²" },
+  { floor: "Étage 1",  type: "Studio B",          surface: 37.41, category: "studio",     label: "Studio B — 37,41 m²" },
+  { floor: "Étage 2",  type: "Studio A",          surface: 28.55, category: "studio",     label: "Studio A — 28,55 m²" },
   { floor: "Étage 2",  type: "Studio B",          surface: 32.75, category: "studio",     label: "Studio B — 32,75 m²" },
-  { floor: "Étage 3",  type: "Studio A",          surface: 37.41, category: "studio",     label: "Studio A — 37,41 m²" },
+  { floor: "Étage 3",  type: "Studio A",          surface: 28.55, category: "studio",     label: "Studio A — 28,55 m²" },
   { floor: "Étage 3",  type: "Studio B",          surface: 32.75, category: "studio",     label: "Studio B — 32,75 m²" },
-  { floor: "Étage 4",  type: "Loft",              surface: 28.55, category: "loft",       label: "Loft — 28,55 m²" },
-  { floor: "Étage 4",  type: "Studio B",          surface: 32.75, category: "studio",     label: "Studio B — 32,75 m²" },
-  { floor: "Étage 5",  type: "Loft",              surface: 22.63, category: "loft",       label: "Loft — 22,63 m²" },
-  { floor: "Étage 5",  type: "Studio B",          surface: 32.75, category: "studio",     label: "Studio B — 32,75 m²" },
+  { floor: "Étage 4",  type: "Loft",              surface: 46.10, category: "loft",       label: "Loft — 46,10 m²" },
+  { floor: "Étage 4",  type: "Studio",            surface: 32.75, category: "studio",     label: "Studio — 32,75 m²" },
+  { floor: "Étage 5",  type: "Loft",              surface: 40.98, category: "loft",       label: "Loft — 40,98 m²" },
+  { floor: "Étage 5",  type: "Studio",            surface: 22.63, category: "studio",     label: "Studio — 22,63 m²" },
 ];
 
-// Hypothèses de revenus
+// Hypothèses de revenus (à valider)
 const REVENUE_ASSUMPTIONS = {
-  prixNuitStudio: 450,        // MAD / nuit
-  prixNuitLoft: 380,          // MAD / nuit
-  loyerCommercial: 8_000,     // MAD / mois
-  commissionPlatformes: 0.15, // Booking / Airbnb
-  croissanceTarifs: 0.03,     // annuelle
+  prixNuitStudio: 450,        // MAD / nuit (à confirmer)
+  prixNuitLoft: 380,          // MAD / nuit (à confirmer)
+  loyerCommercial: 8_000,     // MAD / mois (à confirmer)
+  commissionPlatformes: 0.15, // Booking / Airbnb (à confirmer)
+  croissanceTarifs: 0.03,     // annuelle (à confirmer)
 };
 
 // Scénarios d'occupation
@@ -60,38 +61,58 @@ const SCENARIOS = {
 
 // Charges d'exploitation
 const CHARGES = {
-  menageLinge: 80,           // MAD / nuitée occupée
-  eauElectricite: 8_000,     // MAD / mois
-  internetTv: 2_000,         // MAD / mois
-  assurance: 15_000,         // MAD / an
-  entretien: 30_000,         // MAD / an
-  salaireEmploye: 4_000,     // MAD / mois
-  nbEmployes: 2,
-  chargesSociales: 0.26,
-  taxesPro: 20_000,          // MAD / an
-  divers: 20_000,            // MAD / an
+  menageLinge: 80,           // MAD / nuitée occupée (à confirmer)
+  eauElectricite: 8_000,     // MAD / mois (à confirmer)
+  internetTv: 2_000,         // MAD / mois (à confirmer)
+  assurance: 15_000,         // MAD / an (à confirmer)
+  entretien: 30_000,         // MAD / an (à confirmer)
+  salaireEmploye: 4_000,     // MAD / mois (concierge)
+  nbEmployes: 1,             // 1 concierge
+  chargesSociales: 0.26,     // CNSS + AMO
+  taxesPro: 20_000,          // MAD / an (exo 5 ans nouvelle construction)
+  divers: 20_000,            // MAD / an (à confirmer)
 };
 
-// Financement MDM
+// ======= FINANCEMENT =======
+
+// MDM Invest — subvention (10% du projet, plafonné 5 MDH)
+// Condition : apport en devises ≥ 25% du projet
+// Engagement : 5 ans sans désinvestissement
+// Secteur : hébergement touristique = éligible
 const MDM_INVEST = {
-  tauxSubvention: 0.10,      // % du projet
-  plafond: 5_000_000,        // MAD
-  apportDevisesMin: 0.25,    // % du projet en devises
-  engagementAnnees: 5,       // durée sans désinvestissement
+  tauxSubvention: 0.10,
+  plafond: 5_000_000,
+  apportDevisesMin: 0.25,    // 25% du projet en devises obligatoire
+  engagementAnnees: 5,
 };
 
-const MDM_TAMWIL = {
-  montant: 2_800_000,        // MAD
+// Tamwilkom (MDM Tamwil) — prêt complémentaire
+// Source : tamwilcom.ma — conditions MRE
+// Taux : 2,5% HT/an, durée max 7 ans, différé max 2 ans
+// Plafond : 5 MDH, ne peut excéder la part banque
+// Montant projet min : 2,5 MDH
+const TAMWILKOM = {
   tauxAnnuel: 0.025,         // HT
   dureeAns: 7,
   differeAns: 2,
+  plafond: 5_000_000,
+  maxPctProjet: 0.40,        // max 40% du coût projet
+};
+
+// Banque classique — crédit investissement
+// Source : Médias24, taux marché 2025
+// Taux moyen : 4,25% pour 7-15 ans
+const BANQUE_CLASSIQUE = {
+  tauxAnnuel: 0.0425,        // taux fixe estimé
+  dureeAns: 15,
+  differeAns: 0,             // pas de différé
 };
 
 // Fiscalité
 const FISCALITE = {
-  tvaTaux: 0.10,             // taux réduit hébergement
+  tvaTaux: 0.10,             // taux réduit hébergement touristique
   isTaux: 0.20,
-  caDevisesPct: 0.40,        // part du CA en devises (exonérée IS)
+  caDevisesPct: 0.40,        // part du CA en devises (exonérée IS) — à confirmer
   exoEquipementsMois: 36,    // exonération TVA équipements
   exoTaxeProAns: 5,          // exonération taxe pro nouvelles constructions
 };

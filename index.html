@@ -182,7 +182,8 @@ tr:hover td{background:#f8fafc}
         <tr><td>Frais acquisition (~6.5%)</td><td class="num" id="budget-terrain-frais">–</td></tr>
         <tr><td><strong>Terrain tout compris</strong></td><td class="num" id="budget-terrain-total">–</td></tr>
         <tr><td>Construction & aménagement</td><td class="num" id="budget-construction">–</td></tr>
-        <tr class="total-row"><td><strong>Total TTC</strong></td><td class="num" id="budget-total">–</td></tr>
+        <tr><td>Ameublement (11 unités × 40K)</td><td class="num" id="budget-ameublement">–</td></tr>
+        <tr class="total-row"><td><strong>Total Projet</strong></td><td class="num" id="budget-total">–</td></tr>
         <tr><td>Prix / m² terrain</td><td class="num" id="budget-m2">–</td></tr>
       </tbody></table>
     </div>
@@ -232,27 +233,51 @@ tr:hover td{background:#f8fafc}
 <!-- ==================== FINANCEMENT ==================== -->
 <div data-view="financement" class="hidden">
   <div class="kpi-grid">
-    <div class="kpi-card"><div class="kpi-label">Subvention MDM Invest</div><div class="kpi-value kpi-green" id="fin-subvention">–</div><div class="kpi-sub">10% du projet, gratuit</div></div>
-    <div class="kpi-card"><div class="kpi-label">Crédit MDM Tamwil</div><div class="kpi-value" id="fin-credit">–</div><div class="kpi-sub">2,5% / an sur 7 ans</div></div>
-    <div class="kpi-card"><div class="kpi-label">Mensualité Tamwil</div><div class="kpi-value" id="fin-mensualite">–</div><div class="kpi-sub">Après différé 2 ans</div></div>
-    <div class="kpi-card"><div class="kpi-label">Apport Personnel</div><div class="kpi-value" id="fin-apport">–</div><div class="kpi-sub" id="fin-pct-apport">–</div></div>
+    <div class="kpi-card"><div class="kpi-label">Total Projet</div><div class="kpi-value" id="fin-total-projet">–</div></div>
+    <div class="kpi-card"><div class="kpi-label">Apport (Terrain)</div><div class="kpi-value" id="fin-apport">–</div><div class="kpi-sub" id="fin-pct-apport">–</div></div>
+    <div class="kpi-card"><div class="kpi-label">Subvention MDM</div><div class="kpi-value kpi-green" id="fin-subvention">–</div><div class="kpi-sub">10% du projet, gratuit</div></div>
+    <div class="kpi-card"><div class="kpi-label">À financer</div><div class="kpi-value kpi-amber" id="fin-montant-financer">–</div></div>
   </div>
-  <div class="card">
-    <div class="card-title">Programme MDM Invest</div>
-    <div class="info-box"><strong>Subvention de l'État à fonds perdu</strong> égale à 10% du coût du projet, plafonnée à 5 MDH. Géré par Tamwilcom. Condition : apport en devises ≥ 25% du projet (<span id="fin-devises-min">–</span>). <strong style="color:var(--red)">Engagement : pas de désinvestissement pendant 5 ans.</strong></div>
-  </div>
-  <div class="card">
-    <div class="card-title">Crédit MDM Tamwil</div>
-    <div class="info-box">Crédit à taux préférentiel de <strong>2,5% HT / an</strong>, jusqu'à 5 MDH, durée max 7 ans avec 2 ans de différé. Intérêts seuls pendant le différé : <strong id="fin-interets-diff">–</strong>/an. Coût total du crédit : <strong id="fin-cout-credit">–</strong>.</div>
-    <div class="chart-box" style="margin-top:16px"><canvas id="chart-debt"></canvas></div>
-  </div>
+
   <div class="card">
     <div class="card-title">Répartition du Financement</div>
     <div class="progress-bar" id="fin-progress"></div>
-    <table style="margin-top:16px"><thead><tr><th>Source</th><th>Montant</th><th>% Projet</th></tr></thead><tbody>
-      <tr><td>Apport personnel</td><td class="num" id="fin-pct-apport-2">–</td><td class="num">–</td></tr>
-    </tbody></table>
   </div>
+
+  <div class="card">
+    <div class="card-title">MDM Invest — Subvention</div>
+    <div class="info-box"><strong>Subvention à fonds perdu = 10% du projet</strong>, plafonnée à 5 MDH. Gérée par Tamwilcom.<br>
+    <strong style="color:var(--gold)">Condition : apport en devises ≥ 25% du projet = <span id="fin-devises-min">–</span></strong><br>
+    <strong style="color:var(--red)">Engagement : pas de désinvestissement pendant 5 ans.</strong><br>
+    Secteur éligible : hébergement touristique (Résidence de Tourisme).</div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">Tamwilkom (MDM Tamwil) — 2,5% HT</div>
+      <table>
+        <tr><td>Montant</td><td class="num bold" id="fin-tk-montant">–</td></tr>
+        <tr><td>Taux</td><td class="num" id="fin-tk-taux">–</td></tr>
+        <tr><td>Durée</td><td class="num" id="fin-tk-duree">–</td></tr>
+        <tr><td>Mensualité (après différé)</td><td class="num bold" id="fin-tk-mensualite">–</td></tr>
+        <tr><td>Coût total du crédit</td><td class="num" id="fin-tk-cout">–</td></tr>
+      </table>
+      <div class="info-box" style="margin-top:12px;font-size:.8rem">Source : tamwilcom.ma — Prêt complémentaire MRE, ne peut excéder la part banque, max 40% du projet, plafond 5 MDH.</div>
+    </div>
+    <div class="card">
+      <div class="card-title">Banque Classique — ~4,25%</div>
+      <table>
+        <tr><td>Montant</td><td class="num bold" id="fin-bq-montant">–</td></tr>
+        <tr><td>Taux</td><td class="num" id="fin-bq-taux">–</td></tr>
+        <tr><td>Durée</td><td class="num" id="fin-bq-duree">–</td></tr>
+        <tr><td>Mensualité</td><td class="num bold" id="fin-bq-mensualite">–</td></tr>
+        <tr><td>Coût total du crédit</td><td class="num" id="fin-bq-cout">–</td></tr>
+      </table>
+      <div class="info-box" style="margin-top:12px;font-size:.8rem">Source : Médias24 — Taux moyen crédit investissement 2025 : 4,1%-4,35% (7-15 ans).</div>
+    </div>
+  </div>
+
+  <div class="card"><div class="card-title">Service de la Dette sur 15 ans</div><div class="chart-box"><canvas id="chart-debt"></canvas></div></div>
 </div>
 
 <!-- ==================== CASH-FLOW ==================== -->

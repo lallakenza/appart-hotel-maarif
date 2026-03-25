@@ -51,7 +51,7 @@ function render(state) {
 // --- KPI Strip ---
 function renderKPIs(S) {
   const y1 = S.projections[0];
-  setKPI("kpi-invest",     fmtMAD(BUDGET.totalTTC));
+  setKPI("kpi-invest",     fmtMAD(S.budget.totalProjet));
   setKPI("kpi-rdt-brut",   fmtPct(S.kpi.rendementBrut),   S.kpi.rendementBrut > 0.08 ? "kpi-green" : "kpi-amber");
   setKPI("kpi-cf-net",     fmtMAD(y1.cashFlowNet),         y1.cashFlowNet > 0 ? "kpi-green" : "kpi-red");
   setKPI("kpi-rdt-apport", fmtPct(S.kpi.rendementNetApport), S.kpi.rendementNetApport > 0.1 ? "kpi-green" : "kpi-amber");
@@ -77,7 +77,8 @@ function renderBudget(S) {
   setText("budget-terrain-frais", fmtMAD(S.terrain.fraisTerrain));
   setText("budget-terrain-total", fmtMAD(S.terrain.coutTerrain));
   setText("budget-construction", fmtMAD(S.terrain.budgetConstruction));
-  setText("budget-total", fmtMAD(BUDGET.totalTTC));
+  setText("budget-ameublement", fmtMAD(S.budget.ameublement));
+  setText("budget-total", fmtMAD(S.budget.totalProjet));
   setText("budget-m2", fmtNum(S.terrain.coutM2Terrain) + " MAD/m²");
 }
 
@@ -97,7 +98,6 @@ function renderProgramme(S) {
     `;
     tbody.appendChild(tr);
   });
-  // Total row
   const tr = document.createElement("tr");
   tr.className = "total-row";
   tr.innerHTML = `
@@ -176,24 +176,40 @@ function renderCharges(S) {
 // --- Financement ---
 function renderFinancement(S) {
   const F = S.financement;
+  // Subvention
   setText("fin-subvention",     fmtMAD(F.subventionMDM));
-  setText("fin-credit",         fmtMAD(MDM_TAMWIL.montant));
-  setText("fin-mensualite",     fmtMAD(F.mensualite));
-  setText("fin-apport",         fmtMAD(F.apportPersonnel));
-  setText("fin-pct-apport",     fmtPct(F.pctApport));
-  setText("fin-pct-credit",     fmtPct(F.pctCredit));
-  setText("fin-pct-subvention", fmtPct(F.pctSubvention));
-  setText("fin-interets-diff",  fmtMAD(F.interetsDiffere));
   setText("fin-devises-min",    fmtMAD(F.apportDevisesMin));
-  setText("fin-cout-credit",    fmtMAD(F.coutTotalCredit));
+
+  // Apport terrain
+  setText("fin-apport",         fmtMAD(F.apportTerrain));
+  setText("fin-pct-apport",     fmtPct(F.pctApport));
+
+  // Tamwilkom
+  setText("fin-tk-montant",     fmtMAD(F.montantTamwilkom));
+  setText("fin-tk-taux",        fmtPct(TAMWILKOM.tauxAnnuel) + " HT");
+  setText("fin-tk-duree",       TAMWILKOM.dureeAns + " ans (dont " + TAMWILKOM.differeAns + " ans différé)");
+  setText("fin-tk-mensualite",  fmtMAD(F.mensualiteTK));
+  setText("fin-tk-cout",        fmtMAD(F.coutTotalTK));
+
+  // Banque classique
+  setText("fin-bq-montant",     fmtMAD(F.montantBanque));
+  setText("fin-bq-taux",        fmtPct(BANQUE_CLASSIQUE.tauxAnnuel));
+  setText("fin-bq-duree",       BANQUE_CLASSIQUE.dureeAns + " ans");
+  setText("fin-bq-mensualite",  fmtMAD(F.mensualiteBQ));
+  setText("fin-bq-cout",        fmtMAD(F.coutTotalBQ));
+
+  // Total
+  setText("fin-total-projet",   fmtMAD(S.budget.totalProjet));
+  setText("fin-montant-financer", fmtMAD(F.montantAFinancer));
 
   // Progress bar
   const bar = document.getElementById("fin-progress");
   if (bar) {
     bar.innerHTML = `
-      <div class="progress-seg" style="width:${F.pctApport * 100}%;background:var(--primary)">Apport ${fmtPct(F.pctApport, 0)}</div>
-      <div class="progress-seg" style="width:${F.pctCredit * 100}%;background:var(--primary-light)">Tamwil ${fmtPct(F.pctCredit, 0)}</div>
-      <div class="progress-seg" style="width:${F.pctSubvention * 100}%;background:var(--green)">MDM ${fmtPct(F.pctSubvention, 0)}</div>
+      <div class="progress-seg" style="width:${F.pctApport * 100}%;background:var(--primary)" title="Apport terrain">Terrain ${fmtPct(F.pctApport, 0)}</div>
+      <div class="progress-seg" style="width:${F.pctTamwilkom * 100}%;background:var(--gold)" title="Tamwilkom">TK ${fmtPct(F.pctTamwilkom, 0)}</div>
+      <div class="progress-seg" style="width:${F.pctBanque * 100}%;background:var(--primary-light)" title="Banque classique">Banque ${fmtPct(F.pctBanque, 0)}</div>
+      <div class="progress-seg" style="width:${F.pctSubvention * 100}%;background:var(--green)" title="Subvention MDM Invest">MDM ${fmtPct(F.pctSubvention, 0)}</div>
     `;
   }
 }
@@ -216,7 +232,7 @@ function renderCashFlow(S) {
       <td class="num bold">${fmtMAD(p.revTotal)}</td>
       <td class="num neg">(${fmtMAD(p.chargesTotal)})</td>
       <td class="num" style="background:#e8f5e9"><strong>${fmtMAD(p.ebitda)}</strong></td>
-      <td class="num neg">(${fmtMAD(p.debtServiceEffective)})</td>
+      <td class="num neg">(${fmtMAD(p.debtServiceTotal)})</td>
       <td class="num neg">(${fmtMAD(p.is)})</td>
       <td class="num bold" style="color:${clrSign(p.cashFlowNet)}">${fmtMAD(p.cashFlowNet)}</td>
       <td class="num bold" style="color:${clrSign(p.cumulCashFlow)}">${fmtMAD(p.cumulCashFlow)}</td>

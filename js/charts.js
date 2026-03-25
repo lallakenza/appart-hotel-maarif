@@ -41,8 +41,8 @@ function chartBudget(S) {
   _charts.budget = new Chart(ctx, {
     type: "doughnut",
     data: {
-      labels: ["Terrain + Frais", "Construction & Aménagement"],
-      datasets: [{ data: [S.terrain.coutTerrain, S.terrain.budgetConstruction], backgroundColor: [CHART_COLORS.primary, CHART_COLORS.gold] }]
+      labels: ["Terrain + Frais", "Construction", "Ameublement"],
+      datasets: [{ data: [S.terrain.coutTerrain, S.terrain.budgetConstruction, S.budget.ameublement], backgroundColor: [CHART_COLORS.primary, CHART_COLORS.gold, CHART_COLORS.amber] }]
     },
     options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: "bottom" }, tooltip: { callbacks: { label: ctx => ctx.label + ": " + fmtMAD(ctx.parsed) } } } }
   });
@@ -56,8 +56,8 @@ function chartMontage(S) {
   _charts.montage = new Chart(ctx, {
     type: "doughnut",
     data: {
-      labels: ["Apport personnel", "Crédit MDM Tamwil", "Subvention MDM Invest"],
-      datasets: [{ data: [S.financement.apportPersonnel, MDM_TAMWIL.montant, S.financement.subventionMDM], backgroundColor: [CHART_COLORS.primary, CHART_COLORS.primaryLight, CHART_COLORS.green] }]
+      labels: ["Apport (Terrain)", "Tamwilkom", "Banque classique", "Subvention MDM"],
+      datasets: [{ data: [S.financement.apportTerrain, S.financement.montantTamwilkom, S.financement.montantBanque, S.financement.subventionMDM], backgroundColor: [CHART_COLORS.primary, CHART_COLORS.gold, CHART_COLORS.primaryLight, CHART_COLORS.green] }]
     },
     options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: "bottom" }, tooltip: { callbacks: { label: ctx => ctx.label + ": " + fmtMAD(ctx.parsed) } } } }
   });
@@ -142,9 +142,12 @@ function chartDebtService(S) {
     type: "bar",
     data: {
       labels: S.projections.map(p => "An " + p.year),
-      datasets: [{ label: "Service dette", data: S.projections.map(p => p.debtServiceEffective), backgroundColor: S.projections.map(p => p.isDiffere ? CHART_COLORS.amber : CHART_COLORS.primary) }]
+      datasets: [
+        { label: "Tamwilkom (2,5%)", data: S.projections.map(p => p.debtTK), backgroundColor: CHART_COLORS.gold, stack: "debt" },
+        { label: "Banque (~4,25%)",  data: S.projections.map(p => p.debtBQ), backgroundColor: CHART_COLORS.primaryLight, stack: "debt" },
+      ]
     },
-    options: { responsive: true, maintainAspectRatio: false, scales: { y: { ticks: { callback: v => fmtK(v) } } }, plugins: { tooltip: { callbacks: { label: ctx => (S.projections[ctx.dataIndex].isDiffere ? "Intérêts seuls: " : "Capital + Intérêts: ") + fmtMAD(ctx.parsed.y) } } } }
+    options: { responsive: true, maintainAspectRatio: false, scales: { x: { stacked: true }, y: { stacked: true, ticks: { callback: v => fmtK(v) } } }, plugins: { tooltip: { callbacks: { label: ctx => ctx.dataset.label + ": " + fmtMAD(ctx.parsed.y) } } } }
   });
 }
 
