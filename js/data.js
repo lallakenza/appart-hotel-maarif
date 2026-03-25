@@ -27,7 +27,8 @@ const BUDGET = {
 // Programme architectural — chaque unité
 const UNITS = [
   { floor: "Sous-sol", type: "Services",          surface: null,  category: "service",    label: "Buanderie / Vestiaires / Réfectoire" },
-  { floor: "RDC",      type: "Local commercial",  surface: 46.10, category: "commercial", label: "Local commercial (remplacement parking)" },
+  { floor: "RDC",      type: "Local commercial",  surface: 46.10, category: "commercial", label: "Local commercial (remplacement pente parking)" },
+  { floor: "RDC",      type: "Studio",            surface: 32.75, category: "studio",     label: "Studio RDC — 32,75 m²" },
   { floor: "RDC",      type: "Réception",         surface: null,  category: "service",    label: "Hall & réception" },
   { floor: "Étage 1",  type: "Studio A",          surface: 37.41, category: "studio",     label: "Studio A — 37,41 m²" },
   { floor: "Étage 1",  type: "Studio B",          surface: 32.75, category: "studio",     label: "Studio B — 32,75 m²" },
