@@ -900,7 +900,7 @@ function chartAlternatives(S) {
     { name: "SCPI Europe",          val: 4.5 },
     { name: "Immo locatif Casa",    val: 5.5 },
     { name: "Obligations Maroc",    val: 3.5 },
-    { name: "Livret épargne UAE",   val: 4.0 },
+    { name: "Livret épargne UAE",   val: 6.25 },
     { name: "Bourse MASI (moy.)",   val: 7.0 },
   ];
 
