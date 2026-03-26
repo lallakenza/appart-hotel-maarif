@@ -1124,14 +1124,15 @@ const MONTAGES_EXPLOITATION = {
     taxeProfessionnelle: "Exonération 5 ans pour toute nouvelle activité",
     droitsEnregistrement: "Exonération sur terrain nu si construction hôtelière achevée sous 6 ans, hypothèque légale État, conservation 10 ans",
     dividendes: {
-      retenueSurce: 0.15,
+      retenueSurce: 0.1125,
+      retenueSurceNote: "11,25% en 2026 (LF 2023 : 15%→13,75%→12,5%→11,25%→10% en 2027)",
       abattementHolding: 1.00,
-      note: "Les dividendes restant dans la holding sont exonérés d'IS. Mais dès qu'ils remontent à la personne physique → 15% retenue à la source."
+      note: "Les dividendes restant dans la holding sont exonérés d'IS (100% abattement si preuve de participation + n° IF). Mais dès qu'ils remontent à la personne physique → 11,25% retenue à la source (2026)."
     },
   },
 
   contrainteMDM: {
-    note: "MDM Invest ne requiert pas formellement une société, mais en pratique un appart-hôtel de cette envergure nécessite une structure sociétaire (SARL ou SA) pour : la responsabilité limitée, l'éligibilité aux subventions Go Siyaha, la récupération TVA, et l'exonération IS 5 ans devises.",
+    note: "MDM Invest ne prohibe pas formellement la détention en nom propre, mais en pratique il finance des projets d'entreprise (SARL/SA). Un appart-hôtel nécessite une structure sociétaire pour : la responsabilité limitée, l'éligibilité aux subventions Go Siyaha, la récupération TVA, l'exonération IS 5 ans devises, et la crédibilité bancaire. Les banques partenaires exigent généralement une structure société.",
     apportMinMRE: 0.25,
     contributionMDM: 0.10,
   },
@@ -1156,7 +1157,7 @@ const MONTAGES_EXPLOITATION = {
       ],
       inconvenients: [
         { point: "Pas de protection patrimoniale", detail: "Si la SARL a des dettes d'exploitation (fournisseurs, salariés), l'immeuble peut être saisi par les créanciers de la SARL." },
-        { point: "Fiscalité sur la plus-value si cession", detail: "La plus-value est taxée comme bénéfice IS (20%), puis distribution du produit soumise à 15% retenue source." },
+        { point: "Fiscalité sur la plus-value si cession", detail: "La plus-value est taxée comme bénéfice IS (20%), puis distribution du produit soumise à 11,25% retenue source (2026)." },
         { point: "Pas de flexibilité successorale", detail: "Transmettre la SARL = transmettre murs + exploitation en bloc." },
         { point: "Mélange des risques", detail: "Un litige d'exploitation expose directement l'actif immobilier." },
       ],
@@ -1164,7 +1165,7 @@ const MONTAGES_EXPLOITATION = {
         IS: "20% sur bénéfice net (LF 2026). Exonération 5 ans sur CA devises.",
         TVA: "10% hébergement. Récupération TVA sur investissements.",
         cotisationMin: "0.25% du CA, min 3 000 MAD. Exonéré 36 mois.",
-        dividendes: "15% retenue à la source sur distribution PP.",
+        dividendes: "11,25% retenue à la source (2026) sur distribution PP.",
         taxePro: "Exonéré 5 ans.",
       },
       scoreSimplicite: 5, scoreProtection: 2, scoreFiscal: 4, scoreFlexibilite: 2, scoreGlobal: 4,
@@ -1176,7 +1177,7 @@ const MONTAGES_EXPLOITATION = {
       sousTitre: "SCI détient les murs, SARL exploite l'hôtel",
       recommandation: "Possible mais attention",
       schema: "Vous (PP) → SCI (murs) ← loyer → SARL (exploitation)",
-      description: "La SCI détient l'immeuble et le loue à la SARL d'exploitation. Au Maroc, si la SCI perçoit des loyers meublés, elle bascule automatiquement à l'IS. Pour rester à l'IR, location NUE uniquement.",
+      description: "La SCI détient l'immeuble et le loue NUE à la SARL d'exploitation. Au Maroc, la SCI est une société CIVILE interdite d'activité commerciale. Si elle perçoit des loyers meublés ou exploite un hôtel → requalification en activité commerciale → IS automatique. Seule la location nue (sans meubles/services) est permise pour garder le statut civil.",
       avantages: [
         { point: "Protection patrimoniale", detail: "L'immeuble dans la SCI est protégé des créanciers de la SARL d'exploitation." },
         { point: "Flexibilité successorale", detail: "Transmission progressive des parts de la SCI aux héritiers sans toucher à l'exploitation." },
@@ -1197,7 +1198,7 @@ const MONTAGES_EXPLOITATION = {
         IS_SARL: "20% sur bénéfice net. Exonération 5 ans CA devises.",
         TVA: "SCI location nue : exonérée TVA. SARL : 10% hébergement.",
         loyer: "Doit être au prix de marché. Attention prix de transfert.",
-        dividendes: "15% retenue source sur toute distribution PP.",
+        dividendes: "11,25% retenue source (2026) sur toute distribution PP.",
       },
       scoreSimplicite: 2, scoreProtection: 4, scoreFiscal: 3, scoreFlexibilite: 4, scoreGlobal: 3,
     },
@@ -1216,7 +1217,7 @@ const MONTAGES_EXPLOITATION = {
         { point: "Loyer déductible", detail: "Même avantage que SCI + SARL." },
       ],
       inconvenients: [
-        { point: "Double imposition structurelle", detail: "SARL Immo paie IS sur loyers + SARL Hôtel paie IS sur bénéfice + 15% retenue sur chaque distribution PP. Triple couche." },
+        { point: "Double imposition structurelle", detail: "SARL Immo paie IS sur loyers + SARL Hôtel paie IS sur bénéfice + 11,25% retenue sur chaque distribution PP. Triple couche." },
         { point: "Complexité et coûts x2", detail: "Deux comptabilités, conventions réglementées, etc." },
         { point: "Pas d'exonération devises pour SARL Immo", detail: "Location ≠ hôtellerie." },
         { point: "Surdimensionné pour 11 unités", detail: "Se justifie pour un parc de 5+ immeubles ou CA > 10M MAD." },
@@ -1225,7 +1226,7 @@ const MONTAGES_EXPLOITATION = {
         IS_Immo: "20% sur loyers nets (après amortissement). Pas d'exonération devises.",
         IS_Hotel: "20% sur bénéfice net. Exonération 5 ans CA devises.",
         TVA: "SARL Immo : TVA 20% sur loyers commerciaux. SARL Hôtel : 10%.",
-        dividendes: "15% retenue source × 2 sociétés.",
+        dividendes: "11,25% retenue source (2026) × 2 sociétés.",
       },
       scoreSimplicite: 1, scoreProtection: 4, scoreFiscal: 2, scoreFlexibilite: 3, scoreGlobal: 2,
     },
@@ -1239,7 +1240,7 @@ const MONTAGES_EXPLOITATION = {
       description: "La holding détient les parts des deux SARL. Dividendes filiales→holding exonérés IS 100%. Structure de groupe pour investisseurs multi-projets.",
       avantages: [
         { point: "Exonération dividendes 100%", detail: "Dividendes filiales→holding exonérés d'IS (art. 6-I-C-1 CGI). L'argent circule dans le groupe sans fiscalité." },
-        { point: "Réinvestissement facilité", detail: "La holding réinvestit les dividendes sans que l'argent remonte à la PP (pas de 15% retenue)." },
+        { point: "Réinvestissement facilité", detail: "La holding réinvestit les dividendes sans que l'argent remonte à la PP (pas de 11,25% retenue)." },
         { point: "Consolidation et mutualisation", detail: "Services communs facturés par la holding. Optimisation des charges." },
         { point: "Protection maximale", detail: "Trois niveaux de séparation patrimoine personnel / actifs." },
         { point: "Vision expansion", detail: "Prêt pour un 2ème immeuble ou un autre business." },
