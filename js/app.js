@@ -7,7 +7,7 @@ let currentView = "overview";
 let currentState = null;
 let customOverrides = null; // null = using preset scenario
 
-// --- Control panel fields ---
+// --- Control panel fields (basic — scenario-linked) ---
 const CTRL_FIELDS = [
   { id: "occ",    key: "tauxOccupation",  div: 100, min: 15, max: 85 },
   { id: "studio", key: "prixNuitStudio",  div: 1,   min: 200, max: 900 },
@@ -15,6 +15,40 @@ const CTRL_FIELDS = [
   { id: "loyer",  key: "loyerCommercial", div: 1,   min: 3000, max: 20000 },
   { id: "taux",   key: "tauxBanque",      div: 100, min: 3, max: 8 },
 ];
+
+// --- Advanced fields (global data objects) ---
+const ADV_FIELDS = [
+  // Charges
+  { id: "gestion",      target: "CHARGES",              key: "tauxGestion",              div: 100 },
+  { id: "salaire",      target: "CHARGES",              key: "salaireEmploye",           div: 1 },
+  { id: "employes",     target: "CHARGES",              key: "nbEmployes",               div: 1 },
+  { id: "eau",          target: "CHARGES",              key: "eauElectricite",           div: 1 },
+  { id: "internet",     target: "CHARGES",              key: "internetTv",               div: 1 },
+  { id: "assurance",    target: "CHARGES",              key: "assurance",                div: 1 },
+  { id: "entretien",    target: "CHARGES",              key: "entretien",                div: 1 },
+  { id: "comptable",    target: "CHARGES",              key: "comptable",                div: 1 },
+  { id: "consommables", target: "CHARGES",              key: "consommables",             div: 1 },
+  { id: "divers",       target: "CHARGES",              key: "divers",                   div: 1 },
+  // Revenus
+  { id: "commission",   target: "REVENUE_ASSUMPTIONS",  key: "commissionPlatformes",     div: 100 },
+  { id: "croissance",   target: "REVENUE_ASSUMPTIONS",  key: "croissanceTarifs",         div: 100 },
+  // Financement
+  { id: "dureeBQ",      target: "BANQUE_CLASSIQUE",     key: "dureeAns",                 div: 1 },
+  { id: "tauxTK",       target: "TAMWILKOM",            key: "tauxAnnuel",               div: 100 },
+  { id: "dureeTK",      target: "TAMWILKOM",            key: "dureeAns",                 div: 1 },
+  { id: "differeTK",    target: "TAMWILKOM",            key: "differeAns",               div: 1 },
+];
+
+// Store originals for advanced fields
+let originalAdvanced = {};
+
+function getTargetObj(name) {
+  if (name === "CHARGES") return CHARGES;
+  if (name === "REVENUE_ASSUMPTIONS") return REVENUE_ASSUMPTIONS;
+  if (name === "BANQUE_CLASSIQUE") return BANQUE_CLASSIQUE;
+  if (name === "TAMWILKOM") return TAMWILKOM;
+  return null;
+}
 
 // --- Core pipeline ---
 function refresh() {
@@ -95,6 +129,13 @@ function syncControlPanel(scenario) {
   setCtrl("taux",   BANQUE_CLASSIQUE.tauxAnnuel * 100);
 }
 
+function syncAdvancedPanel() {
+  ADV_FIELDS.forEach(f => {
+    const obj = getTargetObj(f.target);
+    if (obj) setCtrl(f.id, obj[f.key] * f.div);
+  });
+}
+
 function setCtrl(id, value) {
   const range = document.getElementById("ctrl-" + id);
   const input = document.getElementById("ctrl-" + id + "-val");
@@ -146,6 +187,28 @@ function onControlChange(fromRange, id) {
   refresh();
 }
 
+// --- Advanced control change ---
+function onAdvancedChange(fromRange, id) {
+  const range = document.getElementById("ctrl-" + id);
+  const input = document.getElementById("ctrl-" + id + "-val");
+  if (fromRange) {
+    input.value = range.value;
+  } else {
+    range.value = input.value;
+  }
+
+  // Find the field definition and apply value to the target object
+  const field = ADV_FIELDS.find(f => f.id === id);
+  if (field) {
+    const obj = getTargetObj(field.target);
+    if (obj) {
+      obj[field.key] = parseFloat(input.value) / field.div;
+    }
+  }
+
+  refresh();
+}
+
 function findMatchingScenario(vals) {
   for (const key of Object.keys(originalScenarios)) {
     const sc = originalScenarios[key];
@@ -175,6 +238,12 @@ document.addEventListener("DOMContentLoaded", () => {
   storeOriginalScenarios();
   originalBanqueTaux = BANQUE_CLASSIQUE.tauxAnnuel;
 
+  // Store original advanced values
+  ADV_FIELDS.forEach(f => {
+    const obj = getTargetObj(f.target);
+    if (obj) originalAdvanced[f.id] = obj[f.key];
+  });
+
   // Bind nav
   document.querySelectorAll(".nav-btn").forEach(btn => {
     btn.addEventListener("click", () => switchView(btn.dataset.nav));
@@ -188,7 +257,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Bind control panel toggle
   document.getElementById("ctrl-toggle").addEventListener("click", toggleControlPanel);
 
-  // Bind control panel inputs (range + number)
+  // Bind basic control panel inputs (range + number)
   CTRL_FIELDS.forEach(f => {
     const range = document.getElementById("ctrl-" + f.id);
     const input = document.getElementById("ctrl-" + f.id + "-val");
@@ -201,8 +270,22 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
+  // Bind advanced control panel inputs (range + number)
+  ADV_FIELDS.forEach(f => {
+    const range = document.getElementById("ctrl-" + f.id);
+    const input = document.getElementById("ctrl-" + f.id + "-val");
+    if (range) {
+      range.addEventListener("input", () => onAdvancedChange(true, f.id));
+    }
+    if (input) {
+      input.addEventListener("input", () => onAdvancedChange(false, f.id));
+      input.addEventListener("change", () => onAdvancedChange(false, f.id));
+    }
+  });
+
   // Initial sync
   syncControlPanel(currentScenario);
+  syncAdvancedPanel();
 
   // Initial render
   refresh();

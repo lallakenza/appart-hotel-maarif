@@ -76,6 +76,16 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);lin
 .ctrl-input::-webkit-inner-spin-button{-webkit-appearance:none}
 .ctrl-unit{font-size:.75rem;color:var(--text-sec);font-weight:500}
 
+/* Advanced section */
+.ctrl-advanced-toggle{display:flex;align-items:center;gap:6px;margin-top:14px;padding:8px 0;border:none;background:none;cursor:pointer;font-family:inherit;font-size:.78rem;font-weight:600;color:var(--text-sec);text-transform:uppercase;letter-spacing:.04em;transition:color .2s}
+.ctrl-advanced-toggle:hover{color:var(--primary)}
+.ctrl-advanced-toggle .chevron{display:inline-block;transition:transform .25s;font-size:.65rem}
+.ctrl-advanced-toggle.open .chevron{transform:rotate(90deg)}
+.ctrl-advanced-body{display:none;padding-top:12px;border-top:1px solid var(--border)}
+.ctrl-advanced-body.open{display:block}
+.ctrl-section-title{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--primary);margin:10px 0 8px;padding-bottom:4px;border-bottom:1px dashed #e2e8f0}
+.ctrl-section-title:first-child{margin-top:0}
+
 /* Cards */
 .card{background:var(--card);border-radius:12px;padding:20px;box-shadow:0 1px 3px rgba(0,0,0,.06);border:1px solid var(--border);margin-bottom:20px;animation:fadeUp .4s ease both}
 .card-title{font-family:'Instrument Serif',serif;font-size:1.15rem;color:var(--primary);margin-bottom:12px;padding-bottom:10px;border-bottom:2px solid #f0d78c}
@@ -375,6 +385,139 @@ tr:hover td{background:#f8fafc}
       <div class="ctrl-row">
         <input type="range" class="ctrl-range" id="ctrl-taux" min="3.0" max="8.0" step="0.1" value="5.25">
         <div class="ctrl-input-wrap"><input type="number" class="ctrl-input" id="ctrl-taux-val" min="3.0" max="8.0" step="0.1" value="5.25"><span class="ctrl-unit">%</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Advanced Parameters Toggle -->
+  <button class="ctrl-advanced-toggle" id="ctrl-advanced-toggle" onclick="document.getElementById('ctrl-advanced-body').classList.toggle('open');this.classList.toggle('open')">
+    <span class="chevron">▸</span> Paramètres avancés
+  </button>
+  <div class="ctrl-advanced-body" id="ctrl-advanced-body">
+    <!-- Charges -->
+    <div class="ctrl-section-title">Charges d'exploitation</div>
+    <div class="ctrl-grid">
+      <div class="ctrl-group">
+        <label class="ctrl-label">Taux gestion (% CA)</label>
+        <div class="ctrl-row">
+          <input type="range" class="ctrl-range" id="ctrl-gestion" min="10" max="35" step="1" value="20">
+          <div class="ctrl-input-wrap"><input type="number" class="ctrl-input" id="ctrl-gestion-val" min="10" max="35" step="1" value="20"><span class="ctrl-unit">%</span></div>
+        </div>
+      </div>
+      <div class="ctrl-group">
+        <label class="ctrl-label">Salaire / employé</label>
+        <div class="ctrl-row">
+          <input type="range" class="ctrl-range" id="ctrl-salaire" min="2500" max="8000" step="250" value="4000">
+          <div class="ctrl-input-wrap"><input type="number" class="ctrl-input" id="ctrl-salaire-val" min="2500" max="8000" step="250" value="4000"><span class="ctrl-unit">MAD</span></div>
+        </div>
+      </div>
+      <div class="ctrl-group">
+        <label class="ctrl-label">Nombre d'employés</label>
+        <div class="ctrl-row">
+          <input type="range" class="ctrl-range" id="ctrl-employes" min="1" max="5" step="1" value="2">
+          <div class="ctrl-input-wrap"><input type="number" class="ctrl-input" id="ctrl-employes-val" min="1" max="5" step="1" value="2"><span class="ctrl-unit"></span></div>
+        </div>
+      </div>
+      <div class="ctrl-group">
+        <label class="ctrl-label">Eau + Électricité / mois</label>
+        <div class="ctrl-row">
+          <input type="range" class="ctrl-range" id="ctrl-eau" min="2000" max="15000" step="500" value="6000">
+          <div class="ctrl-input-wrap"><input type="number" class="ctrl-input" id="ctrl-eau-val" min="2000" max="15000" step="500" value="6000"><span class="ctrl-unit">MAD</span></div>
+        </div>
+      </div>
+      <div class="ctrl-group">
+        <label class="ctrl-label">Internet + TV / mois</label>
+        <div class="ctrl-row">
+          <input type="range" class="ctrl-range" id="ctrl-internet" min="500" max="5000" step="100" value="1500">
+          <div class="ctrl-input-wrap"><input type="number" class="ctrl-input" id="ctrl-internet-val" min="500" max="5000" step="100" value="1500"><span class="ctrl-unit">MAD</span></div>
+        </div>
+      </div>
+      <div class="ctrl-group">
+        <label class="ctrl-label">Assurance / an</label>
+        <div class="ctrl-row">
+          <input type="range" class="ctrl-range" id="ctrl-assurance" min="5000" max="40000" step="1000" value="15000">
+          <div class="ctrl-input-wrap"><input type="number" class="ctrl-input" id="ctrl-assurance-val" min="5000" max="40000" step="1000" value="15000"><span class="ctrl-unit">MAD</span></div>
+        </div>
+      </div>
+      <div class="ctrl-group">
+        <label class="ctrl-label">Entretien / an</label>
+        <div class="ctrl-row">
+          <input type="range" class="ctrl-range" id="ctrl-entretien" min="10000" max="80000" step="5000" value="30000">
+          <div class="ctrl-input-wrap"><input type="number" class="ctrl-input" id="ctrl-entretien-val" min="10000" max="80000" step="5000" value="30000"><span class="ctrl-unit">MAD</span></div>
+        </div>
+      </div>
+      <div class="ctrl-group">
+        <label class="ctrl-label">Comptable / mois</label>
+        <div class="ctrl-row">
+          <input type="range" class="ctrl-range" id="ctrl-comptable" min="1000" max="8000" step="500" value="3000">
+          <div class="ctrl-input-wrap"><input type="number" class="ctrl-input" id="ctrl-comptable-val" min="1000" max="8000" step="500" value="3000"><span class="ctrl-unit">MAD</span></div>
+        </div>
+      </div>
+      <div class="ctrl-group">
+        <label class="ctrl-label">Consommables / mois</label>
+        <div class="ctrl-row">
+          <input type="range" class="ctrl-range" id="ctrl-consommables" min="500" max="5000" step="100" value="1500">
+          <div class="ctrl-input-wrap"><input type="number" class="ctrl-input" id="ctrl-consommables-val" min="500" max="5000" step="100" value="1500"><span class="ctrl-unit">MAD</span></div>
+        </div>
+      </div>
+      <div class="ctrl-group">
+        <label class="ctrl-label">Divers / an</label>
+        <div class="ctrl-row">
+          <input type="range" class="ctrl-range" id="ctrl-divers" min="5000" max="60000" step="5000" value="20000">
+          <div class="ctrl-input-wrap"><input type="number" class="ctrl-input" id="ctrl-divers-val" min="5000" max="60000" step="5000" value="20000"><span class="ctrl-unit">MAD</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Revenus -->
+    <div class="ctrl-section-title">Revenus</div>
+    <div class="ctrl-grid">
+      <div class="ctrl-group">
+        <label class="ctrl-label">Commission plateformes</label>
+        <div class="ctrl-row">
+          <input type="range" class="ctrl-range" id="ctrl-commission" min="5" max="25" step="1" value="15">
+          <div class="ctrl-input-wrap"><input type="number" class="ctrl-input" id="ctrl-commission-val" min="5" max="25" step="1" value="15"><span class="ctrl-unit">%</span></div>
+        </div>
+      </div>
+      <div class="ctrl-group">
+        <label class="ctrl-label">Croissance tarifs / an</label>
+        <div class="ctrl-row">
+          <input type="range" class="ctrl-range" id="ctrl-croissance" min="0" max="8" step="0.5" value="3">
+          <div class="ctrl-input-wrap"><input type="number" class="ctrl-input" id="ctrl-croissance-val" min="0" max="8" step="0.5" value="3"><span class="ctrl-unit">%</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Financement -->
+    <div class="ctrl-section-title">Financement</div>
+    <div class="ctrl-grid">
+      <div class="ctrl-group">
+        <label class="ctrl-label">Durée crédit banque</label>
+        <div class="ctrl-row">
+          <input type="range" class="ctrl-range" id="ctrl-dureeBQ" min="7" max="20" step="1" value="15">
+          <div class="ctrl-input-wrap"><input type="number" class="ctrl-input" id="ctrl-dureeBQ-val" min="7" max="20" step="1" value="15"><span class="ctrl-unit">ans</span></div>
+        </div>
+      </div>
+      <div class="ctrl-group">
+        <label class="ctrl-label">Taux Tamwilkom</label>
+        <div class="ctrl-row">
+          <input type="range" class="ctrl-range" id="ctrl-tauxTK" min="1" max="5" step="0.1" value="2.5">
+          <div class="ctrl-input-wrap"><input type="number" class="ctrl-input" id="ctrl-tauxTK-val" min="1" max="5" step="0.1" value="2.5"><span class="ctrl-unit">%</span></div>
+        </div>
+      </div>
+      <div class="ctrl-group">
+        <label class="ctrl-label">Durée Tamwilkom</label>
+        <div class="ctrl-row">
+          <input type="range" class="ctrl-range" id="ctrl-dureeTK" min="5" max="12" step="1" value="7">
+          <div class="ctrl-input-wrap"><input type="number" class="ctrl-input" id="ctrl-dureeTK-val" min="5" max="12" step="1" value="7"><span class="ctrl-unit">ans</span></div>
+        </div>
+      </div>
+      <div class="ctrl-group">
+        <label class="ctrl-label">Différé Tamwilkom</label>
+        <div class="ctrl-row">
+          <input type="range" class="ctrl-range" id="ctrl-differeTK" min="0" max="3" step="1" value="2">
+          <div class="ctrl-input-wrap"><input type="number" class="ctrl-input" id="ctrl-differeTK-val" min="0" max="3" step="1" value="2"><span class="ctrl-unit">ans</span></div>
+        </div>
       </div>
     </div>
   </div>
@@ -720,11 +863,11 @@ tr:hover td{background:#f8fafc}
 </main>
 
 <!-- Scripts — strict order: data → engine → render → charts → app -->
-<script src="js/data.js?v=5"></script>
-<script src="js/engine.js?v=5"></script>
-<script src="js/render.js?v=5"></script>
-<script src="js/charts.js?v=5"></script>
-<script src="js/app.js?v=5"></script>
+<script src="js/data.js?v=6"></script>
+<script src="js/engine.js?v=6"></script>
+<script src="js/render.js?v=6"></script>
+<script src="js/charts.js?v=6"></script>
+<script src="js/app.js?v=6"></script>
 
 </body>
 </html>
