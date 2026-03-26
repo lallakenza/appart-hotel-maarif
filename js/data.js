@@ -90,6 +90,14 @@ const SCENARIOS = {
     loyerCommercial: 6_000,    // hypothèse basse
     source: "Sous médiane AirROI (35.8%) — scénario nouvel entrant, offre en hausse +50%/an",
   },
+  prudent_moyen: {
+    label: "Prudent",
+    tauxOccupation: 0.42,      // entre pessimiste (35%) et réaliste (48%)
+    prixNuitStudio: 415,       // interpolation entre 380 et 450
+    prixNuitLoft: 530,         // interpolation entre 480 et 580
+    loyerCommercial: 7_000,    // interpolation entre 6k et 8k
+    source: "Interpolation pessimiste/réaliste — démarrage prudent, montée en puissance progressive",
+  },
   moyen: {
     label: "Réaliste",
     tauxOccupation: 0.48,      // entre médiane Airbtics (49%) et moyenne SandsOfWealth (45%)
@@ -97,6 +105,14 @@ const SCENARIOS = {
     prixNuitLoft: 580,         // premium loft, cohérent avec Maarif Home (530-670)
     loyerCommercial: 8_000,    // marché Maarif
     source: "Médiane marché Airbtics/SandsOfWealth — gestion professionnelle, bon positionnement",
+  },
+  moyen_optimiste: {
+    label: "Favorable",
+    tauxOccupation: 0.53,      // entre réaliste (48%) et optimiste (58%)
+    prixNuitStudio: 485,       // interpolation entre 450 et 520
+    prixNuitLoft: 615,         // interpolation entre 580 et 650
+    loyerCommercial: 9_000,    // interpolation entre 8k et 10k
+    source: "Interpolation réaliste/optimiste — bonne gestion, réputation en construction",
   },
   optimiste: {
     label: "Optimiste",

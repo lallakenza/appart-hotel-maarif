@@ -55,7 +55,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);lin
 .toggle-btn{padding:5px 14px;border:none;background:#fff;cursor:pointer;font-size:.75rem;font-weight:600;font-family:inherit;color:var(--text-sec);transition:all .2s}
 .toggle-btn.active{background:var(--primary);color:#fff}
 .toggle-btn:hover:not(.active){background:#f0f4f8}
-.scenario-btn{padding:10px 20px;border:2px solid var(--border);border-radius:8px;background:#fff;cursor:pointer;font-weight:600;font-family:inherit;font-size:.85rem;transition:all .2s;text-align:center;line-height:1.4}
+.scenario-btn{padding:8px 14px;border:2px solid var(--border);border-radius:8px;background:#fff;cursor:pointer;font-weight:600;font-family:inherit;font-size:.8rem;transition:all .2s;text-align:center;line-height:1.4;flex:1;min-width:0}
 .scenario-btn.active{border-color:var(--primary);background:var(--primary);color:#fff}
 .scenario-btn:hover:not(.active){border-color:var(--primary-light)}
 .ctrl-toggle{padding:8px 14px;border:2px solid var(--border);border-radius:8px;background:#fff;cursor:pointer;font-size:1.1rem;transition:all .2s;margin-left:auto}
@@ -268,7 +268,7 @@ tr:hover td{background:#f8fafc}
   .kpi-value{font-size:1.15rem}
   .kpi-label{font-size:.65rem}
   .scenario-bar{flex-wrap:wrap;gap:6px}
-  .scenario-btn{padding:8px 12px;font-size:.75rem}
+  .scenario-btn{padding:6px 6px;font-size:.68rem;flex:1}
   .ctrl-toggle{padding:6px 10px;font-size:.9rem}
   .ctrl-grid{grid-template-columns:1fr}
   .chart-box{height:220px}
@@ -331,7 +331,9 @@ tr:hover td{background:#f8fafc}
 <!-- Scenario bar + Control Panel -->
 <div class="scenario-bar">
   <button class="scenario-btn" data-scenario="prudent" id="btn-prudent">Pessimiste</button>
+  <button class="scenario-btn" data-scenario="prudent_moyen" id="btn-prudent_moyen">Prudent</button>
   <button class="scenario-btn active" data-scenario="moyen" id="btn-moyen">Réaliste</button>
+  <button class="scenario-btn" data-scenario="moyen_optimiste" id="btn-moyen_optimiste">Favorable</button>
   <button class="scenario-btn" data-scenario="optimiste" id="btn-optimiste">Optimiste</button>
   <button class="scenario-btn" id="btn-custom" style="display:none;border-color:var(--gold);color:var(--gold)">Personnalisé</button>
   <button class="ctrl-toggle open" id="ctrl-toggle" title="Paramètres">⚙</button>
@@ -718,11 +720,11 @@ tr:hover td{background:#f8fafc}
 </main>
 
 <!-- Scripts — strict order: data → engine → render → charts → app -->
-<script src="js/data.js?v=4"></script>
-<script src="js/engine.js?v=4"></script>
-<script src="js/render.js?v=4"></script>
-<script src="js/charts.js?v=4"></script>
-<script src="js/app.js?v=4"></script>
+<script src="js/data.js?v=5"></script>
+<script src="js/engine.js?v=5"></script>
+<script src="js/render.js?v=5"></script>
+<script src="js/charts.js?v=5"></script>
+<script src="js/app.js?v=5"></script>
 
 </body>
 </html>
