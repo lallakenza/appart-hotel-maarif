@@ -49,10 +49,11 @@ function render(state) {
   renderSensibilite(state);
 }
 
-// --- Scenario buttons: show label + occ + prix ---
+// --- Scenario buttons: always show ORIGINAL preset values ---
 function renderScenarioButtons(S) {
+  const originals = typeof originalScenarios !== "undefined" ? originalScenarios : SCENARIOS;
   Object.keys(SCENARIOS).forEach(key => {
-    const sc = SCENARIOS[key];
+    const sc = originals[key] || SCENARIOS[key];
     const btn = document.getElementById("btn-" + key);
     if (btn) {
       btn.innerHTML = `${sc.label}<br><small style="font-weight:400;opacity:.7">${fmtPct(sc.tauxOccupation, 0)} · ${sc.prixNuitStudio} MAD/n</small>`;
