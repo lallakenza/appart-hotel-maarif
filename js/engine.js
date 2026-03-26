@@ -279,6 +279,77 @@ function compute(scenario) {
   const paybackIdx = projections.findIndex(p => p.cumulCashFlow >= apportTerrain);
   const paybackYear = paybackIdx >= 0 ? paybackIdx + 1 : null;
 
+  // ═══ ADVANCED CASH-FLOW KPIs ═══
+
+  // TRI (IRR) — Taux de Rendement Interne sur 20 ans
+  // Initial investment = -apportTerrain (seul cash sorti), puis CF nets annuels
+  function computeIRR(cashFlows, guess) {
+    const maxIter = 100; const tol = 1e-7;
+    let rate = guess || 0.10;
+    for (let i = 0; i < maxIter; i++) {
+      let npv = 0, dnpv = 0;
+      for (let t = 0; t < cashFlows.length; t++) {
+        const factor = Math.pow(1 + rate, t);
+        npv += cashFlows[t] / factor;
+        dnpv -= t * cashFlows[t] / (factor * (1 + rate));
+      }
+      if (Math.abs(dnpv) < 1e-10) break;
+      const newRate = rate - npv / dnpv;
+      if (Math.abs(newRate - rate) < tol) { rate = newRate; break; }
+      rate = newRate;
+    }
+    return rate;
+  }
+  const irrFlows = [-apportTerrain, ...projections.map(p => p.cashFlowNet)];
+  const tri = computeIRR(irrFlows, 0.10);
+
+  // VAN (NPV) — Valeur Actuelle Nette au taux d'actualisation 8%
+  const tauxActualisation = 0.08;
+  let van = -apportTerrain;
+  for (let t = 0; t < projections.length; t++) {
+    van += projections[t].cashFlowNet / Math.pow(1 + tauxActualisation, t + 1);
+  }
+
+  // Cash-on-Cash Return An 1 (CF net / apport réel en cash = terrain)
+  const cashOnCash = y1.cashFlowNet / apportTerrain;
+
+  // CF mensuel moyen An 1
+  const cfMensuelAn1 = y1.cashFlowNet / 12;
+
+  // Marge Cash-Flow (CF net / Revenu total)
+  const margeCF = y1.revTotal > 0 ? y1.cashFlowNet / y1.revTotal : 0;
+
+  // Wealth creation — total CF cumulé sur 20 ans
+  const y20 = projections[projections.length - 1];
+  const wealthTotal = y20.cumulCashFlow;
+  const multipleApport = wealthTotal / apportTerrain;
+
+  // Debt Freedom Year — année où toute la dette est remboursée
+  const debtFreedomIdx = projections.findIndex(p => p.debtServiceTotal === 0);
+  const debtFreedomYear = debtFreedomIdx >= 0 ? debtFreedomIdx + 1 : null;
+
+  // CF post-dette (CF moyen après libération de toute dette)
+  let cfPostDebtAvg = null;
+  if (debtFreedomIdx >= 0) {
+    const postDebtYears = projections.slice(debtFreedomIdx);
+    cfPostDebtAvg = postDebtYears.reduce((s, p) => s + p.cashFlowNet, 0) / postDebtYears.length;
+  }
+
+  // IS cumulé sur 20 ans & ratio IS/CF
+  const isCumule = projections.reduce((s, p) => s + p.is, 0);
+  const cfBrutCumule = projections.reduce((s, p) => s + p.cashFlowNet + p.is, 0);
+  const ratioIS = cfBrutCumule > 0 ? isCumule / cfBrutCumule : 0;
+
+  // Rendement stabilisé (moyenne Y15-Y20 = projet mature, sans dette)
+  const matureYears = projections.slice(14); // Y15-Y20
+  const rendementStabilise = matureYears.length > 0
+    ? matureYears.reduce((s, p) => s + p.cashFlowNet, 0) / matureYears.length / apportTerrain
+    : null;
+
+  // Croissance CF Y1→Y10 et Y1→Y20
+  const cfGrowthY10 = projections.length >= 10 ? (projections[9].cashFlowNet / y1.cashFlowNet - 1) : null;
+  const cfGrowthY20 = (y20.cashFlowNet / y1.cashFlowNet - 1);
+
   // --- TVA : modélisation complète du différentiel 20% (achats) vs 10% (ventes) ---
   // Le terrain n'a PAS de TVA. Seul le budget construction est TTC (20%)
   const constructionHT = budgetConstruction / 1.20;
@@ -453,7 +524,14 @@ function compute(scenario) {
       montantBanque, mensualiteBQ, annuiteBQ, coutTotalBQ,
       pctApport, pctTamwilkom, pctBanque, pctSubvention,
     },
-    kpi: { rendementBrut, rendementNet, rendementNetApport, revpar, coutParNuitee, paybackYear, nuiteesParAn, dscr, breakEvenOcc },
+    kpi: {
+      rendementBrut, rendementNet, rendementNetApport, revpar, coutParNuitee,
+      paybackYear, nuiteesParAn, dscr, breakEvenOcc,
+      // Advanced CF KPIs
+      tri, van, tauxActualisation, cashOnCash, cfMensuelAn1, margeCF,
+      wealthTotal, multipleApport, debtFreedomYear, cfPostDebtAvg,
+      isCumule, ratioIS, rendementStabilise, cfGrowthY10, cfGrowthY20,
+    },
     tva: { constructionHT, tvaConstruction, tvaCollecteeAn1, tvaDeductibleAn1, creditTVA, dureeRecupCredit, tvaProjections },
     projections,
     debtProjections,

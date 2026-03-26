@@ -929,12 +929,40 @@ tr:hover td{background:#f8fafc}
 
 <!-- ==================== CASH-FLOW ==================== -->
 <div data-view="cashflow" class="hidden">
+  <!-- KPIs principaux -->
   <div class="kpi-grid">
-    <div class="kpi-card"><div class="kpi-label">Cash-Flow Net An 1</div><div class="kpi-value kpi-green" id="cf-net-an1">–</div></div>
-    <div class="kpi-card"><div class="kpi-label">Rendement Net / Projet</div><div class="kpi-value" id="cf-rdt-projet">–</div></div>
-    <div class="kpi-card"><div class="kpi-label">Rendement Net / Apport</div><div class="kpi-value" id="cf-rdt-apport">–</div><div class="kpi-sub">Effet de levier</div></div>
+    <div class="kpi-card"><div class="kpi-label">Cash-Flow Net An 1</div><div class="kpi-value kpi-green" id="cf-net-an1">–</div><div class="kpi-sub" id="cf-net-mensuel">–</div></div>
+    <div class="kpi-card"><div class="kpi-label">TRI (IRR) sur 20 ans</div><div class="kpi-value kpi-green" id="cf-tri">–</div><div class="kpi-sub">Taux de rendement interne</div></div>
+    <div class="kpi-card"><div class="kpi-label">VAN (NPV)</div><div class="kpi-value" id="cf-van">–</div><div class="kpi-sub" id="cf-van-taux">–</div></div>
     <div class="kpi-card"><div class="kpi-label">Payback</div><div class="kpi-value" id="cf-payback">–</div><div class="kpi-sub">Sur apport personnel</div></div>
   </div>
+
+  <!-- KPIs rendement -->
+  <div class="kpi-grid" style="margin-top:0">
+    <div class="kpi-card"><div class="kpi-label">Rendement Net / Projet</div><div class="kpi-value" id="cf-rdt-projet">–</div><div class="kpi-sub">Cash yield An 1</div></div>
+    <div class="kpi-card"><div class="kpi-label">Rendement Net / Apport</div><div class="kpi-value kpi-green" id="cf-rdt-apport">–</div><div class="kpi-sub">Effet de levier</div></div>
+    <div class="kpi-card"><div class="kpi-label">Cash-on-Cash Return</div><div class="kpi-value" id="cf-coc">–</div><div class="kpi-sub">CF net / apport terrain An 1</div></div>
+    <div class="kpi-card"><div class="kpi-label">Marge Cash-Flow</div><div class="kpi-value" id="cf-marge">–</div><div class="kpi-sub">CF net / Revenu total An 1</div></div>
+  </div>
+
+  <!-- Trajectoire long-terme -->
+  <div class="card">
+    <div class="card-title">Trajectoire Long-Terme</div>
+    <div class="kpi-grid" style="margin-bottom:0">
+      <div class="kpi-card"><div class="kpi-label">Wealth Creation (20 ans)</div><div class="kpi-value kpi-green" id="cf-wealth">–</div><div class="kpi-sub" id="cf-multiple">–</div></div>
+      <div class="kpi-card"><div class="kpi-label">Libération Dette</div><div class="kpi-value" id="cf-debt-free">–</div><div class="kpi-sub">Année fin remboursement</div></div>
+      <div class="kpi-card"><div class="kpi-label">CF Moyen Post-Dette</div><div class="kpi-value kpi-green" id="cf-post-debt">–</div><div class="kpi-sub" id="cf-post-debt-mensuel">–</div></div>
+      <div class="kpi-card"><div class="kpi-label">Rendement Stabilisé</div><div class="kpi-value kpi-green" id="cf-rdt-stab">–</div><div class="kpi-sub">Moyenne Y15-Y20 / apport</div></div>
+    </div>
+    <div class="kpi-grid" style="margin-top:0;margin-bottom:0">
+      <div class="kpi-card"><div class="kpi-label">Croissance CF Y1→Y10</div><div class="kpi-value" id="cf-growth-10">–</div></div>
+      <div class="kpi-card"><div class="kpi-label">Croissance CF Y1→Y20</div><div class="kpi-value" id="cf-growth-20">–</div></div>
+      <div class="kpi-card"><div class="kpi-label">IS Cumulé (20 ans)</div><div class="kpi-value" id="cf-is-cumule">–</div><div class="kpi-sub" id="cf-ratio-is">–</div></div>
+      <div class="kpi-card"><div class="kpi-label">DSCR An 1</div><div class="kpi-value" id="cf-dscr">–</div><div class="kpi-sub" id="cf-dscr-sub">–</div></div>
+    </div>
+  </div>
+
+  <!-- Chart principal -->
   <div class="card">
     <div class="card-title" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
       <span id="cf-chart-title">Cash-Flow Net et Cumul sur 10 ans</span>
@@ -952,12 +980,22 @@ tr:hover td{background:#f8fafc}
     </div>
     <div class="chart-box"><canvas id="chart-cashflow"></canvas></div>
   </div>
+
+  <!-- Waterfall CF -->
+  <div class="card">
+    <div class="card-title">Décomposition du Cash-Flow An 1 (Waterfall)</div>
+    <div class="chart-box"><canvas id="chart-cf-waterfall"></canvas></div>
+  </div>
+
+  <!-- Comparaison alternatives -->
   <div class="card"><div class="card-title">Comparaison Investissements Alternatifs</div>
     <div class="info-box" style="margin-bottom:12px">Le rendement de ce projet (sur apport terrain) est comparé aux alternatives d'investissement disponibles. Attention : ce projet comporte des risques opérationnels que n'ont pas les placements passifs.</div>
     <div class="chart-box"><canvas id="chart-alternatives"></canvas></div>
   </div>
+
+  <!-- Tableau prévisionnel enrichi -->
   <div class="card"><div class="card-title">Compte de Résultat Prévisionnel</div>
-    <div class="table-wrap"><table><thead><tr><th>Année</th><th>Revenus</th><th>Charges</th><th>EBITDA</th><th>Dette</th><th>IS</th><th>Cash-Flow Net</th><th>Cumul</th></tr></thead><tbody id="cf-tbody"></tbody></table></div>
+    <div class="table-wrap"><table><thead><tr><th>Année</th><th>Revenus</th><th>Charges</th><th>EBITDA</th><th>Marge</th><th>Dette</th><th>IS</th><th>Cash-Flow Net</th><th>CF/mois</th><th>Cumul</th></tr></thead><tbody id="cf-tbody"></tbody></table></div>
   </div>
 </div>
 
@@ -1407,11 +1445,11 @@ tr:hover td{background:#f8fafc}
 </main>
 
 <!-- Scripts — strict order: data → engine → render → charts → app -->
-<script src="js/data.js?v=16"></script>
-<script src="js/engine.js?v=16"></script>
-<script src="js/render.js?v=16"></script>
-<script src="js/charts.js?v=16"></script>
-<script src="js/app.js?v=16"></script>
+<script src="js/data.js?v=17"></script>
+<script src="js/engine.js?v=17"></script>
+<script src="js/render.js?v=17"></script>
+<script src="js/charts.js?v=17"></script>
+<script src="js/app.js?v=17"></script>
 
 </body>
 </html>

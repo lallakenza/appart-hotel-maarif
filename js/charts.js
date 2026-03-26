@@ -31,6 +31,7 @@ function rebuildCharts(state) {
   chartRevenusVsCharges(state);
   chartDebtService(state);
   chartCashFlow(state);
+  chartCFWaterfall(state);
   chartOccupancy();
   chartSensitivity(state);
   chartIS(state);
@@ -781,6 +782,83 @@ function chartSensitivity(S) {
               ${isBreakEven ? '<div class="ctt-row" style="color:#dc2626;font-weight:600;margin-top:4px"><span>⚠ Seuil de rentabilité</span></div>' : ''}
               ${s.cashFlow < 0 ? '<div class="ctt-row" style="color:#dc2626;font-weight:600;margin-top:4px"><span>🔴 Cash-flow négatif — perte mensuelle de ' + fmtMAD(Math.abs(s.cashFlow / 12)) + '</span></div>' : ''}`;
           })
+        }
+      }
+    }
+  });
+}
+
+// --- CF Waterfall An 1 ---
+function chartCFWaterfall(S) {
+  destroyChart("cfWaterfall");
+  const ctx = document.getElementById("chart-cf-waterfall")?.getContext("2d");
+  if (!ctx) return;
+  const y1 = S.projections[0];
+  const ch = y1.chargesDetail;
+
+  // Build waterfall segments: RevBrut → -Commissions → -Gestion → -Salaires → -Utilities → -Autres → =EBITDA → -Dette → -IS → =CF Net
+  const steps = [
+    { label: "Revenus bruts", value: y1.revBrutHotel + y1.revCommercial, type: "positive" },
+    { label: "Commissions OTA", value: -y1.commissions, type: "negative" },
+    { label: "Gestion (20%)", value: -ch.gestion, type: "negative" },
+    { label: "Salaires", value: -ch.salaires, type: "negative" },
+    { label: "Utilities", value: -ch.utilities, type: "negative" },
+    { label: "Consommables", value: -ch.consommables, type: "negative" },
+    { label: "Autres charges", value: -(ch.comptable + ch.assurance + ch.entretien + ch.taxesPro + ch.divers), type: "negative" },
+    { label: "EBITDA", value: y1.ebitda, type: "total" },
+    { label: "Service dette", value: -y1.debtServiceTotal, type: "negative" },
+    { label: "IS", value: -y1.is, type: "negative" },
+    { label: "Cash-Flow Net", value: y1.cashFlowNet, type: "total" },
+  ];
+
+  // For waterfall: invisible base + colored bar
+  const bases = []; const values = []; const colors = [];
+  let running = 0;
+  steps.forEach(s => {
+    if (s.type === "total") {
+      bases.push(0);
+      values.push(s.value);
+      colors.push(s.value >= 0 ? CHART_COLORS.green : CHART_COLORS.red);
+    } else {
+      if (s.value >= 0) {
+        bases.push(running);
+        values.push(s.value);
+        colors.push(CHART_COLORS.green + "cc");
+      } else {
+        bases.push(running + s.value);
+        values.push(-s.value);
+        colors.push(CHART_COLORS.red + "cc");
+      }
+      running += s.value;
+    }
+  });
+
+  _charts.cfWaterfall = new Chart(ctx, {
+    type: "bar",
+    data: {
+      labels: steps.map(s => s.label),
+      datasets: [
+        { label: "Base", data: bases, backgroundColor: "transparent", borderWidth: 0, stack: "wf" },
+        { label: "Valeur", data: values, backgroundColor: colors, borderRadius: 4, stack: "wf" },
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      scales: {
+        x: { stacked: true, grid: { display: false } },
+        y: { stacked: true, ticks: { callback: v => fmtK(v) }, grid: { color: ctx2 => ctx2.tick.value === 0 ? 'rgba(220,38,38,0.4)' : 'rgba(0,0,0,0.05)' } }
+      },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          filter: item => item.datasetIndex === 1,
+          callbacks: {
+            label: c => {
+              const s = steps[c.dataIndex];
+              const sign = s.value >= 0 ? "+" : "";
+              return s.label + ": " + sign + fmtMAD(s.value);
+            }
+          }
         }
       }
     }

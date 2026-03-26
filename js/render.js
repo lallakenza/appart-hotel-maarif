@@ -534,24 +534,68 @@ function renderFinancement(S) {
 // --- Cash-Flow ---
 function renderCashFlow(S) {
   const y1 = S.projections[0];
-  setText("cf-net-an1",     fmtMAD(y1.cashFlowNet));
-  setText("cf-rdt-projet",  fmtPct(S.kpi.rendementNet));
-  setText("cf-rdt-apport",  fmtPct(S.kpi.rendementNetApport));
-  setText("cf-payback",     S.kpi.paybackYear ? S.kpi.paybackYear + " ans" : "> " + PROJECTION_YEARS + " ans");
+  const K = S.kpi;
 
+  // Row 1: CF Net, TRI, VAN, Payback
+  setText("cf-net-an1",     fmtMAD(y1.cashFlowNet));
+  setText("cf-net-mensuel", fmtMAD(K.cfMensuelAn1) + " / mois");
+  setText("cf-tri",         isFinite(K.tri) ? fmtPct(K.tri, 1) : "N/A");
+  setText("cf-van",         fmtMAD(K.van));
+  setText("cf-van-taux",    "Taux d'actualisation : " + fmtPct(K.tauxActualisation, 0));
+  setText("cf-payback",     K.paybackYear ? K.paybackYear + " ans" : "> " + PROJECTION_YEARS + " ans");
+
+  // Row 2: Rendements
+  setText("cf-rdt-projet",  fmtPct(K.rendementNet));
+  setText("cf-rdt-apport",  fmtPct(K.rendementNetApport));
+  setText("cf-coc",         fmtPct(K.cashOnCash));
+  setText("cf-marge",       fmtPct(K.margeCF));
+
+  // Trajectoire long-terme
+  setText("cf-wealth",        fmtMAD(K.wealthTotal));
+  setText("cf-multiple",      "×" + K.multipleApport.toFixed(1) + " l'apport récupéré");
+  setText("cf-debt-free",     K.debtFreedomYear ? "An " + K.debtFreedomYear : "> " + PROJECTION_YEARS + " ans");
+  setText("cf-post-debt",     K.cfPostDebtAvg ? fmtMAD(K.cfPostDebtAvg) + " / an" : "–");
+  setText("cf-post-debt-mensuel", K.cfPostDebtAvg ? fmtMAD(K.cfPostDebtAvg / 12) + " / mois" : "");
+  setText("cf-rdt-stab",     K.rendementStabilise ? fmtPct(K.rendementStabilise) : "–");
+
+  // Croissance & fiscalité
+  setText("cf-growth-10",   K.cfGrowthY10 != null ? (K.cfGrowthY10 >= 0 ? "+" : "") + fmtPct(K.cfGrowthY10, 0) : "–");
+  setText("cf-growth-20",   (K.cfGrowthY20 >= 0 ? "+" : "") + fmtPct(K.cfGrowthY20, 0));
+  setText("cf-is-cumule",   fmtMAD(K.isCumule));
+  setText("cf-ratio-is",    fmtPct(K.ratioIS, 1) + " du cash-flow brut");
+  setText("cf-dscr",        K.dscr === Infinity ? "∞" : K.dscr.toFixed(2) + "x");
+  const dscrEl = document.getElementById("cf-dscr");
+  if (dscrEl) dscrEl.style.color = K.dscr >= 1.5 ? "var(--green)" : K.dscr >= 1.2 ? "var(--amber)" : "var(--red)";
+  setText("cf-dscr-sub",    K.dscr >= 1.5 ? "Confortable (> 1,5x)" : K.dscr >= 1.2 ? "Acceptable (> 1,2x)" : "Risqué (< 1,2x)");
+
+  // Color VAN
+  const vanEl = document.getElementById("cf-van");
+  if (vanEl) vanEl.closest(".kpi-card").querySelector(".kpi-value").style.color = K.van >= 0 ? "var(--green)" : "var(--red)";
+
+  // Color TRI
+  const triEl = document.getElementById("cf-tri");
+  if (triEl) triEl.style.color = K.tri >= 0.08 ? "var(--green)" : K.tri >= 0.05 ? "var(--amber)" : "var(--red)";
+
+  // Enriched table with marge and monthly CF
   const tbody = document.getElementById("cf-tbody");
   if (!tbody) return;
   tbody.innerHTML = "";
   S.projections.forEach(p => {
+    const marge = p.revTotal > 0 ? p.cashFlowNet / p.revTotal : 0;
+    const isPayback = S.kpi.paybackYear && p.year === S.kpi.paybackYear;
+    const isDebtFree = S.kpi.debtFreedomYear && p.year === S.kpi.debtFreedomYear;
+    const highlight = isPayback ? ' style="background:#e8f5e9"' : isDebtFree ? ' style="background:#fff3e0"' : '';
     const tr = document.createElement("tr");
     tr.innerHTML = `
-      <td>An ${p.year}</td>
+      <td${highlight}><strong>An ${p.year}</strong>${isPayback ? ' 🎯' : ''}${isDebtFree ? ' 🔓' : ''}</td>
       <td class="num bold">${fmtMAD(p.revTotal)}</td>
       <td class="num neg">(${fmtMAD(p.chargesTotal)})</td>
       <td class="num" style="background:#e8f5e9"><strong>${fmtMAD(p.ebitda)}</strong></td>
-      <td class="num neg">(${fmtMAD(p.debtServiceTotal)})</td>
-      <td class="num neg">(${fmtMAD(p.is)})</td>
+      <td class="num">${fmtPct(p.margeExploitation, 0)}</td>
+      <td class="num neg">${p.debtServiceTotal > 0 ? '(' + fmtMAD(p.debtServiceTotal) + ')' : '–'}</td>
+      <td class="num neg">${p.is > 0 ? '(' + fmtMAD(p.is) + ')' : '–'}</td>
       <td class="num bold" style="color:${clrSign(p.cashFlowNet)}">${fmtMAD(p.cashFlowNet)}</td>
+      <td class="num" style="color:${clrSign(p.cashFlowNet)}">${fmtMAD(p.cashFlowNet / 12)}</td>
       <td class="num bold" style="color:${clrSign(p.cumulCashFlow)}">${fmtMAD(p.cumulCashFlow)}</td>
     `;
     tbody.appendChild(tr);
