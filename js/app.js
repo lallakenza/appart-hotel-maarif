@@ -18,19 +18,23 @@ const CTRL_FIELDS = [
 
 // --- Advanced fields (global data objects) ---
 const ADV_FIELDS = [
-  // Charges
+  // Charges d'exploitation
   { id: "gestion",      target: "CHARGES",              key: "tauxGestion",              div: 100 },
-  { id: "salaire",      target: "CHARGES",              key: "salaireEmploye",           div: 1 },
+  { id: "salaire",      target: "CHARGES",              key: "salaireConcierge",         div: 1 },
+  { id: "salaireMenage",target: "CHARGES",              key: "salaireMenage",            div: 1 },
   { id: "employes",     target: "CHARGES",              key: "nbEmployes",               div: 1 },
-  { id: "eau",          target: "CHARGES",              key: "eauElectricite",           div: 1 },
+  { id: "eau",          target: "CHARGES",              key: "utilitiesFixe",            div: 1 },
+  { id: "eauVar",       target: "CHARGES",              key: "utilitiesVarParUnite",     div: 1 },
   { id: "internet",     target: "CHARGES",              key: "internetTv",               div: 1 },
   { id: "assurance",    target: "CHARGES",              key: "assurance",                div: 1 },
-  { id: "entretien",    target: "CHARGES",              key: "entretien",                div: 1 },
-  { id: "comptable",    target: "CHARGES",              key: "comptable",                div: 1 },
-  { id: "consommables", target: "CHARGES",              key: "consommables",             div: 1 },
+  { id: "entretien",    target: "CHARGES",              key: "entretienBase",            div: 1 },
+  { id: "comptable",    target: "CHARGES",              key: "comptableAnnuel",          div: 1 },
+  { id: "consommables", target: "CHARGES",              key: "consommablesParNuitee",    div: 1 },
   { id: "divers",       target: "CHARGES",              key: "divers",                   div: 1 },
-  // Revenus
-  { id: "commission",   target: "REVENUE_ASSUMPTIONS",  key: "commissionPlatformes",     div: 100 },
+  // Revenus & canaux
+  { id: "commissionOTA",target: "REVENUE_ASSUMPTIONS",  key: "commissionOTA",            div: 100 },
+  { id: "partOTA",      target: "REVENUE_ASSUMPTIONS",  key: "partOTA",                  div: 100 },
+  { id: "partInformel", target: "REVENUE_ASSUMPTIONS",  key: "partInformel",             div: 100 },
   { id: "croissance",   target: "REVENUE_ASSUMPTIONS",  key: "croissanceTarifs",         div: 100 },
   // Financement
   { id: "dureeBQ",      target: "BANQUE_CLASSIQUE",     key: "dureeAns",                 div: 1 },

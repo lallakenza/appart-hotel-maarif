@@ -74,7 +74,14 @@ const UNITS = [
 
 const REVENUE_ASSUMPTIONS = {
   loyerCommercial: 8_000,     // MAD / mois (à confirmer)
-  commissionPlatformes: 0.15, // Booking 15-18%, Airbnb ~14%, moyenne 15%
+  // --- Répartition canaux de réservation ---
+  // Réalité Maroc STR : ~55% OTA (Booking/Airbnb), ~25% direct (WhatsApp/tél/repeat), ~20% informel (cash)
+  // Commission ne s'applique que sur la part OTA
+  // Sources : Mordor Intelligence 2025, PriceLabs Morocco, AirROI Marrakech 2025
+  partOTA: 0.55,              // % des nuitées passant par plateformes (Booking, Airbnb)
+  partDirect: 0.25,           // % direct déclaré (site, WhatsApp, téléphone, repeat guests)
+  partInformel: 0.20,         // % cash / non-déclaré — réalité marché marocain (estimation conservatrice)
+  commissionOTA: 0.15,        // Booking 15-18%, Airbnb 15.5%, moyenne pondérée ~15%
   croissanceTarifs: 0.03,     // annuelle
 };
 
@@ -88,82 +95,179 @@ const REVENUE_ASSUMPTIONS = {
 // ADR Maarif pro (Booking.com mars 2026) :
 //   Studios pro: 600-770 MAD/n | 1BR/Lofts pro: 735-965 MAD/n
 
+// ═══════════════════════════════════════════════════════════════════════
+// SCÉNARIOS — Avec variations réalistes des charges selon contexte
+// ═══════════════════════════════════════════════════════════════════════
+// Paramètres variables par scénario :
+//   - partOTA : plus d'OTA au début (pas de clientèle fidèle), baisse avec maturité
+//   - partInformel : augmente avec la maturité (bouche-à-oreille, cash, repeat guests)
+//   - nbEmployes : 2 de base, 3 en optimiste (volume de travail)
+//   - consommablesParNuitee : légèrement variable (qualité amenities)
+//
+// Paramètres FIXES (ne varient PAS par scénario) :
+//   - comptableAnnuel : même complexité comptable quel que soit l'occupation
+//   - assurance : prime fixe annuelle, ne dépend pas du CA
+//   - internetTv : coût fixe d'infrastructure
+//   - chargesSociales : taux légal CNSS fixe
+//   - taxesPro : basée sur valeur locative, pas sur le CA
+// ═══════════════════════════════════════════════════════════════════════
+
 const SCENARIOS = {
   prudent: {
     label: "Pessimiste",
-    tauxOccupation: 0.35,      // en dessous médiane — nouvel entrant Y1, ramp-up
-    prixNuitStudio: 500,       // base premium: ~StayHere Palmier (600) - 15% discount nouvel entrant
-    prixNuitLoft: 650,         // base premium loft: ~Dynasty Luxury (650)
-    loyerCommercial: 6_000,    // hypothèse basse
-    budgetTotal: 7_000_000,    // coût projet hors ameublement
-    source: "Sous médiane marché — pricing d'entrée premium (-15% vs StayHere), occupation basse Y1",
+    tauxOccupation: 0.35,
+    prixNuitStudio: 500,
+    prixNuitLoft: 650,
+    loyerCommercial: 6_000,
+    budgetTotal: 7_000_000,
+    // --- Charges variables par scénario ---
+    partOTA: 0.70,             // Nouvel entrant : 70% OTA (pas encore de clientèle directe)
+    partDirect: 0.20,          // 20% direct (walk-in, quelques contacts)
+    partInformel: 0.10,        // 10% informel (peu de réseau, peu de cash)
+    nbEmployes: 2,             // Minimum : 1 concierge + 1 ménage
+    consommablesParNuitee: 45, // Amenities basiques pour limiter les coûts
+    source: "Nouvel entrant — forte dépendance OTA, pricing d'entrée, occupation basse Y1",
   },
   prudent_moyen: {
     label: "Prudent",
-    tauxOccupation: 0.42,      // entre pessimiste (35%) et réaliste (48%)
-    prixNuitStudio: 550,       // montée progressive, ~Faya Nova (615) - 10%
-    prixNuitLoft: 720,         // ~Chic & Cozy (735) - 5%
-    loyerCommercial: 7_000,    // interpolation
+    tauxOccupation: 0.42,
+    prixNuitStudio: 550,
+    prixNuitLoft: 720,
+    loyerCommercial: 7_000,
     budgetTotal: 7_000_000,
-    source: "Démarrage prudent — prix juste sous concurrents pro, occupation en montée",
+    partOTA: 0.65,
+    partDirect: 0.22,
+    partInformel: 0.13,
+    nbEmployes: 2,
+    consommablesParNuitee: 48,
+    source: "Montée en puissance — début de clientèle directe, pricing progressif",
   },
   moyen: {
     label: "Réaliste",
-    tauxOccupation: 0.48,      // médiane Airbtics (49%), cohérent avec hôtels 4* (50%)
-    prixNuitStudio: 620,       // aligné StayHere Palmier (600) avec premium design (+3%)
-    prixNuitLoft: 800,         // entre StayHere Oasis (910) et Chic Cozy (735)
-    loyerCommercial: 8_000,    // marché Maarif
-    budgetTotal: 7_200_000,    // légère hausse budget possible
-    source: "Médiane marché — prix alignés opérateurs pro Maarif (StayHere, AS Premium, unocapital)",
+    tauxOccupation: 0.48,
+    prixNuitStudio: 620,
+    prixNuitLoft: 800,
+    loyerCommercial: 8_000,
+    budgetTotal: 7_200_000,
+    partOTA: 0.55,             // Équilibre OTA/direct comme la moyenne du marché
+    partDirect: 0.25,
+    partInformel: 0.20,        // Bouche-à-oreille, WhatsApp, repeat guests cash
+    nbEmployes: 2,
+    consommablesParNuitee: 50,
+    source: "Médiane marché — mix canaux équilibré, pricing aligné opérateurs pro Maarif",
   },
   moyen_optimiste: {
     label: "Favorable",
-    tauxOccupation: 0.54,      // top performers Casa (55-65%), entre réaliste et optimiste
-    prixNuitStudio: 680,       // ~unocapital (750) - 10%, bonne réputation
-    prixNuitLoft: 870,         // ~StayHere Oasis (910) - 5%
-    loyerCommercial: 9_500,    // emplacement premium
+    tauxOccupation: 0.54,
+    prixNuitStudio: 680,
+    prixNuitLoft: 870,
+    loyerCommercial: 9_500,
     budgetTotal: 7_200_000,
-    source: "Top 30% marché — bonne réputation établie, pricing dynamique efficace",
+    partOTA: 0.48,             // Bonne réputation → plus de direct
+    partDirect: 0.27,
+    partInformel: 0.25,        // Réseau établi, corporate en cash, repeat guests
+    nbEmployes: 2,
+    consommablesParNuitee: 55, // Meilleure qualité amenities (positionnement premium)
+    source: "Établi — clientèle fidèle, bonne note Booking, forte part directe",
   },
   optimiste: {
     label: "Optimiste",
-    tauxOccupation: 0.60,      // top 25% AirROI (58%+), meilleur segment
-    prixNuitStudio: 750,       // ~StayHere Maarif Lifestyle (770), leader segment
-    prixNuitLoft: 950,         // ~maarif elite suite (965), segment premium
-    loyerCommercial: 11_000,   // prime emplacement + commerce attractif
-    budgetTotal: 7_500_000,    // budget confortable avec marge
-    source: "Top 25% — établi, 8.5+ sur Booking, clientèle fidèle, RevPAR élevé",
+    tauxOccupation: 0.60,
+    prixNuitStudio: 750,
+    prixNuitLoft: 950,
+    loyerCommercial: 11_000,
+    budgetTotal: 7_500_000,
+    partOTA: 0.42,             // Forte notoriété → moins de dépendance OTA
+    partDirect: 0.28,
+    partInformel: 0.30,        // Maximum informel : réseau, corporate, long séjour cash
+    nbEmployes: 3,             // Volume justifie un 3e employé (réception renforcée)
+    consommablesParNuitee: 60, // Premium amenities, linge haut de gamme
+    source: "Top 25% — leader segment, RevPAR élevé, 3 employés nécessaires",
   },
 };
 
 // ======= CHARGES D'EXPLOITATION =======
 const CHARGES = {
-  // Société de gestion — 20% du CA hébergement (confirmé)
-  // Inclut : gestion réservations, accueil, suivi opérationnel
+  // ═══════════════════════════════════════════════════════════════
+  // ANALYSE APPROFONDIE — Sources : CNSS 2025, SMIG 2026, Lydec,
+  // ONEE, benchmark opérateurs STR Maroc, cabinets comptables Casa
+  // ═══════════════════════════════════════════════════════════════
+
+  // --- Société de gestion — 20% du CA hébergement brut ---
+  // Confirmé : HouseBooking, YourHostHelper, Welkeys Maroc ~20%
+  // Inclut : gestion réservations, accueil, check-in/out, suivi opérationnel
   tauxGestion: 0.20,
 
-  // Ménage interne (2e employé dédié ménage/linge)
-  // Plus de coût variable par nuitée — coût fixe salarial
-  menageLinge: 0,            // MAD / nuitée — internalisé via employé dédié
+  // --- Utilities : EAU + ÉLECTRICITÉ ---
+  // Tarif commercial Lydec Casablanca : ~1.07 MAD/kWh (vs 1.17 résidentiel)
+  // Appart meublé avec clim : ~200-400 kWh/mois occupé, ~80-120 kWh vide (frigo, veille)
+  // Eau : ~150-250 MAD/mois par unité occupée
+  // Parties communes (hall, couloirs, éclairage, ascenseur) : ~1,500 MAD/mois fixe
+  // MODÈLE : partie fixe + partie variable (proportionnelle à l'occupation)
+  utilitiesFixe: 2_500,      // MAD / mois — parties communes + base incompressible (veille, frigo)
+  utilitiesVarParUnite: 400,  // MAD / mois / unité occupée (eau + élec + clim)
+  // Pour occupation 48% (5.3 unités occupées en moy) : 2500 + 5.3×400 = 4,620 MAD/mois
+  // Pour occupation 60% (6.6 unités) : 2500 + 6.6×400 = 5,140 MAD/mois
+  // Ancien fixe 6,000 était dans la bonne fourchette mais ne variait pas
 
-  eauElectricite: 6_000,     // MAD / mois (~500/appart élec + eau + parties communes)
-  internetTv: 1_500,         // MAD / mois (fibre pro + IPTV 11 unités)
-  assurance: 15_000,         // MAD / an
-  entretien: 30_000,         // MAD / an
+  internetTv: 1_200,          // MAD / mois — fibre pro Inwi/Maroc Telecom 100Mbps (~400) + IPTV (800)
+  // Source : Inwi Pro 2025, fournisseurs IPTV Maroc. 11 unités partagent 1 connexion pro
 
-  // 2 employés : 1 concierge + 1 ménage/linge
-  salaireEmploye: 4_000,     // MAD / mois
-  nbEmployes: 2,             // confirmé : concierge + ménage
-  chargesSociales: 0.26,     // CNSS + AMO
+  // --- Assurance multirisque professionnelle ---
+  assurance: 18_000,          // MAD / an — multirisque hôtelier (incendie, RC, bris machines, perte exploitation)
+  // Source : courtiers Casablanca, fourchette 15,000-25,000 pour petit hôtel
+  // Inclut RC professionnelle obligatoire pour hébergement touristique
 
-  // Comptable externe
-  comptable: 3_000,          // MAD / mois (estimation cabinet comptable Casablanca)
+  // --- Entretien & maintenance ---
+  // Nouveau bâtiment : 1-1.5% de la valeur construction/an
+  // Budget construction ~4.5M → 1% = 45,000, mais garanti 5 ans → réduit An 1-3
+  entretienBase: 20_000,      // MAD / an — années 1-5 (bâtiment neuf sous garantie)
+  entretienMature: 40_000,    // MAD / an — après 5 ans (vieillissement normal)
+  // Le moteur appliquera entretienBase si y < 5, entretienMature sinon
 
-  taxesPro: 20_000,          // MAD / an (exo 5 ans nouvelle construction)
-  divers: 20_000,            // MAD / an
+  // --- Salaires ---
+  // SMIG 2026 : 3,400 MAD/mois brut (17.92 MAD/h × 191h)
+  // Source : Décret SMIG janvier 2026, neoexpertise.net
+  // Concierge/réceptionniste petit appart-hôtel : SMIG + 15-30% (responsabilité, langues)
+  // Femme de ménage / lingère : SMIG ou légèrement au-dessus
+  salaireConcierge: 4_500,    // MAD / mois brut — réception + gestion quotidienne
+  salaireMenage: 3_500,       // MAD / mois brut — ménage + linge (SMIG + prime)
+  nbEmployes: 2,              // 1 concierge + 1 ménage/linge
 
-  // Produits ménage, linge de maison, consommables
-  consommables: 1_500,       // MAD / mois (estimé pour 11 unités)
+  // --- Charges sociales patronales CNSS 2025 ---
+  // Allocations familiales : 6.40% | Prestations sociales : 8.60% | AMO : 4.11% | Formation : 1.60%
+  // Total patronal : 20.71% (plafonné à 8,000 MAD pour certaines cotisations)
+  // Source : espace-paie.ma, comptable-tanger.com 2025
+  chargesSociales: 0.2071,    // CNSS + AMO patronal réel (corrigé de 26% → 20.71%)
+
+  // --- Comptable / Expert-comptable ---
+  // TPE/PME Casablanca : forfait annuel 24,000-36,000 MAD pour tenue + déclarations
+  // Petit appart-hôtel = 1 visite/mois + bilan annuel + déclarations fiscales
+  // Source : lec.ma, tmsonline.ma 2025
+  comptableAnnuel: 30_000,    // MAD / AN (≠ /mois!) — corrigé de 3,000/mois à 30,000/an
+  // = 2,500 MAD/mois — cabinet comptable Casablanca pour TPE hôtelière
+
+  // --- Taxe professionnelle ---
+  // Exonération totale 5 premières années (nouvelle construction)
+  // Après : base = valeur locative × coefficient × taux (10-30% selon activité)
+  // Pour hébergement touristique : ~1.25% de la valeur construction (6-12M MAD bracket)
+  // Source : upsilon-consulting.com, CGI Art. 6-I-A
+  taxesPro: 25_000,           // MAD / an (après exonération)
+
+  // --- Divers & imprévus ---
+  divers: 15_000,             // MAD / an — frais bancaires, fournitures bureau, déplacements, licences PMS
+
+  // --- Consommables : VARIABLE selon occupation ---
+  // Linge de maison, produits ménage, amenities (savon, shampoing, café/thé)
+  // Estimé : 40-60 MAD par nuitée occupée (fournitures + amortissement linge)
+  // Source : benchmark opérateurs STR Maroc, Mews hospitality 2025
+  consommablesParNuitee: 50,  // MAD / nuitée occupée — linge, ménage, amenities
+  // Pour 11 unités × 365j × 48% occ = 1,928 nuitées → 96,400 MAD/an
+  // Ancien : 1,500/mois = 18,000/an — LARGEMENT sous-estimé
+  // Note : une grosse partie du coût ménage est dans les salaires (employé dédié)
+  // Ici c'est uniquement les fournitures consommables
+
+  menageLinge: 0,             // Internalisé via employé dédié (salaireMenage)
 };
 
 // ======= FINANCEMENT =======

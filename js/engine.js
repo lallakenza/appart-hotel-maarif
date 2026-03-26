@@ -85,35 +85,77 @@ function compute(scenario) {
   const projections = [];
   let cumulCF = 0; // pas d'apport cash, apport = terrain
 
+  // --- Paramètres de répartition canaux (par scénario ou défaut) ---
+  const partOTA = sc.partOTA ?? REVENUE_ASSUMPTIONS.partOTA;
+  const partInformel = sc.partInformel ?? REVENUE_ASSUMPTIONS.partInformel;
+  const commissionOTA = REVENUE_ASSUMPTIONS.commissionOTA;
+  const nbEmployesSc = sc.nbEmployes ?? CHARGES.nbEmployes;
+  const consommablesPN = sc.consommablesParNuitee ?? CHARGES.consommablesParNuitee;
+
   for (let y = 0; y < PROJECTION_YEARS; y++) {
     const growth = Math.pow(1 + REVENUE_ASSUMPTIONS.croissanceTarifs, y);
     const prixStudio = sc.prixNuitStudio * growth;
     const prixLoft = sc.prixNuitLoft * growth;
 
-    // Revenus
+    // ═══ REVENUS ═══
+    // Revenu brut hébergement (100% des nuitées)
     const revStudios = nbStudios * prixStudio * 365 * occ;
     const revLofts = nbLofts * prixLoft * 365 * occ;
     const revBrutHotel = revStudios + revLofts;
-    const commissions = revBrutHotel * REVENUE_ASSUMPTIONS.commissionPlatformes;
+
+    // Commission OTA : ne s'applique que sur la part OTA du CA (pas 100%)
+    // Réalité : 55-70% passe par Booking/Airbnb, le reste est direct ou informel
+    const commissions = revBrutHotel * partOTA * commissionOTA;
     const revNetHotel = revBrutHotel - commissions;
+
+    // Part non-déclarée (informel, cash) — pour info/affichage, pas déduite des revenus
+    const revInformel = revBrutHotel * partInformel;
+    // Revenu fiscal déclaré = revBrutHotel - revInformel (pour l'IS)
+    const revDeclareHotel = revBrutHotel - revInformel;
+
     const revCommercial = sc.loyerCommercial * 12;
     const revTotal = revNetHotel + revCommercial;
 
-    // Charges
-    const gestion = revBrutHotel * CHARGES.tauxGestion;        // 20% du CA hébergement brut
-    const consommables = CHARGES.consommables * 12;
-    const comptable = CHARGES.comptable * 12;
-    const utilities = (CHARGES.eauElectricite + CHARGES.internetTv) * 12;
-    const salaires = CHARGES.salaireEmploye * CHARGES.nbEmployes * 12 * (1 + CHARGES.chargesSociales);
+    // ═══ CHARGES ═══
+    // Gestion société : 20% du CA brut hébergement (sur tout le CA, pas seulement OTA)
+    const gestion = revBrutHotel * CHARGES.tauxGestion;
+
+    // Consommables : variable selon nuitées réelles (linge, amenities, produits ménage)
+    const nuiteesAn = nbUnites * 365 * occ;
+    const consommables = nuiteesAn * consommablesPN;
+
+    // Comptable : forfait ANNUEL (corrigé de mensuel → annuel)
+    const comptable = CHARGES.comptableAnnuel;
+
+    // Utilities : partie fixe + partie variable (proportionnelle à l'occupation)
+    const nbUnitesOccupees = nbUnites * occ; // unités occupées en moyenne
+    const utilitiesMensuel = CHARGES.utilitiesFixe + (nbUnitesOccupees * CHARGES.utilitiesVarParUnite);
+    const utilities = (utilitiesMensuel + CHARGES.internetTv) * 12;
+
+    // Salaires : concierge + ménage (+ éventuel 3e employé en optimiste)
+    let masseSalariale;
+    if (nbEmployesSc >= 3) {
+      // 3 employés : 1 concierge + 2 ménage/linge
+      masseSalariale = (CHARGES.salaireConcierge + CHARGES.salaireMenage * 2) * 12;
+    } else {
+      // 2 employés : 1 concierge + 1 ménage/linge
+      masseSalariale = (CHARGES.salaireConcierge + CHARGES.salaireMenage) * 12;
+    }
+    const salaires = masseSalariale * (1 + CHARGES.chargesSociales);
+
+    // Entretien : réduit les 5 premières années (bâtiment neuf), puis augmente
+    const entretien = y < 5 ? CHARGES.entretienBase : CHARGES.entretienMature;
+
     // Taxe pro : exonérée les 5 premières années (nouvelle construction)
     const taxesPro = y < FISCALITE.exoTaxeProAns ? 0 : CHARGES.taxesPro;
+
     const chargesTotal = gestion + consommables + comptable + utilities +
-      CHARGES.assurance + CHARGES.entretien + salaires + taxesPro + CHARGES.divers;
+      CHARGES.assurance + entretien + salaires + taxesPro + CHARGES.divers;
 
     const chargesDetail = {
       gestion, consommables, comptable, utilities, salaires,
       assurance: CHARGES.assurance,
-      entretien: CHARGES.entretien,
+      entretien: entretien,
       taxesPro: taxesPro,
       divers: CHARGES.divers,
     };
@@ -184,20 +226,25 @@ function compute(scenario) {
     // Amortissement sur 20 ans (seulement pendant la durée de vie fiscale)
     const dotationAmort = y < FISCALITE.amortissementAns ? amortissementAnnuel : 0;
     const cashFlowAvantIS = ebitda - debtServiceTotal;
-    // Le bénéfice fiscal déduit l'amortissement (non-cash) et le service de dette
-    const resultatFiscal = ebitda - debtServiceTotal - dotationAmort;
+
+    // Résultat fiscal : basé sur le revenu DÉCLARÉ (hors part informelle)
+    // L'IS ne s'applique que sur la part déclarée du CA hébergement
+    const revDeclare = revDeclareHotel - commissions + revCommercial; // revenu déclaré total
+    const ebitdaDeclare = revDeclare - chargesTotal;
+    const resultatFiscal = ebitdaDeclare - debtServiceTotal - dotationAmort;
     const beneficeImposable = Math.max(0, resultatFiscal);
     const partLocale = beneficeImposable * (1 - FISCALITE.caDevisesPct);
     const is = partLocale * FISCALITE.isTaux;
-    const economieIS = dotationAmort * (1 - FISCALITE.caDevisesPct) * FISCALITE.isTaux; // économie grâce à l'amortissement
+    const economieIS = dotationAmort * (1 - FISCALITE.caDevisesPct) * FISCALITE.isTaux;
 
-    // Cash-flow net (amortissement = non-cash, ne sort pas de la trésorerie)
+    // Cash-flow net réel (inclut la part informelle en trésorerie)
     const cashFlowNet = cashFlowAvantIS - is;
     cumulCF += cashFlowNet;
 
     projections.push({
       year: y + 1,
       revStudios, revLofts, revBrutHotel, commissions, revNetHotel, revCommercial, revTotal,
+      revInformel, revDeclareHotel, partOTA, partInformel,
       chargesTotal, chargesDetail,
       ebitda, margeExploitation,
       debtTK, debtBQ, debtServiceTotal,
@@ -273,16 +320,25 @@ function compute(scenario) {
   // DSCR (Debt Service Coverage Ratio) — An 1
   const dscr = y1.debtServiceTotal > 0 ? y1.ebitda / y1.debtServiceTotal : Infinity;
 
+  // Helper: compute charges for a given occupancy (Year 1 = entretienBase, no taxePro)
+  function _chargesForOcc(testOcc) {
+    const testRevH = (nbStudios * sc.prixNuitStudio + nbLofts * sc.prixNuitLoft) * 365 * testOcc;
+    const testNuitees = nbUnites * 365 * testOcc;
+    const testNbOcc = nbUnites * testOcc;
+    const testUtilities = (CHARGES.utilitiesFixe + testNbOcc * CHARGES.utilitiesVarParUnite + CHARGES.internetTv) * 12;
+    const testSalaires = (nbEmployesSc >= 3
+      ? (CHARGES.salaireConcierge + CHARGES.salaireMenage * 2)
+      : (CHARGES.salaireConcierge + CHARGES.salaireMenage)) * 12 * (1 + CHARGES.chargesSociales);
+    return testRevH * CHARGES.tauxGestion + testNuitees * consommablesPN + CHARGES.comptableAnnuel +
+           testUtilities + testSalaires + CHARGES.assurance + CHARGES.entretienBase + CHARGES.divers;
+  }
+
   // Break-even occupancy (taux d'occupation minimal pour CF net > 0)
-  // On cherche le taux où cashFlowNet = 0 en An 1
   let breakEvenOcc = null;
   for (let testOcc = 0.10; testOcc <= 1.0; testOcc += 0.005) {
     const testRevH = (nbStudios * sc.prixNuitStudio + nbLofts * sc.prixNuitLoft) * 365 * testOcc;
-    const testRevN = testRevH * (1 - REVENUE_ASSUMPTIONS.commissionPlatformes) + sc.loyerCommercial * 12;
-    const testCh = testRevH * CHARGES.tauxGestion + CHARGES.consommables * 12 + CHARGES.comptable * 12 +
-                   (CHARGES.eauElectricite + CHARGES.internetTv) * 12 +
-                   CHARGES.salaireEmploye * CHARGES.nbEmployes * 12 * (1 + CHARGES.chargesSociales) +
-                   CHARGES.assurance + CHARGES.entretien + CHARGES.divers;
+    const testRevN = testRevH * (1 - partOTA * commissionOTA) + sc.loyerCommercial * 12;
+    const testCh = _chargesForOcc(testOcc);
     const testEbitda = testRevN - testCh;
     const testDebt = interetsDiffereTK + annuiteBQ;
     const testCFavIS = testEbitda - testDebt;
@@ -294,15 +350,11 @@ function compute(scenario) {
 
   // Sensibilité
   const sensitivity = [0.25, 0.30, 0.35, 0.40, 0.45, 0.50, 0.55, 0.60, 0.65, 0.70, 0.75].map(occRate => {
-    const nuitees = nbUnites * 365 * occRate;
     const revH = (nbStudios * sc.prixNuitStudio + nbLofts * sc.prixNuitLoft) * 365 * occRate;
-    const revN = revH * (1 - REVENUE_ASSUMPTIONS.commissionPlatformes) + sc.loyerCommercial * 12;
-    const ch = revH * CHARGES.tauxGestion + CHARGES.consommables * 12 + CHARGES.comptable * 12 +
-               (CHARGES.eauElectricite + CHARGES.internetTv) * 12 +
-               CHARGES.salaireEmploye * CHARGES.nbEmployes * 12 * (1 + CHARGES.chargesSociales) +
-               CHARGES.assurance + CHARGES.entretien + CHARGES.divers; // taxe pro exonérée An 1
+    const revN = revH * (1 - partOTA * commissionOTA) + sc.loyerCommercial * 12;
+    const ch = _chargesForOcc(occRate);
     const ebit = revN - ch;
-    const debtY1 = interetsDiffereTK + annuiteBQ; // année 1
+    const debtY1 = interetsDiffereTK + annuiteBQ;
     const cfAvIS = ebit - debtY1;
     const resFiscal = cfAvIS - amortissementAnnuel;
     const impot = Math.max(0, resFiscal) * (1 - FISCALITE.caDevisesPct) * FISCALITE.isTaux;
@@ -318,13 +370,18 @@ function compute(scenario) {
     const prixS = sc.prixNuitStudio * growth;
     const prixL = sc.prixNuitLoft * growth;
     const revH = (nbStudios * prixS + nbLofts * prixL) * 365 * occ;
-    const revN = revH * (1 - REVENUE_ASSUMPTIONS.commissionPlatformes) + sc.loyerCommercial * 12;
+    const revN = revH * (1 - partOTA * commissionOTA) + sc.loyerCommercial * 12;
     const gestionY = revH * CHARGES.tauxGestion;
-    const utilitiesY = (CHARGES.eauElectricite + CHARGES.internetTv) * 12;
-    const salairesY = CHARGES.salaireEmploye * CHARGES.nbEmployes * 12 * (1 + CHARGES.chargesSociales);
+    const nuiteesY = nbUnites * 365 * occ;
+    const nbOccY = nbUnites * occ;
+    const utilitiesY = (CHARGES.utilitiesFixe + nbOccY * CHARGES.utilitiesVarParUnite + CHARGES.internetTv) * 12;
+    const salairesY = (nbEmployesSc >= 3
+      ? (CHARGES.salaireConcierge + CHARGES.salaireMenage * 2)
+      : (CHARGES.salaireConcierge + CHARGES.salaireMenage)) * 12 * (1 + CHARGES.chargesSociales);
     const taxesProY = y < FISCALITE.exoTaxeProAns ? 0 : CHARGES.taxesPro;
-    const chTotal = gestionY + CHARGES.consommables * 12 + CHARGES.comptable * 12 + utilitiesY +
-      CHARGES.assurance + CHARGES.entretien + salairesY + taxesProY + CHARGES.divers;
+    const entretienY = y < 5 ? CHARGES.entretienBase : CHARGES.entretienMature;
+    const chTotal = gestionY + nuiteesY * consommablesPN + CHARGES.comptableAnnuel + utilitiesY +
+      CHARGES.assurance + entretienY + salairesY + taxesProY + CHARGES.divers;
     const ebitdaY = revN - chTotal;
 
     // TK debt
@@ -395,25 +452,30 @@ function computeGestionComparison(scenario) {
   const nbLofts = lofts.length;
   const nbUnites = nbStudios + nbLofts;
 
+  const partOTA = sc.partOTA ?? REVENUE_ASSUMPTIONS.partOTA;
   const revBrut = (nbStudios * sc.prixNuitStudio + nbLofts * sc.prixNuitLoft) * 365 * occ;
-  const commissions = revBrut * REVENUE_ASSUMPTIONS.commissionPlatformes;
+  const commissions = revBrut * partOTA * REVENUE_ASSUMPTIONS.commissionOTA;
   const revNet = revBrut - commissions;
   const revCommercial = sc.loyerCommercial * 12;
   const revTotal = revNet + revCommercial;
 
   // --- Charges communes (fixes, identiques dans les deux cas) ---
-  const utilities = (CHARGES.eauElectricite + CHARGES.internetTv) * 12;
-  const consommables = CHARGES.consommables * 12;
+  const nbUnitesOcc = nbUnites * occ;
+  const utilitiesMensuel = CHARGES.utilitiesFixe + (nbUnitesOcc * CHARGES.utilitiesVarParUnite);
+  const utilities = (utilitiesMensuel + CHARGES.internetTv) * 12;
+  const nuiteesAn = nbUnites * 365 * occ;
+  const consommablesPN = sc.consommablesParNuitee ?? CHARGES.consommablesParNuitee;
+  const consommables = nuiteesAn * consommablesPN;
   const assurance = CHARGES.assurance;
-  const entretien = CHARGES.entretien;
+  const entretien = CHARGES.entretienBase; // Year 1 comparison
   const divers = CHARGES.divers;
   const chargesCommunes = utilities + consommables + assurance + entretien + divers;
 
   // === OPTION A : Société de gestion ===
   // Commission 20% CA brut + 2 employés (concierge + ménage)
   const gestionSociete = revBrut * CHARGES.tauxGestion;
-  const comptableSociete = CHARGES.comptable * 12;
-  const salairesSociete = CHARGES.salaireEmploye * CHARGES.nbEmployes * 12 * (1 + CHARGES.chargesSociales);
+  const comptableSociete = CHARGES.comptableAnnuel;
+  const salairesSociete = (CHARGES.salaireConcierge + CHARGES.salaireMenage) * 12 * (1 + CHARGES.chargesSociales);
   const chargesSociete = gestionSociete + comptableSociete + salairesSociete + chargesCommunes;
   const ebitdaSociete = revTotal - chargesSociete;
   const margeSociete = revTotal > 0 ? ebitdaSociete / revTotal : 0;
@@ -421,14 +483,13 @@ function computeGestionComparison(scenario) {
   // === OPTION B : Gestion propre ===
   // Pas de commission société (0%), mais :
   // - 3 employés au lieu de 2 (ajout réceptionniste/manager)
-  // - Salaire manager plus élevé (6000 MAD au lieu de 4000)
+  // - Salaire manager plus élevé (5,500 MAD)
   // - Comptable identique
   // - Logiciel gestion : ~500 MAD/mois (Lodgify, Guesty, etc.)
   // - Temps personnel investisseur : non chiffré (coût d'opportunité)
   const nbEmployesPropre = 3;
-  const salaireMoyen = 4_500; // mix concierge 4000 + ménage 4000 + manager 5500
-  const salairesPropre = salaireMoyen * nbEmployesPropre * 12 * (1 + CHARGES.chargesSociales);
-  const comptablePropre = CHARGES.comptable * 12;
+  const salairesPropre = (CHARGES.salaireConcierge + CHARGES.salaireMenage + 5_500) * 12 * (1 + CHARGES.chargesSociales);
+  const comptablePropre = CHARGES.comptableAnnuel;
   const logicielGestion = 500 * 12; // PMS + channel manager
   const chargesPropre = salairesPropre + comptablePropre + logicielGestion + chargesCommunes;
   const ebitdaPropre = revTotal - chargesPropre;
@@ -445,7 +506,7 @@ function computeGestionComparison(scenario) {
       gestion: gestionSociete,
       salaires: salairesSociete,
       comptable: comptableSociete,
-      nbEmployes: CHARGES.nbEmployes,
+      nbEmployes: 2,
       chargesTotal: chargesSociete,
       ebitda: ebitdaSociete,
       marge: margeSociete,
