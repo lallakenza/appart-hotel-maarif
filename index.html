@@ -333,6 +333,7 @@ tr:hover td{background:#f8fafc}
     <button class="nav-btn" data-nav="charges">Charges & Exploitation</button>
     <button class="nav-btn" data-nav="financement">Financement MDM</button>
     <button class="nav-btn" data-nav="cashflow">Cash-Flow & Rentabilité</button>
+    <button class="nav-btn" data-nav="gestion">Gestion propre vs Société</button>
     <button class="nav-btn" data-nav="marche">Étude de Marché</button>
     <button class="nav-btn" data-nav="fiscalite">Fiscalité & TVA</button>
     <button class="nav-btn" data-nav="risques">Analyse de Risques</button>
@@ -488,6 +489,18 @@ tr:hover td{background:#f8fafc}
         <div class="ctrl-row">
           <input type="range" class="ctrl-range" id="ctrl-croissance" min="0" max="8" step="0.5" value="3">
           <div class="ctrl-input-wrap"><input type="number" class="ctrl-input" id="ctrl-croissance-val" min="0" max="8" step="0.5" value="3"><span class="ctrl-unit">%</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Budget -->
+    <div class="ctrl-section-title">Budget Projet</div>
+    <div class="ctrl-grid">
+      <div class="ctrl-group">
+        <label class="ctrl-label">Budget total (hors ameublement)</label>
+        <div class="ctrl-row">
+          <input type="range" class="ctrl-range" id="ctrl-budget" min="5" max="10" step="0.1" value="7">
+          <div class="ctrl-input-wrap"><input type="number" class="ctrl-input" id="ctrl-budget-val" min="5" max="10" step="0.1" value="7"><span class="ctrl-unit">M MAD</span></div>
         </div>
       </div>
     </div>
@@ -711,6 +724,49 @@ tr:hover td{background:#f8fafc}
   </div>
 </div>
 
+<!-- ==================== GESTION PROPRE vs SOCIÉTÉ ==================== -->
+<div data-view="gestion" class="hidden">
+  <div class="kpi-grid">
+    <div class="kpi-card"><div class="kpi-label">EBITDA — Société de gestion</div><div class="kpi-value" id="gest-ebitda-societe">–</div><div class="kpi-sub" id="gest-marge-societe">–</div></div>
+    <div class="kpi-card"><div class="kpi-label">EBITDA — Gestion propre</div><div class="kpi-value kpi-green" id="gest-ebitda-propre">–</div><div class="kpi-sub" id="gest-marge-propre">–</div></div>
+    <div class="kpi-card"><div class="kpi-label">Économie annuelle</div><div class="kpi-value kpi-green" id="gest-economie">–</div><div class="kpi-sub">En faveur de la gestion propre</div></div>
+    <div class="kpi-card"><div class="kpi-label">Revenus totaux</div><div class="kpi-value" id="gest-rev-total">–</div><div class="kpi-sub">Identiques dans les 2 cas</div></div>
+  </div>
+
+  <div class="grid-2">
+    <!-- Société de gestion -->
+    <div class="card">
+      <div class="card-title" style="color:var(--primary)">Option A — Société de gestion</div>
+      <div class="table-wrap"><table>
+        <tbody id="gest-societe-tbody"></tbody>
+        <tfoot><tr style="font-weight:600;border-top:2px solid var(--border)"><td>EBITDA</td><td id="gest-societe-ebitda" style="text-align:right">–</td></tr></tfoot>
+      </table></div>
+      <div style="margin-top:12px">
+        <div class="info-box" style="margin-bottom:8px"><strong>Avantages</strong><ul id="gest-societe-avantages" style="padding-left:18px;margin-top:6px;font-size:.82rem"></ul></div>
+        <div class="warn-box"><strong>Inconvénients</strong><ul id="gest-societe-inconvenients" style="padding-left:18px;margin-top:6px;font-size:.82rem"></ul></div>
+      </div>
+    </div>
+
+    <!-- Gestion propre -->
+    <div class="card">
+      <div class="card-title" style="color:var(--green)">Option B — Gestion propre</div>
+      <div class="table-wrap"><table>
+        <tbody id="gest-propre-tbody"></tbody>
+        <tfoot><tr style="font-weight:600;border-top:2px solid var(--border)"><td>EBITDA</td><td id="gest-propre-ebitda" style="text-align:right">–</td></tr></tfoot>
+      </table></div>
+      <div style="margin-top:12px">
+        <div class="info-box" style="margin-bottom:8px"><strong>Avantages</strong><ul id="gest-propre-avantages" style="padding-left:18px;margin-top:6px;font-size:.82rem"></ul></div>
+        <div class="warn-box"><strong>Inconvénients</strong><ul id="gest-propre-inconvenients" style="padding-left:18px;margin-top:6px;font-size:.82rem"></ul></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Recommandation</div>
+    <div class="info-box" id="gest-recommandation" style="font-size:.9rem;line-height:1.6"></div>
+  </div>
+</div>
+
 <!-- ==================== MARCHÉ ==================== -->
 <div data-view="marche" class="hidden">
   <div class="kpi-grid">
@@ -738,8 +794,8 @@ tr:hover td{background:#f8fafc}
 
   <div class="grid-2">
     <div class="card"><div class="card-title">Taux d'Occupation par Segment</div><div class="chart-box"><canvas id="chart-occupancy"></canvas></div></div>
-    <div class="card"><div class="card-title">Concurrence Appart-Hôtels Maarif</div>
-      <div class="table-wrap"><table><thead><tr><th>Nom</th><th>Type</th><th>Prix / nuit</th><th>Gamme</th></tr></thead><tbody id="mkt-concurrence-tbody"></tbody></table></div>
+    <div class="card"><div class="card-title">Benchmark Concurrentiel Maarif — Booking.com (mars 2026, 12 propriétés)</div>
+      <div class="table-wrap"><table><thead><tr><th>Nom</th><th>Type</th><th>Note (avis)</th><th>Prix / nuit</th><th>Gamme</th></tr></thead><tbody id="mkt-concurrence-tbody"></tbody></table></div>
     </div>
   </div>
   <div class="card"><div class="card-title">Analyse SWOT</div>
@@ -877,11 +933,11 @@ tr:hover td{background:#f8fafc}
 </main>
 
 <!-- Scripts — strict order: data → engine → render → charts → app -->
-<script src="js/data.js?v=7"></script>
-<script src="js/engine.js?v=7"></script>
-<script src="js/render.js?v=7"></script>
-<script src="js/charts.js?v=7"></script>
-<script src="js/app.js?v=7"></script>
+<script src="js/data.js?v=8"></script>
+<script src="js/engine.js?v=8"></script>
+<script src="js/render.js?v=8"></script>
+<script src="js/charts.js?v=8"></script>
+<script src="js/app.js?v=8"></script>
 
 </body>
 </html>

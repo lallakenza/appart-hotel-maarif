@@ -15,7 +15,7 @@ function compute(scenario) {
   // --- Terrain ---
   const fraisTerrain = TERRAIN.prix * TERRAIN.fraisAcquisition;
   const coutTerrain = TERRAIN.prix + fraisTerrain;
-  const budgetConstruction = BUDGET.totalTTC - coutTerrain;
+  let budgetConstruction = BUDGET.totalTTC - coutTerrain;
   const coutM2Terrain = TERRAIN.prix / TERRAIN.surface;
 
   // --- Unités ---
@@ -28,9 +28,11 @@ function compute(scenario) {
   const surfaceLocative = locatifs.reduce((s, u) => s + u.surface, 0);
   const surfaceCommerciale = UNITS.find(u => u.category === "commercial")?.surface || 0;
 
-  // --- Budget total (ameublement EN PLUS du 7M) ---
+  // --- Budget total (ameublement EN PLUS du budget de base) ---
+  const baseBudget = sc.budgetTotal || BUDGET.totalTTC; // scénario peut overrider le budget
+  budgetConstruction = baseBudget - coutTerrain; // recalc si budget change par scénario
   const ameublement = BUDGET.ameublementParUnite * nbUnites;
-  const totalProjet = BUDGET.totalTTC + ameublement; // 7M + ameublement
+  const totalProjet = baseBudget + ameublement;
 
   // --- MDM Invest ---
   const subventionMDM = Math.min(totalProjet * MDM_INVEST.tauxSubvention, MDM_INVEST.plafond);
@@ -379,3 +381,116 @@ function compute(scenario) {
     scenario,
   };
 }
+
+// ============================================================
+// GESTION COMPARISON — Gestion propre vs Société de gestion
+// ============================================================
+function computeGestionComparison(scenario) {
+  const sc = SCENARIOS[scenario];
+  const occ = sc.tauxOccupation;
+
+  const studios = UNITS.filter(u => u.category === "studio");
+  const lofts = UNITS.filter(u => u.category === "loft");
+  const nbStudios = studios.length;
+  const nbLofts = lofts.length;
+  const nbUnites = nbStudios + nbLofts;
+
+  const revBrut = (nbStudios * sc.prixNuitStudio + nbLofts * sc.prixNuitLoft) * 365 * occ;
+  const commissions = revBrut * REVENUE_ASSUMPTIONS.commissionPlatformes;
+  const revNet = revBrut - commissions;
+  const revCommercial = sc.loyerCommercial * 12;
+  const revTotal = revNet + revCommercial;
+
+  // --- Charges communes (fixes, identiques dans les deux cas) ---
+  const utilities = (CHARGES.eauElectricite + CHARGES.internetTv) * 12;
+  const consommables = CHARGES.consommables * 12;
+  const assurance = CHARGES.assurance;
+  const entretien = CHARGES.entretien;
+  const divers = CHARGES.divers;
+  const chargesCommunes = utilities + consommables + assurance + entretien + divers;
+
+  // === OPTION A : Société de gestion ===
+  // Commission 20% CA brut + 2 employés (concierge + ménage)
+  const gestionSociete = revBrut * CHARGES.tauxGestion;
+  const comptableSociete = CHARGES.comptable * 12;
+  const salairesSociete = CHARGES.salaireEmploye * CHARGES.nbEmployes * 12 * (1 + CHARGES.chargesSociales);
+  const chargesSociete = gestionSociete + comptableSociete + salairesSociete + chargesCommunes;
+  const ebitdaSociete = revTotal - chargesSociete;
+  const margeSociete = revTotal > 0 ? ebitdaSociete / revTotal : 0;
+
+  // === OPTION B : Gestion propre ===
+  // Pas de commission société (0%), mais :
+  // - 3 employés au lieu de 2 (ajout réceptionniste/manager)
+  // - Salaire manager plus élevé (6000 MAD au lieu de 4000)
+  // - Comptable identique
+  // - Logiciel gestion : ~500 MAD/mois (Lodgify, Guesty, etc.)
+  // - Temps personnel investisseur : non chiffré (coût d'opportunité)
+  const nbEmployesPropre = 3;
+  const salaireMoyen = 4_500; // mix concierge 4000 + ménage 4000 + manager 5500
+  const salairesPropre = salaireMoyen * nbEmployesPropre * 12 * (1 + CHARGES.chargesSociales);
+  const comptablePropre = CHARGES.comptable * 12;
+  const logicielGestion = 500 * 12; // PMS + channel manager
+  const chargesPropre = salairesPropre + comptablePropre + logicielGestion + chargesCommunes;
+  const ebitdaPropre = revTotal - chargesPropre;
+  const margePropre = revTotal > 0 ? ebitdaPropre / revTotal : 0;
+
+  // Différentiel
+  const economiePropre = ebitdaPropre - ebitdaSociete;
+
+  return {
+    revBrut, revNet, revCommercial, revTotal,
+    chargesCommunes,
+    societe: {
+      label: "Société de gestion",
+      gestion: gestionSociete,
+      salaires: salairesSociete,
+      comptable: comptableSociete,
+      nbEmployes: CHARGES.nbEmployes,
+      chargesTotal: chargesSociete,
+      ebitda: ebitdaSociete,
+      marge: margeSociete,
+      avantages: [
+        "Gestion 100% déléguée — idéal résidence UAE",
+        "Expertise pricing dynamique & revenue management",
+        "Réseau et visibilité multi-plateformes",
+        "Remplacement employés géré par la société",
+        "Moins de stress opérationnel",
+      ],
+      inconvenients: [
+        "Coût élevé (20% du CA brut hébergement)",
+        "Moins de contrôle sur la qualité",
+        "Intérêts potentiellement divergents",
+        "Dépendance vis-à-vis d'un prestataire",
+      ],
+    },
+    propre: {
+      label: "Gestion propre",
+      gestion: 0,
+      salaires: salairesPropre,
+      comptable: comptablePropre,
+      logiciel: logicielGestion,
+      nbEmployes: nbEmployesPropre,
+      chargesTotal: chargesPropre,
+      ebitda: ebitdaPropre,
+      marge: margePropre,
+      avantages: [
+        "Économie significative (" + fmt(economiePropre) + " MAD/an)",
+        "Contrôle total sur la qualité et les prix",
+        "Relation directe avec les clients",
+        "Flexibilité opérationnelle maximale",
+        "Meilleure marge d'exploitation",
+      ],
+      inconvenients: [
+        "Nécessite un manager sur place (résidence UAE)",
+        "Gestion RH (3 employés à gérer à distance)",
+        "Investissement temps personnel important",
+        "Risque si le manager quitte",
+        "Courbe d'apprentissage pricing/OTAs",
+      ],
+    },
+    economiePropre,
+    recommandation: "Pour un investisseur basé aux UAE, la société de gestion est recommandée en phase de lancement (Y1-Y2). Transition vers gestion propre avec manager de confiance envisageable Y3+ une fois la marque établie.",
+  };
+}
+
+function fmt(n) { return Math.round(n).toLocaleString("fr-FR"); }

@@ -42,6 +42,9 @@ const ADV_FIELDS = [
 // Store originals for advanced fields
 let originalAdvanced = {};
 
+// --- Budget field (special — modifies scenario's budgetTotal) ---
+const BUDGET_FIELD = { id: "budget", key: "budgetTotal", div: 1_000_000 };
+
 function getTargetObj(name) {
   if (name === "CHARGES") return CHARGES;
   if (name === "REVENUE_ASSUMPTIONS") return REVENUE_ASSUMPTIONS;
@@ -57,6 +60,7 @@ function refresh() {
     applyOverrides();
   }
   currentState = compute(currentScenario);
+  currentState.gestion = computeGestionComparison(currentScenario);
   render(currentState);
   rebuildCharts(currentState);
 }
@@ -127,6 +131,7 @@ function syncControlPanel(scenario) {
   setCtrl("loft",   sc.prixNuitLoft);
   setCtrl("loyer",  sc.loyerCommercial);
   setCtrl("taux",   BANQUE_CLASSIQUE.tauxAnnuel * 100);
+  setCtrl("budget", (sc.budgetTotal || BUDGET.totalTTC) / 1_000_000);
 }
 
 function syncAdvancedPanel() {
@@ -195,6 +200,14 @@ function onAdvancedChange(fromRange, id) {
     input.value = range.value;
   } else {
     range.value = input.value;
+  }
+
+  // Special handling for budget slider
+  if (id === "budget") {
+    const val = parseFloat(input.value) * 1_000_000;
+    SCENARIOS[currentScenario].budgetTotal = val;
+    refresh();
+    return;
   }
 
   // Find the field definition and apply value to the target object
@@ -269,6 +282,17 @@ document.addEventListener("DOMContentLoaded", () => {
       input.addEventListener("change", () => onControlChange(false, f.id));
     }
   });
+
+  // Bind budget slider (special)
+  const budgetRange = document.getElementById("ctrl-budget");
+  const budgetInput = document.getElementById("ctrl-budget-val");
+  if (budgetRange) {
+    budgetRange.addEventListener("input", () => onAdvancedChange(true, "budget"));
+  }
+  if (budgetInput) {
+    budgetInput.addEventListener("input", () => onAdvancedChange(false, "budget"));
+    budgetInput.addEventListener("change", () => onAdvancedChange(false, "budget"));
+  }
 
   // Bind advanced control panel inputs (range + number)
   ADV_FIELDS.forEach(f => {

@@ -44,6 +44,7 @@ function render(state) {
   renderCharges(state);
   renderFinancement(state);
   renderCashFlow(state);
+  renderGestion(state);
   renderMarche(state);
   renderFiscalite(state);
   renderRisques(state);
@@ -377,6 +378,58 @@ function renderCashFlow(S) {
   });
 }
 
+// --- Gestion propre vs Société ---
+function renderGestion(S) {
+  const G = S.gestion;
+  if (!G) return;
+
+  setText("gest-ebitda-societe", fmtMAD(G.societe.ebitda));
+  setText("gest-marge-societe", "Marge " + fmtPct(G.societe.marge, 1));
+  setText("gest-ebitda-propre", fmtMAD(G.propre.ebitda));
+  setText("gest-marge-propre", "Marge " + fmtPct(G.propre.marge, 1));
+  setText("gest-economie", "+" + fmtMAD(G.economiePropre) + " /an");
+  setText("gest-rev-total", fmtMAD(G.revTotal) + " /an");
+
+  // Société detail table
+  const tbS = document.getElementById("gest-societe-tbody");
+  if (tbS) tbS.innerHTML = `
+    <tr><td>Revenus totaux</td><td class="num">${fmtMAD(G.revTotal)}</td></tr>
+    <tr style="color:var(--danger)"><td>Commission société (${fmtPct(CHARGES.tauxGestion,0)} du CA brut)</td><td class="num">-${fmtMAD(G.societe.gestion)}</td></tr>
+    <tr><td>Salaires (${G.societe.nbEmployes} employés)</td><td class="num">-${fmtMAD(G.societe.salaires)}</td></tr>
+    <tr><td>Comptable</td><td class="num">-${fmtMAD(G.societe.comptable)}</td></tr>
+    <tr><td>Charges communes (utilities, entretien...)</td><td class="num">-${fmtMAD(G.chargesCommunes)}</td></tr>
+  `;
+  const eSoc = document.getElementById("gest-societe-ebitda");
+  if (eSoc) eSoc.textContent = fmtMAD(G.societe.ebitda);
+
+  // Propre detail table
+  const tbP = document.getElementById("gest-propre-tbody");
+  if (tbP) tbP.innerHTML = `
+    <tr><td>Revenus totaux</td><td class="num">${fmtMAD(G.revTotal)}</td></tr>
+    <tr style="color:var(--green)"><td>Commission société</td><td class="num">0 MAD</td></tr>
+    <tr><td>Salaires (${G.propre.nbEmployes} employés, incl. manager)</td><td class="num">-${fmtMAD(G.propre.salaires)}</td></tr>
+    <tr><td>Comptable</td><td class="num">-${fmtMAD(G.propre.comptable)}</td></tr>
+    <tr><td>Logiciel PMS/Channel Manager</td><td class="num">-${fmtMAD(G.propre.logiciel)}</td></tr>
+    <tr><td>Charges communes (utilities, entretien...)</td><td class="num">-${fmtMAD(G.chargesCommunes)}</td></tr>
+  `;
+  const ePro = document.getElementById("gest-propre-ebitda");
+  if (ePro) ePro.textContent = fmtMAD(G.propre.ebitda);
+
+  // Avantages / Inconvénients
+  const fillList = (id, items) => {
+    const ul = document.getElementById(id);
+    if (ul) ul.innerHTML = items.map(i => `<li>${i}</li>`).join("");
+  };
+  fillList("gest-societe-avantages", G.societe.avantages);
+  fillList("gest-societe-inconvenients", G.societe.inconvenients);
+  fillList("gest-propre-avantages", G.propre.avantages);
+  fillList("gest-propre-inconvenients", G.propre.inconvenients);
+
+  // Recommandation
+  const recEl = document.getElementById("gest-recommandation");
+  if (recEl) recEl.textContent = G.recommandation;
+}
+
 // --- Marché ---
 function renderMarche(S) {
   setText("mkt-visiteurs", fmtNum(MARKET_DATA.visiteurs2024));
@@ -394,9 +447,11 @@ function renderMarche(S) {
   if (!tbody) return;
   tbody.innerHTML = "";
   MARKET_DATA.concurrence.forEach(c => {
-    const gammeClass = c.gamme === "Haut" ? "badge-green" : c.gamme === "Milieu" ? "badge-blue" : "badge-amber";
+    const gammeClass = c.gamme === "Luxe" ? "badge-green" : c.gamme === "Premium" ? "badge-blue" : c.gamme === "Milieu+" ? "badge-amber" : "badge-amber";
+    const ratingStr = c.rating ? `<strong>${c.rating}</strong>/10` : "–";
+    const reviewsStr = c.reviews ? `(${c.reviews})` : "";
     const tr = document.createElement("tr");
-    tr.innerHTML = `<td>${c.nom}</td><td>${c.type}</td><td>${c.prix}</td><td><span class="badge ${gammeClass}">${c.gamme}</span></td>`;
+    tr.innerHTML = `<td>${c.nom}</td><td style="font-size:.78rem">${c.type}</td><td>${ratingStr} ${reviewsStr}</td><td><strong>${c.prix}</strong></td><td><span class="badge ${gammeClass}">${c.gamme}</span></td>`;
     tbody.appendChild(tr);
   });
 }

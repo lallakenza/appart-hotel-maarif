@@ -56,11 +56,21 @@ const UNITS = [
 ];
 
 // ======= HYPOTHÈSES DE REVENUS =======
-// Basées sur données AirDNA, Airbtics, AirROI, SandsOfWealth (2025-2026)
-// Maarif ADR médiane : ~627 MAD (tout confondu)
-// Range Maarif : 450 – 850 MAD/nuit
-// Nos studios (25-37 m²) : positionnés segment éco-milieu de gamme
-// Nos lofts (40-46 m²) : positionnés milieu de gamme
+// Basées sur benchmark Booking.com Maarif (mars 2026, 17 propriétés analysées)
+// + données AirDNA, Airbtics, AirROI, SandsOfWealth (2025-2026)
+//
+// Benchmark Booking.com Maarif — Studios (30-45m²):
+//   StayHere Lifestyle 770 MAD/n (8.5) | AS Premium Soho 745 (8.8)
+//   unocapital 750 (8.5) | Élégant Studio 755 (9.2) | StayHere Palmier 600 (8.1)
+//   Faya Nova 615 (8.2) | Studio Palmiers 525 (7.3)
+//   → Médiane pro: 700-750 MAD/n | Budget: 525-615 MAD/n
+//
+// Benchmark Booking.com Maarif — 1BR/Loft (45-90m²):
+//   maarif elite suite 965 (8.2) | StayHere Oasis 910 (8.6)
+//   Chic & Cozy 735 (8.8) | Dynasty Luxury 650 (part.)
+//   → Médiane pro: 735-910 MAD/n
+//
+// Positionnement : Premium / Boutique (design, service, 8.5+ visé)
 
 const REVENUE_ASSUMPTIONS = {
   loyerCommercial: 8_000,     // MAD / mois (à confirmer)
@@ -69,58 +79,60 @@ const REVENUE_ASSUMPTIONS = {
 };
 
 // ======= SCÉNARIOS =======
-// Chaque scénario a ses propres prix ET taux d'occupation
-// Sources : AirDNA Casablanca 2026, Airbtics, AirROI, SandsOfWealth
+// Recalibrés avec benchmark Booking.com Maarif (mars 2026, 17 concurrents)
+// Positionnement Premium/Boutique — prix alignés opérateurs professionnels
 //
-// Occupancy Casablanca (AirROI 2026) :
-//   Médiane : 35.8%  |  Top 25% : 58%+  |  Top 10% : 76%+
-// Occupancy Casablanca (Airbtics) :
-//   Médiane : 49%
-// Occupancy Casablanca (SandsOfWealth) :
-//   Moyenne : 45%  |  Top performers : 55-65%
-// ADR Maarif (Airbtics) : 627 MAD (tout type confondu)
-// ADR Range Maarif (SandsOfWealth) : 450 – 850 MAD
+// Occupancy Casablanca (multi-sources 2025-2026) :
+//   AirROI médiane: 35.8% | Airbtics médiane: 49% | SandsOfWealth moy: 45%
+//   Top 25%: 58%+ | Hôtels 4*: 50% | Luxe: 62.3%
+// ADR Maarif pro (Booking.com mars 2026) :
+//   Studios pro: 600-770 MAD/n | 1BR/Lofts pro: 735-965 MAD/n
 
 const SCENARIOS = {
   prudent: {
     label: "Pessimiste",
-    tauxOccupation: 0.35,      // en dessous médiane (nouvel entrant, marché saturé)
-    prixNuitStudio: 380,       // bas de la fourchette Maarif, pricing agressif pour remplir
-    prixNuitLoft: 480,         // lofts plus grands = léger premium
+    tauxOccupation: 0.35,      // en dessous médiane — nouvel entrant Y1, ramp-up
+    prixNuitStudio: 500,       // base premium: ~StayHere Palmier (600) - 15% discount nouvel entrant
+    prixNuitLoft: 650,         // base premium loft: ~Dynasty Luxury (650)
     loyerCommercial: 6_000,    // hypothèse basse
-    source: "Sous médiane AirROI (35.8%) — scénario nouvel entrant, offre en hausse +50%/an",
+    budgetTotal: 7_000_000,    // coût projet hors ameublement
+    source: "Sous médiane marché — pricing d'entrée premium (-15% vs StayHere), occupation basse Y1",
   },
   prudent_moyen: {
     label: "Prudent",
     tauxOccupation: 0.42,      // entre pessimiste (35%) et réaliste (48%)
-    prixNuitStudio: 415,       // interpolation entre 380 et 450
-    prixNuitLoft: 530,         // interpolation entre 480 et 580
-    loyerCommercial: 7_000,    // interpolation entre 6k et 8k
-    source: "Interpolation pessimiste/réaliste — démarrage prudent, montée en puissance progressive",
+    prixNuitStudio: 550,       // montée progressive, ~Faya Nova (615) - 10%
+    prixNuitLoft: 720,         // ~Chic & Cozy (735) - 5%
+    loyerCommercial: 7_000,    // interpolation
+    budgetTotal: 7_000_000,
+    source: "Démarrage prudent — prix juste sous concurrents pro, occupation en montée",
   },
   moyen: {
     label: "Réaliste",
-    tauxOccupation: 0.48,      // entre médiane Airbtics (49%) et moyenne SandsOfWealth (45%)
-    prixNuitStudio: 450,       // milieu de gamme, cohérent avec Le 22 Appart'Hôtel (450-600)
-    prixNuitLoft: 580,         // premium loft, cohérent avec Maarif Home (530-670)
+    tauxOccupation: 0.48,      // médiane Airbtics (49%), cohérent avec hôtels 4* (50%)
+    prixNuitStudio: 620,       // aligné StayHere Palmier (600) avec premium design (+3%)
+    prixNuitLoft: 800,         // entre StayHere Oasis (910) et Chic Cozy (735)
     loyerCommercial: 8_000,    // marché Maarif
-    source: "Médiane marché Airbtics/SandsOfWealth — gestion professionnelle, bon positionnement",
+    budgetTotal: 7_200_000,    // légère hausse budget possible
+    source: "Médiane marché — prix alignés opérateurs pro Maarif (StayHere, AS Premium, unocapital)",
   },
   moyen_optimiste: {
     label: "Favorable",
-    tauxOccupation: 0.53,      // entre réaliste (48%) et optimiste (58%)
-    prixNuitStudio: 485,       // interpolation entre 450 et 520
-    prixNuitLoft: 615,         // interpolation entre 580 et 650
-    loyerCommercial: 9_000,    // interpolation entre 8k et 10k
-    source: "Interpolation réaliste/optimiste — bonne gestion, réputation en construction",
+    tauxOccupation: 0.54,      // top performers Casa (55-65%), entre réaliste et optimiste
+    prixNuitStudio: 680,       // ~unocapital (750) - 10%, bonne réputation
+    prixNuitLoft: 870,         // ~StayHere Oasis (910) - 5%
+    loyerCommercial: 9_500,    // emplacement premium
+    budgetTotal: 7_200_000,
+    source: "Top 30% marché — bonne réputation établie, pricing dynamique efficace",
   },
   optimiste: {
     label: "Optimiste",
-    tauxOccupation: 0.58,      // top 25% AirROI, cohérent avec top performers SandsOfWealth (55-65%)
-    prixNuitStudio: 520,       // pricing premium, bonne réputation acquise
-    prixNuitLoft: 650,         // aligné haut de gamme Maarif (Loft Residence GoodMove 500-700)
-    loyerCommercial: 10_000,   // prime emplacement
-    source: "Top 25% AirROI — établi, bonnes notes, clientèle fidèle, pricing dynamique",
+    tauxOccupation: 0.60,      // top 25% AirROI (58%+), meilleur segment
+    prixNuitStudio: 750,       // ~StayHere Maarif Lifestyle (770), leader segment
+    prixNuitLoft: 950,         // ~maarif elite suite (965), segment premium
+    loyerCommercial: 11_000,   // prime emplacement + commerce attractif
+    budgetTotal: 7_500_000,    // budget confortable avec marge
+    source: "Top 25% — établi, 8.5+ sur Booking, clientèle fidèle, RevPAR élevé",
   },
 };
 
@@ -326,18 +338,58 @@ const MARKET_DATA = {
 
   // Positionnement tarifaire
   prixNuiteeRange: {
-    bas: 380,
-    moyen: 530,
-    haut: 700,
-    maarifMediane: 627,
+    bas: 500,
+    moyen: 680,
+    haut: 950,
+    maarifMedianePro: 730,
+    source: "Booking.com Maarif mars 2026 (17 propriétés)",
   },
 
   // Concurrence directe Maarif
   concurrence: [
-    { nom: "Maarif Home",              type: "Appart-hôtel",     prix: "530 – 670 MAD", gamme: "Milieu" },
-    { nom: "Le 22 Appart' Hôtel",     type: "Appart-hôtel",     prix: "450 – 600 MAD", gamme: "Milieu" },
-    { nom: "Studios Airbnb (indép.)",  type: "Location courte",  prix: "200 – 550 MAD", gamme: "Économique" },
-    { nom: "Loft Residence GoodMove",  type: "Appart-hôtel",     prix: "500 – 700 MAD", gamme: "Haut" },
+    { nom: "StayHere Maarif Lifestyle",    type: "Appart-hôtel pro",    prix: "770 MAD/n", rating: 8.5, reviews: 1927, surface: "35m²", gamme: "Premium" },
+    { nom: "AS Premium By Soho Hotels",    type: "Appart-hôtel pro",    prix: "745 MAD/n", rating: 8.8, reviews: 1523, surface: "Suite", gamme: "Premium" },
+    { nom: "unocapital",                   type: "Appart-hôtel pro",    prix: "750 MAD/n", rating: 8.5, reviews: 200,  surface: "45m²", gamme: "Premium" },
+    { nom: "StayHere Palmier City Living",  type: "Appart-hôtel pro",    prix: "600 MAD/n", rating: 8.1, reviews: 922,  surface: "30m²", gamme: "Milieu+" },
+    { nom: "Faya Nova Central Stay",        type: "Appart-hôtel pro",    prix: "615 MAD/n", rating: 8.2, reviews: 260,  surface: "42m²", gamme: "Milieu+" },
+    { nom: "StayHere Oasis Residential",    type: "Appart-hôtel pro",    prix: "910 MAD/n", rating: 8.6, reviews: 250,  surface: "50m²", gamme: "Premium" },
+    { nom: "maarif elite suite",            type: "Particulier premium", prix: "965 MAD/n", rating: 8.2, reviews: 99,   surface: "Suite", gamme: "Luxe" },
+    { nom: "Chic & Cozy 1BR Oasis",        type: "Particulier premium", prix: "735 MAD/n", rating: 8.8, reviews: 59,   surface: "90m²", gamme: "Premium" },
+    { nom: "W-Aldorf",                      type: "Appart-hôtel pro",    prix: "1175 MAD/n", rating: 8.0, reviews: 423,  surface: "85m²", gamme: "Luxe" },
+    { nom: "Dynasty Luxury Palmiers",       type: "Particulier",         prix: "650 MAD/n", rating: null, reviews: null, surface: "45m²", gamme: "Milieu+" },
+    { nom: "Élégant Studio Centre",         type: "Particulier premium", prix: "755 MAD/n", rating: 9.2, reviews: 4,    surface: "47m²", gamme: "Premium" },
+    { nom: "Studio Palmiers Maarif",        type: "Particulier",         prix: "525 MAD/n", rating: 7.3, reviews: 4,    surface: "30m²", gamme: "Économique" },
+  ],
+};
+
+// ======= BENCHMARK CONCURRENTIEL =======
+// Source : Booking.com, recherche Maarif Casablanca, 15-17 avril 2026, 2 adultes
+const BENCHMARK = {
+  date: "Mars 2026",
+  source: "Booking.com — Maarif, Casablanca",
+  searchCriteria: "2 nuits, 2 adultes, avril 2026, type: Appartement",
+  nbCompetitors: 17,
+  summary: {
+    studiosPro: { min: 600, median: 730, max: 770, label: "Studios pro (30-45m²)" },
+    studiosParticulier: { min: 525, median: 570, max: 615, label: "Studios particulier" },
+    loftsPro: { min: 735, median: 820, max: 965, label: "1BR/Lofts pro (45-90m²)" },
+    luxe2BR: { min: 1000, median: 1175, max: 1490, label: "2BR+ Luxe (85m²+)" },
+  },
+  occupancy: {
+    casaAverage: 0.46,
+    casaMedianAirbtics: 0.49,
+    casaMedianAirROI: 0.358,
+    casaTop25: 0.58,
+    hotel4Stars: 0.50,
+    luxeSegment: 0.623,
+    source: "AirROI, Airbtics, SandsOfWealth, Observatoire du Tourisme",
+  },
+  insights: [
+    "StayHere domine avec 3 propriétés (Maarif, Palmier, Oasis) — marque forte, volumes élevés",
+    "AS Premium By Soho (8.8/10) = meilleur rapport qualité/volume — modèle à suivre",
+    "Écart de prix x2 entre particuliers basiques (525 MAD) et pros premium (770 MAD)",
+    "Les propriétés avec services hôteliers (petit-déj, conciergerie) justifient +15-25% de premium",
+    "Segment ultra-luxe (piscine/jacuzzi privé) atteint 1490 MAD/n mais niche très restreinte",
   ],
 };
 
