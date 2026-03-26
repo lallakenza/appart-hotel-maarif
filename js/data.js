@@ -118,8 +118,8 @@ const CHARGES = {
   // Plus de coût variable par nuitée — coût fixe salarial
   menageLinge: 0,            // MAD / nuitée — internalisé via employé dédié
 
-  eauElectricite: 8_000,     // MAD / mois
-  internetTv: 2_000,         // MAD / mois
+  eauElectricite: 6_000,     // MAD / mois (~500/appart élec + eau + parties communes)
+  internetTv: 1_500,         // MAD / mois (fibre pro + IPTV 11 unités)
   assurance: 15_000,         // MAD / an
   entretien: 30_000,         // MAD / an
 

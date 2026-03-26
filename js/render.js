@@ -35,6 +35,7 @@ function badgeClass(type) {
 
 // --- Main render ---
 function render(state) {
+  renderVerdict(state);
   renderScenarioButtons(state);
   renderKPIs(state);
   renderBudget(state);
@@ -47,6 +48,60 @@ function render(state) {
   renderFiscalite(state);
   renderRisques(state);
   renderSensibilite(state);
+}
+
+// --- Verdict Go / No-Go ---
+function renderVerdict(S) {
+  const y1 = S.projections[0];
+  const dscr = S.kpi.dscr;
+  const cfPositif = y1.cashFlowNet > 0;
+  const dscrOk = dscr >= 1.2;
+  const rdtApport = S.kpi.rendementNetApport;
+  const breakEven = S.kpi.breakEvenOcc;
+  const currentOcc = SCENARIOS[S.scenario].tauxOccupation;
+  const margeSecurite = breakEven ? currentOcc - breakEven : 0;
+
+  // Score: 0-5 based on key metrics
+  let score = 0;
+  if (cfPositif) score++;
+  if (dscrOk) score++;
+  if (rdtApport > 0.03) score++;
+  if (breakEven && margeSecurite > 0.08) score++;
+  if (S.kpi.paybackYear && S.kpi.paybackYear <= 10) score++;
+
+  const banner = document.getElementById("verdict-banner");
+  const icon = document.getElementById("verdict-icon");
+  const title = document.getElementById("verdict-title");
+  const subtitle = document.getElementById("verdict-subtitle");
+  const metrics = document.getElementById("verdict-metrics");
+
+  if (!banner) return;
+
+  banner.className = "verdict-banner";
+  if (score >= 4) {
+    banner.classList.add("verdict-go");
+    icon.textContent = "✅";
+    title.textContent = "Projet viable — Go conditionnel";
+    subtitle.textContent = "Les fondamentaux sont solides. Le projet génère un cash-flow positif avec une marge de sécurité sur l'occupation. Attention aux risques opérationnels (gestion à distance, saturation Maarif).";
+  } else if (score >= 2) {
+    banner.classList.add("verdict-caution");
+    icon.textContent = "⚠️";
+    title.textContent = "Projet fragile — Go avec réserves";
+    subtitle.textContent = "Le cash-flow est positif mais la marge de sécurité est faible. Un taux d'occupation inférieur aux prévisions mettrait le projet en difficulté. Négocier de meilleures conditions de financement améliorerait significativement le profil.";
+  } else {
+    banner.classList.add("verdict-nogo");
+    icon.textContent = "🔴";
+    title.textContent = "Projet à risque — No-Go recommandé";
+    subtitle.textContent = "Le cash-flow est négatif ou le DSCR insuffisant dans ce scénario. Les conditions actuelles ne permettent pas de couvrir la dette. Reconsidérer le montage financier ou le positionnement tarifaire.";
+  }
+
+  metrics.innerHTML = `
+    <div class="verdict-metric">DSCR: ${dscr === Infinity ? '∞' : dscr.toFixed(2) + 'x'} ${dscrOk ? '✅' : '⚠️'}</div>
+    <div class="verdict-metric">CF An 1: ${fmtMAD(y1.cashFlowNet)} ${cfPositif ? '✅' : '🔴'}</div>
+    <div class="verdict-metric">Break-even: ${breakEven ? fmtPct(breakEven, 0) : '?'} ${margeSecurite > 0.08 ? '✅' : '⚠️'}</div>
+    <div class="verdict-metric">Rdt/apport: ${fmtPct(rdtApport)} ${rdtApport > 0.03 ? '✅' : '⚠️'}</div>
+    <div class="verdict-metric">Score: ${score}/5</div>
+  `;
 }
 
 // --- Scenario buttons: always show ORIGINAL preset values ---
@@ -64,14 +119,32 @@ function renderScenarioButtons(S) {
 // --- KPI Strip ---
 function renderKPIs(S) {
   const y1 = S.projections[0];
+  const dscr = S.kpi.dscr;
+  const breakEven = S.kpi.breakEvenOcc;
+  const currentOcc = SCENARIOS[S.scenario].tauxOccupation;
+
   setKPI("kpi-invest",     fmtMAD(S.budget.totalProjet));
-  setKPI("kpi-rdt-brut",   fmtPct(S.kpi.rendementBrut),   S.kpi.rendementBrut > 0.08 ? "kpi-green" : "kpi-amber");
+  setKPI("kpi-rdt-brut",   fmtPct(S.kpi.rendementBrut),   S.kpi.rendementBrut > 0.10 ? "kpi-green" : S.kpi.rendementBrut > 0.06 ? "kpi-amber" : "kpi-red");
   setKPI("kpi-cf-net",     fmtMAD(y1.cashFlowNet),         y1.cashFlowNet > 0 ? "kpi-green" : "kpi-red");
-  setKPI("kpi-rdt-apport", fmtPct(S.kpi.rendementNetApport), S.kpi.rendementNetApport > 0.1 ? "kpi-green" : "kpi-amber");
-  setKPI("kpi-payback",    S.kpi.paybackYear ? S.kpi.paybackYear + " ans" : "> 10 ans");
-  setKPI("kpi-revpar",     fmtNum(S.kpi.revpar) + " MAD");
-  setKPI("kpi-unites",     S.units.nbUnites);
-  setKPI("kpi-subvention", fmtMAD(S.financement.subventionMDM), "kpi-green");
+  setKPI("kpi-rdt-apport", fmtPct(S.kpi.rendementNetApport), S.kpi.rendementNetApport > 0.05 ? "kpi-green" : S.kpi.rendementNetApport > 0.02 ? "kpi-amber" : "kpi-red");
+
+  // DSCR
+  const dscrVal = dscr === Infinity ? "∞" : dscr.toFixed(2) + "x";
+  const dscrColor = dscr >= 1.5 ? "kpi-green" : dscr >= 1.2 ? "kpi-amber" : "kpi-red";
+  setKPI("kpi-dscr", dscrVal, dscrColor);
+
+  // Break-even occupancy
+  if (breakEven) {
+    const margin = currentOcc - breakEven;
+    const beColor = margin > 0.10 ? "kpi-green" : margin > 0.05 ? "kpi-amber" : "kpi-red";
+    setKPI("kpi-breakeven", fmtPct(breakEven, 0), beColor);
+  } else {
+    setKPI("kpi-breakeven", "> 75%", "kpi-red");
+  }
+
+  const paybackColor = S.kpi.paybackYear && S.kpi.paybackYear <= 7 ? "kpi-green" : S.kpi.paybackYear && S.kpi.paybackYear <= 10 ? "kpi-amber" : "kpi-red";
+  setKPI("kpi-payback", S.kpi.paybackYear ? S.kpi.paybackYear + " ans" : "> 10 ans", paybackColor);
+  setKPI("kpi-revpar", fmtNum(S.kpi.revpar) + " MAD");
 }
 
 function setKPI(id, value, colorClass) {
@@ -167,7 +240,7 @@ function renderCharges(S) {
     { name: "Comptable externe",                     val: ch.comptable },
     { name: "Assurance",                             val: ch.assurance },
     { name: "Entretien & maintenance",               val: ch.entretien },
-    { name: "Taxes professionnelles",                val: ch.taxesPro },
+    { name: "Taxes professionnelles" + (ch.taxesPro === 0 ? " (exonéré 5 ans)" : ""), val: ch.taxesPro },
     { name: "Divers & imprévus",                     val: ch.divers },
   ];
   const tbody = document.getElementById("charges-tbody");
@@ -316,16 +389,33 @@ function renderSensibilite(S) {
   if (!tbody) return;
   tbody.innerHTML = "";
   const currentOcc = SCENARIOS[S.scenario].tauxOccupation;
+  const breakEven = S.kpi.breakEvenOcc;
+
+  // Add break-even info above table
+  const beInfo = document.getElementById("sens-breakeven-info");
+  if (beInfo && breakEven) {
+    const margin = currentOcc - breakEven;
+    beInfo.innerHTML = `<strong>Seuil de rentabilité : ${fmtPct(breakEven, 0)} d'occupation</strong> — Marge de sécurité : ${fmtPct(margin, 0)} ${margin > 0.10 ? '✅ Confortable' : margin > 0.05 ? '⚠️ Faible' : '🔴 Critique'}`;
+    beInfo.className = margin > 0.10 ? "info-box" : margin > 0.05 ? "warn-box" : "warn-box";
+    beInfo.style.borderLeftColor = margin > 0.10 ? "var(--green)" : margin > 0.05 ? "var(--amber)" : "var(--red)";
+  }
+
   S.sensitivity.forEach(s => {
     const isCurrent = Math.abs(s.occ - currentOcc) < 0.01;
+    const isBreakEven = breakEven && Math.abs(s.occ - breakEven) < 0.03;
     const tr = document.createElement("tr");
     if (isCurrent) tr.className = "highlight-row";
+    if (isBreakEven && !isCurrent) tr.style.background = "#fef2f2";
     tr.innerHTML = `
-      <td class="${isCurrent ? 'bold' : ''}">${fmtPct(s.occ, 0)}</td>
+      <td class="${isCurrent ? 'bold' : ''}">
+        ${fmtPct(s.occ, 0)}
+        ${isCurrent ? ' <span class="badge badge-blue">Actuel</span>' : ''}
+        ${isBreakEven ? ' <span class="badge badge-red">Break-even</span>' : ''}
+      </td>
       <td class="num">${fmtMAD(s.revenu)}</td>
       <td class="num">${fmtMAD(s.ebitda)}</td>
-      <td class="num" style="color:${clrSign(s.cashFlow)}">${fmtMAD(s.cashFlow)}</td>
-      <td class="num">${fmtPct(s.rendement)}</td>
+      <td class="num bold" style="color:${clrSign(s.cashFlow)}">${fmtMAD(s.cashFlow)}</td>
+      <td class="num" style="color:${clrSign(s.rendement)}">${fmtPct(s.rendement)}</td>
     `;
     tbody.appendChild(tr);
   });

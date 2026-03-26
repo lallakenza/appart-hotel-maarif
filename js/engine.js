@@ -98,14 +98,16 @@ function compute(scenario) {
     const comptable = CHARGES.comptable * 12;
     const utilities = (CHARGES.eauElectricite + CHARGES.internetTv) * 12;
     const salaires = CHARGES.salaireEmploye * CHARGES.nbEmployes * 12 * (1 + CHARGES.chargesSociales);
+    // Taxe pro : exonérée les 5 premières années (nouvelle construction)
+    const taxesPro = y < FISCALITE.exoTaxeProAns ? 0 : CHARGES.taxesPro;
     const chargesTotal = gestion + consommables + comptable + utilities +
-      CHARGES.assurance + CHARGES.entretien + salaires + CHARGES.taxesPro + CHARGES.divers;
+      CHARGES.assurance + CHARGES.entretien + salaires + taxesPro + CHARGES.divers;
 
     const chargesDetail = {
       gestion, consommables, comptable, utilities, salaires,
       assurance: CHARGES.assurance,
       entretien: CHARGES.entretien,
-      taxesPro: CHARGES.taxesPro,
+      taxesPro: taxesPro,
       divers: CHARGES.divers,
     };
 
@@ -162,6 +164,27 @@ function compute(scenario) {
   const tvaCollecteeAn1 = y1.revBrutHotel * FISCALITE.tvaTaux;
   const creditTVA = Math.max(0, tvaConstruction - tvaCollecteeAn1);
 
+  // DSCR (Debt Service Coverage Ratio) — An 1
+  const dscr = y1.debtServiceTotal > 0 ? y1.ebitda / y1.debtServiceTotal : Infinity;
+
+  // Break-even occupancy (taux d'occupation minimal pour CF net > 0)
+  // On cherche le taux où cashFlowNet = 0 en An 1
+  let breakEvenOcc = null;
+  for (let testOcc = 0.10; testOcc <= 1.0; testOcc += 0.005) {
+    const testRevH = (nbStudios * sc.prixNuitStudio + nbLofts * sc.prixNuitLoft) * 365 * testOcc;
+    const testRevN = testRevH * (1 - REVENUE_ASSUMPTIONS.commissionPlatformes) + sc.loyerCommercial * 12;
+    const testCh = testRevH * CHARGES.tauxGestion + CHARGES.consommables * 12 + CHARGES.comptable * 12 +
+                   (CHARGES.eauElectricite + CHARGES.internetTv) * 12 +
+                   CHARGES.salaireEmploye * CHARGES.nbEmployes * 12 * (1 + CHARGES.chargesSociales) +
+                   CHARGES.assurance + CHARGES.entretien + CHARGES.divers;
+    const testEbitda = testRevN - testCh;
+    const testDebt = interetsDiffereTK + annuiteBQ;
+    const testCFavIS = testEbitda - testDebt;
+    const testIS = Math.max(0, testCFavIS) * (1 - FISCALITE.caDevisesPct) * FISCALITE.isTaux;
+    const testCF = testCFavIS - testIS;
+    if (testCF >= 0) { breakEvenOcc = testOcc; break; }
+  }
+
   // Sensibilité
   const sensitivity = [0.25, 0.30, 0.35, 0.40, 0.45, 0.50, 0.55, 0.60, 0.65, 0.70, 0.75].map(occRate => {
     const nuitees = nbUnites * 365 * occRate;
@@ -170,7 +193,7 @@ function compute(scenario) {
     const ch = revH * CHARGES.tauxGestion + CHARGES.consommables * 12 + CHARGES.comptable * 12 +
                (CHARGES.eauElectricite + CHARGES.internetTv) * 12 +
                CHARGES.salaireEmploye * CHARGES.nbEmployes * 12 * (1 + CHARGES.chargesSociales) +
-               CHARGES.assurance + CHARGES.entretien + CHARGES.taxesPro + CHARGES.divers;
+               CHARGES.assurance + CHARGES.entretien + CHARGES.divers; // taxe pro exonérée An 1
     const ebit = revN - ch;
     const debtY1 = interetsDiffereTK + annuiteBQ; // année 1
     const cfAvIS = ebit - debtY1;
@@ -190,7 +213,7 @@ function compute(scenario) {
       montantBanque, mensualiteBQ, annuiteBQ, coutTotalBQ,
       pctApport, pctTamwilkom, pctBanque, pctSubvention,
     },
-    kpi: { rendementBrut, rendementNet, rendementNetApport, revpar, coutParNuitee, paybackYear, nuiteesParAn },
+    kpi: { rendementBrut, rendementNet, rendementNetApport, revpar, coutParNuitee, paybackYear, nuiteesParAn, dscr, breakEvenOcc },
     tva: { tvaConstruction, tvaCollecteeAn1, creditTVA },
     projections,
     sensitivity,
