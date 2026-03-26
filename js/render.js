@@ -493,17 +493,36 @@ function renderSurfaceUtile(S) {
   setText("su-cout-int", fmtNum(Math.round(coutInt)) + " MAD/m²");
   setText("su-cout-utile", fmtNum(Math.round(coutUtile)) + " MAD/m²");
 
-  // Analyse contextuelle
-  const benchmarkMaarif = 18000;
-  const diff = ((coutUtile / benchmarkMaarif) - 1) * 100;
+  // Analyse contextuelle — benchmarks réels mars 2026
+  // Sources : Agenz.ma (15 969 MAD/m² moy. Maarif), Yakeey (13 951 MAD/m²),
+  //           Nuroa.ma annonces studios neufs Maarif (21 000-23 000 MAD/m²)
+  const benchmarks = {
+    ancienMoy: 14000,    // Yakeey + Agenz moyenne tout confondu
+    neufStandard: 17000, // Nuroa moyenne toutes surfaces neuves
+    studioNeuf: 21000,   // Nuroa studios neufs standing (44-59 m²)
+  };
+  const diffStudio = ((coutUtile / benchmarks.studioNeuf) - 1) * 100;
   const el = document.getElementById("su-analyse");
   if (el) {
-    if (coutUtile < benchmarkMaarif) {
-      el.innerHTML = `<strong style="color:var(--green)">Bonne affaire :</strong> votre coût au m² utile (${fmtNum(Math.round(coutUtile))} MAD) est <strong>${Math.abs(diff).toFixed(0)}% en dessous</strong> du benchmark neuf standing Maarif (~${fmtNum(benchmarkMaarif)} MAD/m²). Les terrasses (${fmtM2(u.surfaceTerrasseTotale)}) ajoutent ${fmtM2(u.surfaceTerrasseTotale * 0.5)} de surface utile, réduisant le coût effectif au m².`;
-    } else {
-      el.innerHTML = `Votre coût au m² utile (${fmtNum(Math.round(coutUtile))} MAD) est <strong>${diff.toFixed(0)}% au-dessus</strong> du benchmark neuf standing Maarif (~${fmtNum(benchmarkMaarif)} MAD/m²). Cela inclut l'ameublement hôtelier et les équipements spécifiques appart-hôtel.`;
-    }
+    el.innerHTML = `<strong>Comparaison marché Maarif (mars 2026) :</strong><br>` +
+      `<span style="display:inline-flex;gap:6px;align-items:center;margin:4px 0">` +
+      `<span style="color:var(--text-sec)">Ancien moyen :</span> <strong>${fmtNum(benchmarks.ancienMoy)} MAD/m²</strong>` +
+      `<span style="margin:0 8px;color:#ddd">|</span>` +
+      `<span style="color:var(--text-sec)">Neuf standard :</span> <strong>${fmtNum(benchmarks.neufStandard)} MAD/m²</strong>` +
+      `<span style="margin:0 8px;color:#ddd">|</span>` +
+      `<span style="color:var(--text-sec)">Studio neuf standing :</span> <strong>${fmtNum(benchmarks.studioNeuf)} MAD/m²</strong></span><br>` +
+      `Votre coût au m² utile (<strong>${fmtNum(Math.round(coutUtile))} MAD</strong>) est ` +
+      (diffStudio < 0
+        ? `<strong style="color:var(--green)">${Math.abs(diffStudio).toFixed(0)}% en dessous</strong> du prix d'un studio neuf standing à Maarif (~${fmtNum(benchmarks.studioNeuf)} MAD/m²)`
+        : `<strong style="color:var(--red)">${diffStudio.toFixed(0)}% au-dessus</strong> du prix d'un studio neuf standing à Maarif (~${fmtNum(benchmarks.studioNeuf)} MAD/m²)`) +
+      ` — et votre projet inclut l'ameublement hôtelier complet.` +
+      `<br><span style="font-size:.78rem;color:var(--text-sec)">Sources : Agenz.ma, Yakeey.com, Nuroa.ma (annonces actives mars 2026)</span>`;
   }
+
+  // Update benchmark KPI card with studio neuf value
+  setText("su-benchmark", "~" + fmtNum(benchmarks.studioNeuf));
+  const benchSub = document.getElementById("su-benchmark")?.closest(".kpi-card")?.querySelector(".kpi-sub");
+  if (benchSub) benchSub.textContent = "MAD/m² studio neuf Maarif";
 }
 
 // --- Revenus ---
