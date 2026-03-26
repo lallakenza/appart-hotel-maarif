@@ -100,6 +100,12 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);lin
 .ctrl-advanced-body{display:none;padding-top:12px;border-top:1px solid var(--border)}
 .ctrl-advanced-body.open{display:block}
 .ctrl-section-title{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--primary);margin:10px 0 8px;padding-bottom:4px;border-bottom:1px dashed #e2e8f0}
+.eco-toggle-wrap{position:relative;display:inline-block;width:40px;height:22px;flex-shrink:0}
+.eco-toggle-wrap input{opacity:0;width:0;height:0}
+.eco-toggle-slider{position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;background:#ccc;border-radius:22px;transition:.3s}
+.eco-toggle-slider:before{content:"";position:absolute;height:16px;width:16px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.3s}
+.eco-toggle-wrap input:checked+.eco-toggle-slider{background:#16a34a}
+.eco-toggle-wrap input:checked+.eco-toggle-slider:before{transform:translateX(18px)}
 .ctrl-section-title:first-child{margin-top:0}
 
 /* Source links */
@@ -517,17 +523,17 @@ tr:hover td{background:#f8fafc}
       </div>
     </div>
     <div class="ctrl-group">
-      <label class="ctrl-label">Prix nuit Studio</label>
+      <label class="ctrl-label">Prix nuit Studio (T2)</label>
       <div class="ctrl-row">
-        <input type="range" class="ctrl-range" id="ctrl-studio" min="200" max="900" step="10" value="450">
-        <div class="ctrl-input-wrap"><input type="number" class="ctrl-input" id="ctrl-studio-val" min="200" max="900" step="10" value="450"><span class="ctrl-unit">MAD</span></div>
+        <input type="range" class="ctrl-range" id="ctrl-studio" min="300" max="1000" step="10" value="650">
+        <div class="ctrl-input-wrap"><input type="number" class="ctrl-input" id="ctrl-studio-val" min="300" max="1000" step="10" value="650"><span class="ctrl-unit">MAD</span></div>
       </div>
     </div>
     <div class="ctrl-group">
-      <label class="ctrl-label">Prix nuit Loft</label>
+      <label class="ctrl-label">Prix nuit Loft (kitchenette)</label>
       <div class="ctrl-row">
-        <input type="range" class="ctrl-range" id="ctrl-loft" min="200" max="1200" step="10" value="580">
-        <div class="ctrl-input-wrap"><input type="number" class="ctrl-input" id="ctrl-loft-val" min="200" max="1200" step="10" value="580"><span class="ctrl-unit">MAD</span></div>
+        <input type="range" class="ctrl-range" id="ctrl-loft" min="200" max="800" step="10" value="480">
+        <div class="ctrl-input-wrap"><input type="number" class="ctrl-input" id="ctrl-loft-val" min="200" max="800" step="10" value="480"><span class="ctrl-unit">MAD</span></div>
       </div>
     </div>
     <div class="ctrl-group">
@@ -685,6 +691,32 @@ tr:hover td{background:#f8fafc}
       </div>
     </div>
 
+    <!-- Go Siyaha Bonus Écologique -->
+    <div class="ctrl-section-title">Go Siyaha — Bonus Écologique</div>
+    <div class="ctrl-grid">
+      <div class="ctrl-group" style="grid-column:1/-1">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+          <label class="eco-toggle-wrap">
+            <input type="checkbox" id="ctrl-eco-toggle">
+            <span class="eco-toggle-slider"></span>
+          </label>
+          <label class="ctrl-label" for="ctrl-eco-toggle" style="margin:0;cursor:pointer">Activer l'investissement écologique</label>
+        </div>
+        <div class="eco-info" id="eco-info" style="display:none;font-size:.78rem;color:var(--text-sec);line-height:1.5;padding:8px 12px;background:var(--bg);border-radius:8px;border-left:3px solid #16a34a">
+          <strong style="color:#16a34a">Programme Go Siyaha — Croissance Verte</strong><br>
+          Subvention 40% sur équipements éco-responsables : chauffe-eau solaire, LED, isolation thermique, robinetterie éco.<br>
+          Économies opérationnelles : -18% utilities, -5% consommables.
+        </div>
+      </div>
+      <div class="ctrl-group eco-field" style="display:none">
+        <label class="ctrl-label">Investissement écologique</label>
+        <div class="ctrl-row">
+          <input type="range" class="ctrl-range" id="ctrl-ecoInvest" min="100000" max="600000" step="10000" value="300000">
+          <div class="ctrl-input-wrap"><input type="number" class="ctrl-input" id="ctrl-ecoInvest-val" min="100000" max="600000" step="10000" value="300000"><span class="ctrl-unit">MAD</span></div>
+        </div>
+      </div>
+    </div>
+
     <!-- Financement -->
     <div class="ctrl-section-title">Financement</div>
     <div class="ctrl-grid">
@@ -755,6 +787,10 @@ tr:hover td{background:#f8fafc}
         <tr><td><strong>Terrain tout compris</strong></td><td class="num" id="budget-terrain-total">–</td></tr>
         <tr><td>Construction & aménagement</td><td class="num" id="budget-construction">–</td></tr>
         <tr><td><em>dont ameublement (11 × 40K)</em></td><td class="num" id="budget-ameublement">–</td></tr>
+        <tr id="budget-eco-row" style="display:none">
+          <td style="padding-left:12px"><span style="color:#16a34a">🌿</span> Éco-investissement (<span id="budget-eco-invest">–</span>)<br><small style="color:#16a34a">Subvention Go Siyaha 40% : <span id="budget-eco-subvention">–</span></small></td>
+          <td class="num" id="budget-eco-net" style="color:#16a34a">–</td>
+        </tr>
         <tr class="total-row"><td><strong>Total Projet TTC</strong></td><td class="num" id="budget-total">–</td></tr>
         <tr><td>Prix / m² terrain</td><td class="num" id="budget-m2">–</td></tr>
       </tbody></table>
@@ -1129,11 +1165,11 @@ tr:hover td{background:#f8fafc}
 </main>
 
 <!-- Scripts — strict order: data → engine → render → charts → app -->
-<script src="js/data.js?v=13"></script>
-<script src="js/engine.js?v=13"></script>
-<script src="js/render.js?v=13"></script>
-<script src="js/charts.js?v=13"></script>
-<script src="js/app.js?v=13"></script>
+<script src="js/data.js?v=14"></script>
+<script src="js/engine.js?v=14"></script>
+<script src="js/render.js?v=14"></script>
+<script src="js/charts.js?v=14"></script>
+<script src="js/app.js?v=14"></script>
 
 </body>
 </html>

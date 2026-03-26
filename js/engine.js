@@ -32,7 +32,13 @@ function compute(scenario) {
   const baseBudget = sc.budgetTotal || BUDGET.totalTTC; // scénario peut overrider le budget
   budgetConstruction = baseBudget - coutTerrain; // recalc si budget change par scénario
   const ameublement = BUDGET.ameublementParUnite * nbUnites;
-  const totalProjet = baseBudget + ameublement;
+
+  // --- Go Siyaha Bonus Écologique ---
+  const ecoEnabled = GO_SIYAHA_ECO.enabled;
+  const investissementEco = ecoEnabled ? GO_SIYAHA_ECO.investissementEco : 0;
+  const subventionEco = investissementEco * GO_SIYAHA_ECO.tauxSubvention; // 40%
+  const coutNetEco = investissementEco - subventionEco; // coût net après subvention
+  const totalProjet = baseBudget + ameublement + coutNetEco;
 
   // --- MDM Invest ---
   const subventionMDM = Math.min(totalProjet * MDM_INVEST.tauxSubvention, MDM_INVEST.plafond);
@@ -122,7 +128,9 @@ function compute(scenario) {
 
     // Consommables : variable selon nuitées réelles (linge, amenities, produits ménage)
     const nuiteesAn = nbUnites * 365 * occ;
-    const consommables = nuiteesAn * consommablesPN;
+    let consommables = nuiteesAn * consommablesPN;
+    const economieConsommablesEco = ecoEnabled ? consommables * GO_SIYAHA_ECO.reductionConsommables : 0;
+    consommables -= economieConsommablesEco;
 
     // Comptable : forfait ANNUEL (corrigé de mensuel → annuel)
     const comptable = CHARGES.comptableAnnuel;
@@ -130,7 +138,10 @@ function compute(scenario) {
     // Utilities : partie fixe + partie variable (proportionnelle à l'occupation)
     const nbUnitesOccupees = nbUnites * occ; // unités occupées en moyenne
     const utilitiesMensuel = CHARGES.utilitiesFixe + (nbUnitesOccupees * CHARGES.utilitiesVarParUnite);
-    const utilities = (utilitiesMensuel + CHARGES.internetTv) * 12;
+    let utilities = (utilitiesMensuel + CHARGES.internetTv) * 12;
+    // Go Siyaha Éco : réduction des utilities si équipements installés
+    const economieUtilitiesEco = ecoEnabled ? utilities * GO_SIYAHA_ECO.reductionUtilities : 0;
+    utilities -= economieUtilitiesEco;
 
     // Salaires : concierge + ménage (+ éventuel 3e employé en optimiste)
     let masseSalariale;
@@ -158,6 +169,7 @@ function compute(scenario) {
       entretien: entretien,
       taxesPro: taxesPro,
       divers: CHARGES.divers,
+      economieEco: economieUtilitiesEco + economieConsommablesEco,
     };
 
     // EBITDA
@@ -325,11 +337,17 @@ function compute(scenario) {
     const testRevH = (nbStudios * sc.prixNuitStudio + nbLofts * sc.prixNuitLoft) * 365 * testOcc;
     const testNuitees = nbUnites * 365 * testOcc;
     const testNbOcc = nbUnites * testOcc;
-    const testUtilities = (CHARGES.utilitiesFixe + testNbOcc * CHARGES.utilitiesVarParUnite + CHARGES.internetTv) * 12;
+    let testUtilities = (CHARGES.utilitiesFixe + testNbOcc * CHARGES.utilitiesVarParUnite + CHARGES.internetTv) * 12;
+    let testConsommables = testNuitees * consommablesPN;
+    // Appliquer réductions éco si activé
+    if (ecoEnabled) {
+      testUtilities *= (1 - GO_SIYAHA_ECO.reductionUtilities);
+      testConsommables *= (1 - GO_SIYAHA_ECO.reductionConsommables);
+    }
     const testSalaires = (nbEmployesSc >= 3
       ? (CHARGES.salaireConcierge + CHARGES.salaireMenage * 2)
       : (CHARGES.salaireConcierge + CHARGES.salaireMenage)) * 12 * (1 + CHARGES.chargesSociales);
-    return testRevH * CHARGES.tauxGestion + testNuitees * consommablesPN + CHARGES.comptableAnnuel +
+    return testRevH * CHARGES.tauxGestion + testConsommables + CHARGES.comptableAnnuel +
            testUtilities + testSalaires + CHARGES.assurance + CHARGES.entretienBase + CHARGES.divers;
   }
 
@@ -374,13 +392,18 @@ function compute(scenario) {
     const gestionY = revH * CHARGES.tauxGestion;
     const nuiteesY = nbUnites * 365 * occ;
     const nbOccY = nbUnites * occ;
-    const utilitiesY = (CHARGES.utilitiesFixe + nbOccY * CHARGES.utilitiesVarParUnite + CHARGES.internetTv) * 12;
+    let utilitiesY = (CHARGES.utilitiesFixe + nbOccY * CHARGES.utilitiesVarParUnite + CHARGES.internetTv) * 12;
+    let consommablesY = nuiteesY * consommablesPN;
+    if (ecoEnabled) {
+      utilitiesY *= (1 - GO_SIYAHA_ECO.reductionUtilities);
+      consommablesY *= (1 - GO_SIYAHA_ECO.reductionConsommables);
+    }
     const salairesY = (nbEmployesSc >= 3
       ? (CHARGES.salaireConcierge + CHARGES.salaireMenage * 2)
       : (CHARGES.salaireConcierge + CHARGES.salaireMenage)) * 12 * (1 + CHARGES.chargesSociales);
     const taxesProY = y < FISCALITE.exoTaxeProAns ? 0 : CHARGES.taxesPro;
     const entretienY = y < 5 ? CHARGES.entretienBase : CHARGES.entretienMature;
-    const chTotal = gestionY + nuiteesY * consommablesPN + CHARGES.comptableAnnuel + utilitiesY +
+    const chTotal = gestionY + consommablesY + CHARGES.comptableAnnuel + utilitiesY +
       CHARGES.assurance + entretienY + salairesY + taxesProY + CHARGES.divers;
     const ebitdaY = revN - chTotal;
 
@@ -422,7 +445,7 @@ function compute(scenario) {
     terrain: { coutTerrain, fraisTerrain, budgetConstruction, coutM2Terrain, constructionHTForAmort },
     amortissement: { annuel: amortissementAnnuel, duree: FISCALITE.amortissementAns, total: constructionHTForAmort },
     units: { nbStudios, nbLofts, nbUnites, surfaceLocative, surfaceCommerciale },
-    budget: { ameublement, totalProjet },
+    budget: { ameublement, totalProjet, investissementEco, subventionEco, coutNetEco, ecoEnabled },
     financement: {
       subventionMDM, apportDevisesMin, apportTerrain,
       montantAFinancer,

@@ -10,8 +10,8 @@ let customOverrides = null; // null = using preset scenario
 // --- Control panel fields (basic — scenario-linked) ---
 const CTRL_FIELDS = [
   { id: "occ",    key: "tauxOccupation",  div: 100, min: 15, max: 85 },
-  { id: "studio", key: "prixNuitStudio",  div: 1,   min: 200, max: 900 },
-  { id: "loft",   key: "prixNuitLoft",    div: 1,   min: 200, max: 1200 },
+  { id: "studio", key: "prixNuitStudio",  div: 1,   min: 300, max: 1000 },
+  { id: "loft",   key: "prixNuitLoft",    div: 1,   min: 200, max: 800 },
   { id: "loyer",  key: "loyerCommercial", div: 1,   min: 3000, max: 20000 },
   { id: "taux",   key: "tauxBanque",      div: 100, min: 3, max: 8 },
 ];
@@ -367,6 +367,33 @@ document.addEventListener("DOMContentLoaded", () => {
       input.addEventListener("change", () => onAdvancedChange(false, f.id));
     }
   });
+
+  // Bind eco toggle
+  const ecoToggle = document.getElementById("ctrl-eco-toggle");
+  const ecoInfo = document.getElementById("eco-info");
+  const ecoFields = document.querySelectorAll(".eco-field");
+  if (ecoToggle) {
+    ecoToggle.addEventListener("change", () => {
+      GO_SIYAHA_ECO.enabled = ecoToggle.checked;
+      if (ecoInfo) ecoInfo.style.display = ecoToggle.checked ? "block" : "none";
+      ecoFields.forEach(f => f.style.display = ecoToggle.checked ? "" : "none");
+      refresh();
+    });
+  }
+  // Bind eco investment slider
+  const ecoRange = document.getElementById("ctrl-ecoInvest");
+  const ecoInput = document.getElementById("ctrl-ecoInvest-val");
+  function onEcoInvestChange(fromRange) {
+    if (fromRange) { ecoInput.value = ecoRange.value; }
+    else { ecoRange.value = ecoInput.value; }
+    GO_SIYAHA_ECO.investissementEco = parseFloat(ecoInput.value);
+    refresh();
+  }
+  if (ecoRange) ecoRange.addEventListener("input", () => onEcoInvestChange(true));
+  if (ecoInput) {
+    ecoInput.addEventListener("input", () => onEcoInvestChange(false));
+    ecoInput.addEventListener("change", () => onEcoInvestChange(false));
+  }
 
   // Initial sync
   syncControlPanel(currentScenario);

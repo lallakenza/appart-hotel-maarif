@@ -37,40 +37,52 @@ const BUDGET = {
 };
 
 // ======= PROGRAMME ARCHITECTURAL =======
-// Surfaces estimées d'après plans provisoires architecte Jad (à affiner)
+// Surfaces d'après plans architecte Jad (Nour Architects) — version finale
+//
+// TERMINOLOGIE MAROC :
+//   Studio = T2 en France : chambre séparée + salon/cuisine → unités premium, plus grandes
+//   Loft   = Kitchenette : espace ouvert cuisine/lit, pas de chambre séparée → plus petit, tarif inférieur
+//
+// Étage 1/2/3 : même layout (2 studios par étage)
+// Étage 4/5 : 1 loft + 1 studio par étage (lofts avec terrasse)
 const UNITS = [
   { floor: "Sous-sol", type: "Services",          surface: null,  category: "service",    label: "Buanderie / Vestiaires / Réfectoire" },
   { floor: "RDC",      type: "Local commercial",  surface: 40.00, category: "commercial", label: "Local commercial (~40 m² + extension sous-sol)" },
-  { floor: "RDC",      type: "Studio",            surface: 37.41, category: "studio",     label: "Studio RDC — 37,41 m²" },
+  { floor: "RDC",      type: "Studio",            surface: 46.10, category: "studio",     label: "Studio RDC — 46,10 m²" },
   { floor: "RDC",      type: "Réception",         surface: null,  category: "service",    label: "Hall & réception" },
-  { floor: "Étage 1",  type: "Studio A",          surface: 32.75, category: "studio",     label: "Studio A — 32,75 m²" },
-  { floor: "Étage 1",  type: "Studio B",          surface: 37.41, category: "studio",     label: "Studio B — 37,41 m²" },
-  { floor: "Étage 2",  type: "Studio A",          surface: 28.55, category: "studio",     label: "Studio A — 28,55 m²" },
+  { floor: "Étage 1",  type: "Studio A",          surface: 37.41, category: "studio",     label: "Studio A — 37,41 m²" },
+  { floor: "Étage 1",  type: "Studio B",          surface: 32.75, category: "studio",     label: "Studio B — 32,75 m²" },
+  { floor: "Étage 2",  type: "Studio A",          surface: 37.41, category: "studio",     label: "Studio A — 37,41 m²" },
   { floor: "Étage 2",  type: "Studio B",          surface: 32.75, category: "studio",     label: "Studio B — 32,75 m²" },
-  { floor: "Étage 3",  type: "Studio A",          surface: 28.55, category: "studio",     label: "Studio A — 28,55 m²" },
+  { floor: "Étage 3",  type: "Studio A",          surface: 37.41, category: "studio",     label: "Studio A — 37,41 m²" },
   { floor: "Étage 3",  type: "Studio B",          surface: 32.75, category: "studio",     label: "Studio B — 32,75 m²" },
-  { floor: "Étage 4",  type: "Loft",              surface: 46.10, category: "loft",       label: "Loft — 46,10 m²" },
+  { floor: "Étage 4",  type: "Loft",              surface: 28.55, category: "loft",       label: "Loft — 28,55 m² (+ terrasse)" },
   { floor: "Étage 4",  type: "Studio",            surface: 32.75, category: "studio",     label: "Studio — 32,75 m²" },
-  { floor: "Étage 5",  type: "Loft",              surface: 40.98, category: "loft",       label: "Loft — 40,98 m²" },
-  { floor: "Étage 5",  type: "Studio",            surface: 22.63, category: "studio",     label: "Studio — 22,63 m²" },
+  { floor: "Étage 5",  type: "Loft",              surface: 22.63, category: "loft",       label: "Loft — 22,63 m² (+ terrasse 15,77 m²)" },
+  { floor: "Étage 5",  type: "Studio",            surface: 32.75, category: "studio",     label: "Studio — 32,75 m²" },
 ];
 
 // ======= HYPOTHÈSES DE REVENUS =======
 // Basées sur benchmark Booking.com Maarif (mars 2026, 17 propriétés analysées)
 // + données AirDNA, Airbtics, AirROI, SandsOfWealth (2025-2026)
 //
-// Benchmark Booking.com Maarif — Studios (30-45m²):
+// TERMINOLOGIE MAROC (≠ France) :
+//   Studio = T2 (chambre + salon, 32-46 m²) → unité premium, tarif plus élevé
+//   Loft   = Kitchenette (espace ouvert, 22-28 m²) → unité entrée de gamme, tarif inférieur
+//
+// Benchmark Booking.com Maarif — Studios / T2 (32-46 m², chambre séparée):
 //   StayHere Lifestyle 770 MAD/n (8.5) | AS Premium Soho 745 (8.8)
 //   unocapital 750 (8.5) | Élégant Studio 755 (9.2) | StayHere Palmier 600 (8.1)
-//   Faya Nova 615 (8.2) | Studio Palmiers 525 (7.3)
-//   → Médiane pro: 700-750 MAD/n | Budget: 525-615 MAD/n
+//   → Médiane pro: 650-750 MAD/n | Budget: 500-615 MAD/n
 //
-// Benchmark Booking.com Maarif — 1BR/Loft (45-90m²):
-//   maarif elite suite 965 (8.2) | StayHere Oasis 910 (8.6)
-//   Chic & Cozy 735 (8.8) | Dynasty Luxury 650 (part.)
-//   → Médiane pro: 735-910 MAD/n
+// Benchmark Booking.com Maarif — Lofts / Kitchenettes (22-30 m², espace ouvert):
+//   Faya Nova 615 (8.2) | Studio Palmiers 525 (7.3)
+//   Petits espaces sans chambre séparée → tarif 20-30% inférieur aux studios
+//   → Médiane pro: 400-550 MAD/n
 //
 // Positionnement : Premium / Boutique (design, service, 8.5+ visé)
+// Les studios (T2) commandent un premium grâce à la chambre séparée
+// Les lofts (kitchenettes) sont plus abordables mais attractifs (terrasse, vue)
 
 const REVENUE_ASSUMPTIONS = {
   loyerCommercial: 8_000,     // MAD / mois (à confirmer)
@@ -93,7 +105,8 @@ const REVENUE_ASSUMPTIONS = {
 //   AirROI médiane: 35.8% | Airbtics médiane: 49% | SandsOfWealth moy: 45%
 //   Top 25%: 58%+ | Hôtels 4*: 50% | Luxe: 62.3%
 // ADR Maarif pro (Booking.com mars 2026) :
-//   Studios pro: 600-770 MAD/n | 1BR/Lofts pro: 735-965 MAD/n
+//   Studios / T2 (chambre+salon, 32-46 m²) : 600-780 MAD/n (premium)
+//   Lofts / Kitchenettes (espace ouvert, 22-28 m²) : 380-580 MAD/n (budget/solo)
 
 // ═══════════════════════════════════════════════════════════════════════
 // SCÉNARIOS — Avec variations réalistes des charges selon contexte
@@ -116,8 +129,8 @@ const SCENARIOS = {
   prudent: {
     label: "Pessimiste",
     tauxOccupation: 0.35,
-    prixNuitStudio: 500,
-    prixNuitLoft: 650,
+    prixNuitStudio: 500,       // Studio T2 (32-46 m², chambre séparée) — pricing d'entrée
+    prixNuitLoft: 380,         // Loft kitchenette (22-28 m², espace ouvert) — budget
     loyerCommercial: 6_000,
     budgetTotal: 7_000_000,
     // --- Charges variables par scénario ---
@@ -131,8 +144,8 @@ const SCENARIOS = {
   prudent_moyen: {
     label: "Prudent",
     tauxOccupation: 0.42,
-    prixNuitStudio: 550,
-    prixNuitLoft: 720,
+    prixNuitStudio: 580,       // Studio T2 — pricing progressif
+    prixNuitLoft: 420,         // Loft kitchenette — remplit grâce au prix attractif
     loyerCommercial: 7_000,
     budgetTotal: 7_000_000,
     partOTA: 0.65,
@@ -145,8 +158,8 @@ const SCENARIOS = {
   moyen: {
     label: "Réaliste",
     tauxOccupation: 0.48,
-    prixNuitStudio: 620,
-    prixNuitLoft: 800,
+    prixNuitStudio: 650,       // Studio T2 — médiane Booking.com Maarif opérateurs pro
+    prixNuitLoft: 480,         // Loft kitchenette — attractif pour solo/court séjour
     loyerCommercial: 8_000,
     budgetTotal: 7_200_000,
     partOTA: 0.55,             // Équilibre OTA/direct comme la moyenne du marché
@@ -159,8 +172,8 @@ const SCENARIOS = {
   moyen_optimiste: {
     label: "Favorable",
     tauxOccupation: 0.54,
-    prixNuitStudio: 680,
-    prixNuitLoft: 870,
+    prixNuitStudio: 720,       // Studio T2 — positionnement premium confirmé
+    prixNuitLoft: 530,         // Loft kitchenette — premium grâce terrasse + design
     loyerCommercial: 9_500,
     budgetTotal: 7_200_000,
     partOTA: 0.48,             // Bonne réputation → plus de direct
@@ -173,8 +186,8 @@ const SCENARIOS = {
   optimiste: {
     label: "Optimiste",
     tauxOccupation: 0.60,
-    prixNuitStudio: 750,
-    prixNuitLoft: 950,
+    prixNuitStudio: 780,       // Studio T2 — top quartile Maarif, note 8.5+ Booking
+    prixNuitLoft: 580,         // Loft kitchenette — premium avec terrasse vue dégagée
     loyerCommercial: 11_000,
     budgetTotal: 7_500_000,
     partOTA: 0.42,             // Forte notoriété → moins de dépendance OTA
@@ -440,13 +453,13 @@ const MARKET_DATA = {
     { segment: "Airbnb top 25% Casa",        taux: 0.58  },
   ],
 
-  // Positionnement tarifaire
+  // Positionnement tarifaire (moyenne pondérée Studios T2 + Lofts)
   prixNuiteeRange: {
-    bas: 500,
-    moyen: 680,
-    haut: 950,
-    maarifMedianePro: 730,
-    source: "Booking.com Maarif mars 2026 (17 propriétés)",
+    bas: 400,
+    moyen: 600,
+    haut: 780,
+    maarifMedianePro: 650,
+    source: "Booking.com Maarif mars 2026 (17 propriétés) — ajusté mix Studios T2 + Lofts",
   },
 
   // Concurrence directe Maarif
@@ -474,9 +487,9 @@ const BENCHMARK = {
   searchCriteria: "2 nuits, 2 adultes, avril 2026, type: Appartement",
   nbCompetitors: 17,
   summary: {
-    studiosPro: { min: 600, median: 730, max: 770, label: "Studios pro (30-45m²)" },
-    studiosParticulier: { min: 525, median: 570, max: 615, label: "Studios particulier" },
-    loftsPro: { min: 735, median: 820, max: 965, label: "1BR/Lofts pro (45-90m²)" },
+    studiosPro: { min: 600, median: 700, max: 780, label: "Studios / T2 pro (32-46 m²)" },
+    studiosParticulier: { min: 500, median: 570, max: 650, label: "Studios / T2 particulier" },
+    loftsPro: { min: 380, median: 480, max: 580, label: "Lofts / Kitchenettes (22-30 m²)" },
     luxe2BR: { min: 1000, median: 1175, max: 1490, label: "2BR+ Luxe (85m²+)" },
   },
   occupancy: {
@@ -548,7 +561,7 @@ const SUBVENTIONS = [
       { label: "Activité hébergement touristique", requis: true, projet: true, detail: "Résidence de tourisme = éligible" },
       { label: "Seuil d'investissement minimum", requis: true, projet: true, detail: "Seuil supprimé en juillet 2025 (ancien : 2 MDH)" },
       { label: "Entreprise nouvelle ou existante", requis: true, projet: true, detail: "Ouvert aux nouvelles créations (SARL)" },
-      { label: "Composante éco-responsable (bonus)", requis: false, projet: false, detail: "Non prévu en phase 1 — bonus 30% non accessible" },
+      { label: "Composante éco-responsable (bonus 40%)", requis: false, projet: true, detail: "Activable via toggle — investissement éco ~300K MAD, subvention 40% = 120K MAD" },
     ],
     whyEligible: "Programme sectoriel tourisme, seuil supprimé depuis juil. 2025. Le projet est un hébergement touristique neuf — profil éligible de base.",
   },
@@ -754,3 +767,65 @@ const MDM_PROCESS = {
 };
 
 const PROJECTION_YEARS = 20;
+
+// ======= GO SIYAHA — BONUS ÉCOLOGIQUE =======
+// Programme Go Siyaha (Maroc PME / Min. Tourisme) — Volet Croissance Verte
+// Sources : marocpme.gov.ma, invest-time.com, leseco.ma, medias24.com (2024-2025)
+//
+// Subvention : 40% du coût des équipements éco-responsables (projets < 10 MDH)
+// Assistance technique : 90% du coût d'audit énergétique
+// Projets doivent être complétés sous 3 ans
+// Conditions : entreprise marocaine, hébergement touristique, CA < 200 MDH
+//
+// Équipements éligibles :
+//   - Chauffe-eau solaire / panneaux photovoltaïques
+//   - Isolation thermique renforcée
+//   - Éclairage LED basse consommation
+//   - Robinetterie économe en eau / double chasse
+//   - Tri des déchets / compostage
+//   - Certification éco-label
+//
+// Estimation investissement écologique pour 11 unités locatives :
+//   - Chauffe-eau solaire (11 unités)        : 150 000 MAD
+//   - LED + domotique éclairage              :  30 000 MAD
+//   - Isolation thermique renforcée          :  80 000 MAD
+//   - Robinetterie & sanitaire éco           :  25 000 MAD
+//   - Audit énergétique + certification      :  15 000 MAD
+//   - TOTAL estimé                           : 300 000 MAD
+//
+// Économies opérationnelles estimées :
+//   - Chauffe-eau solaire : -40% sur eau chaude (~20% des utilities)
+//   - LED : -60% sur éclairage (~10% des utilities)
+//   - Isolation : -15% sur climatisation (~15% des utilities)
+//   - Robinetterie éco : -20% sur eau (~10% des utilities)
+//   → Réduction globale estimée : 15-20% des utilities annuelles
+
+const GO_SIYAHA_ECO = {
+  enabled: false,  // toggle par l'utilisateur
+  tauxSubvention: 0.40,          // 40% du coût éco couvert par Go Siyaha
+  investissementEco: 300_000,    // MAD — montant total des équipements éco (ajustable)
+  // Détail des postes d'investissement
+  postes: [
+    { label: "Chauffe-eau solaire (11 unités)", montant: 150_000 },
+    { label: "Éclairage LED + domotique",       montant: 30_000 },
+    { label: "Isolation thermique renforcée",    montant: 80_000 },
+    { label: "Robinetterie & sanitaire éco",     montant: 25_000 },
+    { label: "Audit énergétique + certification",montant: 15_000 },
+  ],
+  // Économies annuelles sur les utilities (% de réduction)
+  reductionUtilities: 0.18,      // 18% de réduction sur les utilities annuelles
+  // Économie supplémentaire sur consommables (produits éco, moins de gaspillage)
+  reductionConsommables: 0.05,   // 5% de réduction sur les consommables
+  // Avantage marketing : meilleur rating, premium price justifié
+  premiumPrix: 0,                // 0 MAD — conservateur, pas de premium prix intégré
+  // Durée d'amortissement des équipements éco
+  amortissementEcoAns: 10,
+  // Sources
+  sources: [
+    "marocpme.gov.ma — Go Siyaha, volet Croissance Verte",
+    "invest-time.com — Morocco Go Siyaha tourism opportunity",
+    "leseco.ma — 11 nouveaux projets validés pour un tourisme plus durable",
+    "medias24.com — Go Siyaha 720 MDH pour 1 700 entreprises",
+    "lkelma.com — Ce qu'il offre aux entreprises touristiques marocaines",
+  ],
+};

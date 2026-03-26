@@ -186,12 +186,19 @@ function renderKPIInsights(S) {
   const pctTerrain = S.terrain.coutTerrain / S.budget.totalProjet;
   const pctConstruction = S.terrain.budgetConstruction / S.budget.totalProjet;
   const pctAmeub = S.budget.ameublement / S.budget.totalProjet;
-  setInsight("kpi-invest-insight", `
+  let investInsightHtml = `
     <div class="insight-row"><span class="insight-label">Terrain + frais</span><span class="insight-val">${fmtK(S.terrain.coutTerrain)} <small>(${fmtPct(pctTerrain,0)})</small></span></div>
     <div class="insight-row"><span class="insight-label">Construction</span><span class="insight-val">${fmtK(S.terrain.budgetConstruction)} <small>(${fmtPct(pctConstruction,0)})</small></span></div>
-    <div class="insight-row"><span class="insight-label">Ameublement</span><span class="insight-val">${fmtK(S.budget.ameublement)} <small>(${fmtPct(pctAmeub,0)})</small></span></div>
-    <div style="margin-top:4px;font-size:.68rem;color:var(--text-sec)">Coût / m² terrain : <span class="insight-highlight">${fmtNum(S.terrain.coutM2Terrain)} MAD/m²</span></div>
-  `);
+    <div class="insight-row"><span class="insight-label">Ameublement</span><span class="insight-val">${fmtK(S.budget.ameublement)} <small>(${fmtPct(pctAmeub,0)})</small></span></div>`;
+  if (S.budget.ecoEnabled) {
+    const pctEco = S.budget.coutNetEco / S.budget.totalProjet;
+    investInsightHtml += `
+    <div class="insight-row"><span class="insight-label" style="color:#16a34a">🌿 Éco (net sub. 40%)</span><span class="insight-val" style="color:#16a34a">${fmtK(S.budget.coutNetEco)} <small>(${fmtPct(pctEco,0)})</small></span></div>
+    <div style="margin-top:2px;font-size:.66rem;color:#16a34a">Subvention Go Siyaha : ${fmtK(S.budget.subventionEco)} économisés</div>`;
+  }
+  investInsightHtml += `
+    <div style="margin-top:4px;font-size:.68rem;color:var(--text-sec)">Coût / m² terrain : <span class="insight-highlight">${fmtNum(S.terrain.coutM2Terrain)} MAD/m²</span></div>`;
+  setInsight("kpi-invest-insight", investInsightHtml);
 
   // 2. Rendement Brut — comparison vs alternatives
   const rdtBrut = S.kpi.rendementBrut;
@@ -323,6 +330,19 @@ function renderBudget(S) {
   setText("budget-ameublement", fmtMAD(S.budget.ameublement));
   setText("budget-total", fmtMAD(S.budget.totalProjet));
   setText("budget-m2", fmtNum(S.terrain.coutM2Terrain) + " MAD/m²");
+
+  // Go Siyaha Éco row
+  const ecoRow = document.getElementById("budget-eco-row");
+  if (ecoRow) {
+    if (S.budget.ecoEnabled) {
+      ecoRow.style.display = "";
+      setText("budget-eco-invest", fmtMAD(S.budget.investissementEco));
+      setText("budget-eco-subvention", "- " + fmtMAD(S.budget.subventionEco));
+      setText("budget-eco-net", fmtMAD(S.budget.coutNetEco));
+    } else {
+      ecoRow.style.display = "none";
+    }
+  }
 }
 
 // --- Programme architectural ---
