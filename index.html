@@ -54,6 +54,23 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);lin
 .scenario-btn{padding:10px 20px;border:2px solid var(--border);border-radius:8px;background:#fff;cursor:pointer;font-weight:600;font-family:inherit;font-size:.85rem;transition:all .2s;text-align:center;line-height:1.4}
 .scenario-btn.active{border-color:var(--primary);background:var(--primary);color:#fff}
 .scenario-btn:hover:not(.active){border-color:var(--primary-light)}
+.ctrl-toggle{padding:8px 14px;border:2px solid var(--border);border-radius:8px;background:#fff;cursor:pointer;font-size:1.1rem;transition:all .2s;margin-left:auto}
+.ctrl-toggle.open{background:var(--primary);color:#fff;border-color:var(--primary)}
+
+/* Control Panel */
+.control-panel{display:none;background:#fff;border-radius:12px;padding:16px 20px;border:1px solid var(--border);box-shadow:0 2px 8px rgba(0,0,0,.06);margin-bottom:20px;animation:fadeUp .3s ease both}
+.control-panel.open{display:block}
+.ctrl-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:16px}
+.ctrl-group{display:flex;flex-direction:column;gap:4px}
+.ctrl-label{font-size:.75rem;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--text-sec)}
+.ctrl-row{display:flex;align-items:center;gap:10px}
+.ctrl-range{flex:1;height:6px;-webkit-appearance:none;appearance:none;background:#e2e8f0;border-radius:4px;outline:none;cursor:pointer}
+.ctrl-range::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:var(--primary);cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,.2)}
+.ctrl-range::-moz-range-thumb{width:18px;height:18px;border-radius:50%;background:var(--primary);cursor:pointer;border:none}
+.ctrl-input-wrap{display:flex;align-items:center;gap:2px;background:#f8fafc;border:1px solid var(--border);border-radius:6px;padding:4px 8px;min-width:90px}
+.ctrl-input{width:55px;border:none;background:transparent;font-family:inherit;font-size:.85rem;font-weight:600;color:var(--primary);text-align:right;outline:none;font-variant-numeric:tabular-nums}
+.ctrl-input::-webkit-inner-spin-button{-webkit-appearance:none}
+.ctrl-unit{font-size:.75rem;color:var(--text-sec);font-weight:500}
 
 /* Cards */
 .card{background:var(--card);border-radius:12px;padding:20px;box-shadow:0 1px 3px rgba(0,0,0,.06);border:1px solid var(--border);margin-bottom:20px;animation:fadeUp .4s ease both}
@@ -156,11 +173,54 @@ tr:hover td{background:#f8fafc}
 
 <main class="main">
 
-<!-- Scenario bar -->
+<!-- Scenario bar + Control Panel -->
 <div class="scenario-bar">
   <button class="scenario-btn" data-scenario="prudent" id="btn-prudent">Pessimiste</button>
   <button class="scenario-btn active" data-scenario="moyen" id="btn-moyen">Réaliste</button>
   <button class="scenario-btn" data-scenario="optimiste" id="btn-optimiste">Optimiste</button>
+  <button class="scenario-btn" id="btn-custom" style="display:none;border-color:var(--gold);color:var(--gold)">Personnalisé</button>
+  <button class="ctrl-toggle" id="ctrl-toggle" title="Paramètres">⚙</button>
+</div>
+
+<!-- Control Panel -->
+<div class="control-panel" id="control-panel">
+  <div class="ctrl-grid">
+    <div class="ctrl-group">
+      <label class="ctrl-label">Taux d'occupation</label>
+      <div class="ctrl-row">
+        <input type="range" class="ctrl-range" id="ctrl-occ" min="15" max="85" step="1" value="48">
+        <div class="ctrl-input-wrap"><input type="number" class="ctrl-input" id="ctrl-occ-val" min="15" max="85" step="1" value="48"><span class="ctrl-unit">%</span></div>
+      </div>
+    </div>
+    <div class="ctrl-group">
+      <label class="ctrl-label">Prix nuit Studio</label>
+      <div class="ctrl-row">
+        <input type="range" class="ctrl-range" id="ctrl-studio" min="200" max="900" step="10" value="450">
+        <div class="ctrl-input-wrap"><input type="number" class="ctrl-input" id="ctrl-studio-val" min="200" max="900" step="10" value="450"><span class="ctrl-unit">MAD</span></div>
+      </div>
+    </div>
+    <div class="ctrl-group">
+      <label class="ctrl-label">Prix nuit Loft</label>
+      <div class="ctrl-row">
+        <input type="range" class="ctrl-range" id="ctrl-loft" min="200" max="1200" step="10" value="580">
+        <div class="ctrl-input-wrap"><input type="number" class="ctrl-input" id="ctrl-loft-val" min="200" max="1200" step="10" value="580"><span class="ctrl-unit">MAD</span></div>
+      </div>
+    </div>
+    <div class="ctrl-group">
+      <label class="ctrl-label">Loyer local commercial</label>
+      <div class="ctrl-row">
+        <input type="range" class="ctrl-range" id="ctrl-loyer" min="3000" max="20000" step="500" value="8000">
+        <div class="ctrl-input-wrap"><input type="number" class="ctrl-input" id="ctrl-loyer-val" min="3000" max="20000" step="500" value="8000"><span class="ctrl-unit">MAD</span></div>
+      </div>
+    </div>
+    <div class="ctrl-group">
+      <label class="ctrl-label">Taux crédit banque</label>
+      <div class="ctrl-row">
+        <input type="range" class="ctrl-range" id="ctrl-taux" min="2.0" max="8.0" step="0.1" value="4.5">
+        <div class="ctrl-input-wrap"><input type="number" class="ctrl-input" id="ctrl-taux-val" min="2.0" max="8.0" step="0.1" value="4.5"><span class="ctrl-unit">%</span></div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- ==================== VUE D'ENSEMBLE ==================== -->
