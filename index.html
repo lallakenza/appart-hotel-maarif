@@ -28,6 +28,7 @@ if ('serviceWorker' in navigator) {
   --red:#dc2626; --amber:#d97706; --bg:#fafaf9; --card:#ffffff;
   --text:#1a1a2e; --text-sec:#64748b; --border:#e7e5e4;
 }
+html{scroll-behavior:smooth}
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);line-height:1.6;font-variant-numeric:tabular-nums}
 .hidden{display:none!important}
@@ -143,9 +144,13 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);lin
 .grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px}
 
 /* Tables */
-.table-wrap{overflow-x:auto}
+.table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;position:relative}
+.table-wrap::after{content:'';position:absolute;right:0;top:0;bottom:0;width:20px;pointer-events:none;background:linear-gradient(to right,rgba(255,255,255,0),rgba(0,0,0,.05));opacity:0;transition:opacity .3s}
+.table-wrap::-webkit-scrollbar{height:6px}
+.table-wrap::-webkit-scrollbar-track{background:transparent}
+.table-wrap::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:3px}
 table{width:100%;border-collapse:collapse;font-size:.85rem}
-th{background:var(--primary);color:#fff;padding:8px 12px;text-align:left;font-weight:600;font-size:.75rem;text-transform:uppercase;letter-spacing:.03em}
+th{background:var(--primary);color:#fff;padding:8px 12px;text-align:left;font-weight:600;font-size:.75rem;text-transform:uppercase;letter-spacing:.03em;position:sticky;top:0;z-index:10}
 td{padding:6px 12px;border-bottom:1px solid var(--border)}
 tr:hover td{background:#f8fafc}
 .total-row td{font-weight:700;background:#f0d78c30;border-top:2px solid var(--gold)}
@@ -290,6 +295,27 @@ tr:hover td{background:#f8fafc}
 /* Animations */
 @keyframes slideDown{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
 @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeInUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+
+/* Card animation on scroll */
+.card-animate{animation:fadeInUp .6s ease both}
+
+/* Back-to-top button */
+.back-to-top{position:fixed;bottom:24px;right:24px;width:48px;height:48px;background:var(--gold);color:#fff;border:none;border-radius:50%;cursor:pointer;display:none;align-items:center;justify-content:center;font-size:1.2rem;box-shadow:0 4px 16px rgba(0,0,0,.2);transition:all .3s ease;z-index:99;-webkit-tap-highlight-color:transparent}
+.back-to-top:hover{background:#d97706;transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,.3)}
+.back-to-top.show{display:flex}
+
+/* Toast notification */
+.toast{position:fixed;bottom:24px;left:24px;background:#1e3a5f;color:#fff;padding:16px 24px;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.2);animation:slideUp .3s ease both;z-index:98;font-size:.95rem;font-weight:600}
+@keyframes slideUp{from{opacity:0;transform:translateY(100px)}to{opacity:1;transform:translateY(0)}}
+.toast.hide{animation:slideDown .3s ease both forwards}
+
+/* Executive summary scorecard */
+#exec-summary{display:grid!important;grid-template-columns:repeat(6,1fr)!important;gap:12px;margin-bottom:20px;background:none!important;border:none!important;padding:0!important;margin-left:0!important;margin-right:0!important;box-shadow:none!important}
+.exec-kpi{background:#f8fafc;border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center;position:relative}
+.exec-kpi-label{font-size:.7rem;font-weight:600;color:var(--text-sec);text-transform:uppercase;margin-bottom:6px}
+.exec-kpi-value{font-size:1.2rem;font-weight:800;color:var(--primary)}
+.exec-status-dot{width:8px;height:8px;border-radius:50%;position:absolute;top:8px;right:8px}
 
 /* Print */
 @media print{.header,.nav,.scenario-bar,.control-panel,.ctrl-toggle{display:none!important}.main{padding:0}.card{break-inside:avoid;page-break-inside:avoid;box-shadow:none;border:1px solid #ddd}}
@@ -323,6 +349,13 @@ tr:hover td{background:#f8fafc}
   .header-sub{font-size:.72rem;display:none}
   .header-badge{font-size:.78rem;padding:4px 10px;border-radius:6px;order:0}
   .mobile-menu-btn{display:flex;flex-direction:column;align-items:center;justify-content:center;order:1}
+
+  /* ─── Scroll hint for tables ─── */
+  .table-wrap{position:relative}
+  .table-wrap::after{display:block!important;opacity:0.6}
+
+  /* Back-to-top button mobile adjustment */
+  .back-to-top{bottom:16px;right:16px;width:40px;height:40px;font-size:1rem}
 
   /* ─── Nav → Mobile drawer ─── */
   .nav{position:fixed;top:0;left:-100%;width:80%;max-width:300px;height:100vh;z-index:1000;box-shadow:4px 0 20px rgba(0,0,0,.3);transition:left .3s ease;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-top:60px;border-bottom:none}
@@ -429,6 +462,12 @@ tr:hover td{background:#f8fafc}
 
   /* ─── Gestion comparison ─── */
   .grid-2{gap:14px}
+
+  /* ─── Executive summary responsive ─── */
+  #exec-summary{grid-template-columns:repeat(3,1fr)!important;gap:8px!important}
+  .exec-kpi{padding:10px;border-radius:8px}
+  .exec-kpi-label{font-size:.65rem}
+  .exec-kpi-value{font-size:1rem}
 }
 
 /* Extra small screens */
@@ -759,6 +798,16 @@ tr:hover td{background:#f8fafc}
 
 <!-- ==================== VUE D'ENSEMBLE ==================== -->
 <div data-view="overview">
+  <!-- EXECUTIVE SUMMARY -->
+  <div class="card exec-summary" id="exec-summary" style="display:none;grid-template-columns:repeat(6,1fr);gap:8px;margin-bottom:20px">
+    <div><div class="exec-kpi-label">Investissement</div><div class="exec-kpi-value" id="exec-invest">–</div><div class="exec-status-dot" id="exec-invest-dot"></div></div>
+    <div><div class="exec-kpi-label">CF An1</div><div class="exec-kpi-value" id="exec-cf">–</div><div class="exec-status-dot" id="exec-cf-dot"></div></div>
+    <div><div class="exec-kpi-label">TRI</div><div class="exec-kpi-value" id="exec-tri">–</div><div class="exec-status-dot" id="exec-tri-dot"></div></div>
+    <div><div class="exec-kpi-label">Payback</div><div class="exec-kpi-value" id="exec-payback">–</div><div class="exec-status-dot" id="exec-payback-dot"></div></div>
+    <div><div class="exec-kpi-label">DSCR</div><div class="exec-kpi-value" id="exec-dscr">–</div><div class="exec-status-dot" id="exec-dscr-dot"></div></div>
+    <div><div class="exec-kpi-label">VAN</div><div class="exec-kpi-value" id="exec-van">–</div><div class="exec-status-dot" id="exec-van-dot"></div></div>
+  </div>
+
   <!-- VERDICT GO / NO-GO -->
   <div class="verdict-banner verdict-caution" id="verdict-banner">
     <div class="verdict-icon-wrap" id="verdict-icon-wrap">
@@ -804,6 +853,12 @@ tr:hover td{background:#f8fafc}
   </div>
   <div class="card"><div class="card-title">Programme Architectural</div>
     <div class="table-wrap"><table><thead><tr><th>Niveau</th><th>Type</th><th>Surface</th><th>Position</th><th>Exposition</th><th>Catégorie</th></tr></thead><tbody id="programme-tbody"></tbody></table></div>
+  </div>
+
+  <!-- SCENARIO COMPARISON TABLE -->
+  <div class="card" id="scenario-comparison">
+    <div class="card-title">Comparaison des 5 Scénarios</div>
+    <div class="table-wrap"><table><thead><tr><th>Scénario</th><th>Occ.</th><th>Rdt Brut</th><th>CF An1</th><th>TRI</th><th>Payback</th><th>DSCR</th><th>VAN</th></tr></thead><tbody id="scenario-comparison-tbody"></tbody></table></div>
   </div>
 </div>
 
@@ -991,6 +1046,12 @@ tr:hover td{background:#f8fafc}
   <div class="card"><div class="card-title">Comparaison Investissements Alternatifs</div>
     <div class="info-box" style="margin-bottom:12px">Le rendement de ce projet (sur apport terrain) est comparé aux alternatives d'investissement disponibles. Attention : ce projet comporte des risques opérationnels que n'ont pas les placements passifs.</div>
     <div class="chart-box"><canvas id="chart-alternatives"></canvas></div>
+  </div>
+
+  <!-- Rendement evolution chart -->
+  <div class="card">
+    <div class="card-title">Évolution du Rendement Net (20 ans)</div>
+    <div class="chart-box"><canvas id="chart-rendement-evolution"></canvas></div>
   </div>
 
   <!-- Tableau prévisionnel enrichi -->
@@ -1445,11 +1506,11 @@ tr:hover td{background:#f8fafc}
 </main>
 
 <!-- Scripts — strict order: data → engine → render → charts → app -->
-<script src="js/data.js?v=18"></script>
-<script src="js/engine.js?v=18"></script>
-<script src="js/render.js?v=18"></script>
-<script src="js/charts.js?v=18"></script>
-<script src="js/app.js?v=18"></script>
+<script src="js/data.js?v=19"></script>
+<script src="js/engine.js?v=19"></script>
+<script src="js/render.js?v=19"></script>
+<script src="js/charts.js?v=19"></script>
+<script src="js/app.js?v=19"></script>
 
 </body>
 </html>

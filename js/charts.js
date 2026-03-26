@@ -36,6 +36,7 @@ function rebuildCharts(state) {
   chartSensitivity(state);
   chartIS(state);
   chartAlternatives(state);
+  chartRendementEvolution(state);
 }
 
 // ======================== RICH TOOLTIP SYSTEM ========================
@@ -926,6 +927,58 @@ function chartAlternatives(S) {
         legend: { display: false },
         tooltip: {
           callbacks: { label: c => c.label + ": " + c.parsed.x.toFixed(1) + "% rendement net annuel" + (c.dataIndex === 0 ? " (sur apport terrain)" : " (benchmark)") }
+        }
+      }
+    }
+  });
+}
+
+// --- Rendement evolution over 20 years ---
+function chartRendementEvolution(S) {
+  destroyChart("rendementEvolution");
+  const ctx = document.getElementById("chart-rendement-evolution")?.getContext("2d");
+  if (!ctx) return;
+
+  const apport = S.financement.apportTerrain;
+  const data = S.projections.map(p => apport > 0 ? (p.cashFlowNet / apport) * 100 : 0);
+
+  _charts.rendementEvolution = new Chart(ctx, {
+    type: "line",
+    data: {
+      labels: S.projections.map(p => "An " + p.year),
+      datasets: [{
+        label: "Rendement net % (CF/apport terrain)",
+        data: data,
+        borderColor: CHART_COLORS.primaryLight,
+        backgroundColor: CHART_COLORS.primaryLight + '15',
+        fill: true,
+        tension: 0.4,
+        pointRadius: 4,
+        pointBackgroundColor: CHART_COLORS.primaryLight,
+        pointBorderWidth: 0,
+        borderWidth: 2.5,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        y: {
+          ticks: { callback: v => v.toFixed(1) + "%" },
+          grid: { color: 'rgba(0,0,0,0.04)' }
+        },
+        x: { grid: { display: false } }
+      },
+      plugins: {
+        legend: { display: true, position: "top" },
+        tooltip: {
+          callbacks: {
+            label: c => c.dataset.label + ": " + c.parsed.y.toFixed(2) + "%",
+            afterLabel: (c) => {
+              const p = S.projections[c.dataIndex];
+              return "CF: " + fmtMAD(p.cashFlowNet) + "/an";
+            }
+          }
         }
       }
     }

@@ -36,12 +36,14 @@ function badgeClass(type) {
 // --- Main render ---
 function render(state) {
   renderHeader(state);
+  renderExecutiveSummary(state);
   renderVerdict(state);
   renderScenarioButtons(state);
   renderKPIs(state);
   renderKPIInsights(state);
   renderBudget(state);
   renderProgramme(state);
+  renderScenarioComparison(state);
   renderRevenus(state);
   renderCharges(state);
   renderFinancement(state);
@@ -59,6 +61,84 @@ function render(state) {
 // --- Header badge (dynamic total projet) ---
 function renderHeader(S) {
   setText("header-badge", fmtMAD(S.budget.totalProjet));
+}
+
+// --- Executive Summary Mini-Scorecard ---
+function renderExecutiveSummary(S) {
+  const y1 = S.projections[0];
+  const K = S.kpi;
+  const elem = document.getElementById("exec-summary");
+
+  if (!elem) return;
+
+  // Only show if it's the overview (to avoid clutter)
+  if (currentView !== "overview" && typeof currentView !== "undefined") {
+    elem.style.display = "none";
+    return;
+  }
+  elem.style.display = "grid";
+
+  function setExecKPI(id, val, dotId, isGood) {
+    const el = document.getElementById(id);
+    const dot = document.getElementById(dotId);
+    if (el) el.textContent = val;
+    if (dot) {
+      dot.style.background = isGood ? "var(--green)" : isGood === false ? "var(--red)" : "var(--amber)";
+    }
+  }
+
+  // Investissement
+  setExecKPI("exec-invest", fmtK(S.budget.totalProjet), "exec-invest-dot", true);
+
+  // CF An1
+  const cfGood = y1.cashFlowNet > 0;
+  setExecKPI("exec-cf", fmtK(y1.cashFlowNet), "exec-cf-dot", cfGood);
+
+  // TRI
+  const triGood = K.tri >= 0.10 ? true : K.tri >= 0.07 ? null : false;
+  setExecKPI("exec-tri", isFinite(K.tri) ? fmtPct(K.tri, 0) : "N/A", "exec-tri-dot", triGood);
+
+  // Payback
+  const pbGood = K.paybackYear && K.paybackYear <= 7 ? true : K.paybackYear && K.paybackYear <= 10 ? null : false;
+  setExecKPI("exec-payback", K.paybackYear ? K.paybackYear + " ans" : ">20a", "exec-payback-dot", pbGood);
+
+  // DSCR
+  const dscrGood = K.dscr >= 1.5 ? true : K.dscr >= 1.2 ? null : false;
+  setExecKPI("exec-dscr", K.dscr === Infinity ? "∞" : K.dscr.toFixed(2) + "x", "exec-dscr-dot", dscrGood);
+
+  // VAN
+  const vanGood = K.van > 0;
+  setExecKPI("exec-van", fmtK(K.van), "exec-van-dot", vanGood);
+}
+
+// --- Scenario Comparison Table ---
+function renderScenarioComparison(S) {
+  const tbody = document.getElementById("scenario-comparison-tbody");
+  if (!tbody) return;
+  tbody.innerHTML = "";
+
+  // Compute metrics for all 5 scenarios
+  const scenarios = ["prudent", "prudent_moyen", "moyen", "moyen_optimiste", "optimiste"];
+
+  scenarios.forEach(scKey => {
+    const sc = SCENARIOS[scKey];
+    const scState = compute(scKey); // Compute state for this scenario
+    const y1 = scState.projections[0];
+    const K = scState.kpi;
+
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td><strong>${sc.label}</strong></td>
+      <td class="num">${fmtPct(sc.tauxOccupation, 0)}</td>
+      <td class="num">${fmtPct(K.rendementBrut)}</td>
+      <td class="num" style="color:${y1.cashFlowNet >= 0 ? 'var(--green)' : 'var(--red)'}">${fmtK(y1.cashFlowNet)}</td>
+      <td class="num" style="color:${K.tri >= 0.10 ? 'var(--green)' : K.tri >= 0.07 ? 'var(--amber)' : 'var(--red)'}">${isFinite(K.tri) ? fmtPct(K.tri, 0) : 'N/A'}</td>
+      <td class="num">${K.paybackYear ? K.paybackYear + ' ans' : '>20a'}</td>
+      <td class="num" style="color:${K.dscr >= 1.5 ? 'var(--green)' : K.dscr >= 1.2 ? 'var(--amber)' : 'var(--red)'}">${K.dscr === Infinity ? '∞' : K.dscr.toFixed(2)}x</td>
+      <td class="num" style="color:${K.van >= 0 ? 'var(--green)' : 'var(--red)'}">${fmtK(K.van)}</td>
+    `;
+    tbody.appendChild(tr);
+  });
 }
 
 // --- Verdict Go / No-Go ---
@@ -576,7 +656,7 @@ function renderCashFlow(S) {
   const triEl = document.getElementById("cf-tri");
   if (triEl) triEl.style.color = K.tri >= 0.08 ? "var(--green)" : K.tri >= 0.05 ? "var(--amber)" : "var(--red)";
 
-  // Enriched table with marge and monthly CF
+  // Enriched table with marge and monthly CF, with color coding
   const tbody = document.getElementById("cf-tbody");
   if (!tbody) return;
   tbody.innerHTML = "";
@@ -584,13 +664,29 @@ function renderCashFlow(S) {
     const marge = p.revTotal > 0 ? p.cashFlowNet / p.revTotal : 0;
     const isPayback = S.kpi.paybackYear && p.year === S.kpi.paybackYear;
     const isDebtFree = S.kpi.debtFreedomYear && p.year === S.kpi.debtFreedomYear;
-    const highlight = isPayback ? ' style="background:#e8f5e9"' : isDebtFree ? ' style="background:#fff3e0"' : '';
+
+    // Color coding for rows
+    let rowClass = '';
+    let rowStyle = '';
+    if (isPayback) {
+      rowClass = 'highlight-row';
+      rowStyle = 'background:#d1fae5!important;font-weight:700';
+    } else if (isDebtFree) {
+      rowStyle = 'background:#fef3c7!important;font-weight:700';
+    } else if (p.cumulCashFlow < 0) {
+      rowStyle = 'background:#fee2e2';
+    } else if (p.cumulCashFlow >= 0) {
+      rowStyle = 'background:#f0fdf4';
+    }
+
     const tr = document.createElement("tr");
+    tr.className = rowClass;
+    tr.style.cssText = rowStyle;
     tr.innerHTML = `
-      <td${highlight}><strong>An ${p.year}</strong>${isPayback ? ' 🎯' : ''}${isDebtFree ? ' 🔓' : ''}</td>
+      <td><strong>An ${p.year}</strong>${isPayback ? ' 🎯' : ''}${isDebtFree ? ' 🔓' : ''}</td>
       <td class="num bold">${fmtMAD(p.revTotal)}</td>
       <td class="num neg">(${fmtMAD(p.chargesTotal)})</td>
-      <td class="num" style="background:#e8f5e9"><strong>${fmtMAD(p.ebitda)}</strong></td>
+      <td class="num"><strong>${fmtMAD(p.ebitda)}</strong></td>
       <td class="num">${fmtPct(p.margeExploitation, 0)}</td>
       <td class="num neg">${p.debtServiceTotal > 0 ? '(' + fmtMAD(p.debtServiceTotal) + ')' : '–'}</td>
       <td class="num neg">${p.is > 0 ? '(' + fmtMAD(p.is) + ')' : '–'}</td>

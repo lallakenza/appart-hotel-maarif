@@ -446,4 +446,84 @@ document.addEventListener("DOMContentLoaded", () => {
     closeMobileMenu();
     origSwitchView(view);
   };
+
+  // ========== NEW: Back-to-top button ==========
+  const backToTopBtn = document.createElement("button");
+  backToTopBtn.className = "back-to-top";
+  backToTopBtn.innerHTML = "↑";
+  backToTopBtn.title = "Retour en haut";
+  document.body.appendChild(backToTopBtn);
+
+  window.addEventListener("scroll", () => {
+    if (window.scrollY > 300) {
+      backToTopBtn.classList.add("show");
+    } else {
+      backToTopBtn.classList.remove("show");
+    }
+  });
+
+  backToTopBtn.addEventListener("click", () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  });
+
+  // ========== NEW: Scenario change toast notification ==========
+  const origSwitchScenario = switchScenario;
+  switchScenario = function(scenario) {
+    const sc = SCENARIOS[scenario];
+    showToast(`Scénario ${sc.label} — Occ. ${fmtPct(sc.tauxOccupation, 0)} · ${sc.prixNuitStudio} MAD/nuit`);
+    origSwitchScenario(scenario);
+  };
+
+  function showToast(message) {
+    const toast = document.createElement("div");
+    toast.className = "toast";
+    toast.textContent = message;
+    document.body.appendChild(toast);
+    setTimeout(() => {
+      toast.classList.add("hide");
+      setTimeout(() => toast.remove(), 300);
+    }, 3000);
+  }
+
+  // ========== NEW: Card fade-in animation on scroll ==========
+  if ("IntersectionObserver" in window) {
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add("card-animate");
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.1 });
+
+    document.querySelectorAll(".card").forEach(card => {
+      observer.observe(card);
+    });
+  }
+
+  // ========== NEW: Animated KPI counter ==========
+  function animateCounter(element, target, duration = 600) {
+    if (!element || isNaN(target)) return;
+    const originalText = element.textContent;
+    const start = 0;
+    const startTime = performance.now();
+
+    const update = (currentTime) => {
+      const elapsed = currentTime - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      const current = Math.floor(start + (target - start) * progress);
+
+      // Preserve formatting (MAD, %, etc.)
+      const suffix = originalText.replace(/^[0-9\s.,]+/, '');
+      element.textContent = current.toLocaleString('fr-FR') + suffix;
+
+      if (progress < 1) {
+        requestAnimationFrame(update);
+      }
+    };
+    requestAnimationFrame(update);
+  }
+
+  // Note: KPI animations are optional; the basic setKPI function is sufficient
+  // For animated counters, we could enhance setKPI here in the future
 });
