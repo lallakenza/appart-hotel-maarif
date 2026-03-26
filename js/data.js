@@ -169,14 +169,15 @@ const TAMWILKOM = {
   maxPctProjet: 0.40,        // max 40% du coût projet
 };
 
-// Banque classique — crédit investissement
-// Source : Médias24 jan 2026 — TAEG moyen crédits immo : 5.50% (en baisse -17bps/an)
-// Taux directeur BAM : 2.25% (maintenu mars 2026)
-// Fourchette marché : 3.90% – 5.50% selon profil
-// MRE bénéficient de conditions préférentielles
-// Durée : 7-25 ans pour investissement
+// Banque classique — crédit investissement ENTREPRISE
+// Source : Bank Al-Maghrib T4-2025 — Taux débiteur moyen TPME : 5,22%
+// Taux directeur BAM : 2.50% (maintenu mars 2026)
+// Fourchette marché TPME investissement : 5,17% – 5,61%
+// Grandes entreprises : 4,74% – 4,96%
+// NB : ce projet (7M MAD) relève de la catégorie TPME
+// Durée : 7-20 ans pour investissement
 const BANQUE_CLASSIQUE = {
-  tauxAnnuel: 0.045,         // estimation prudente MRE investissement
+  tauxAnnuel: 0.0525,        // estimation médiane TPME investissement (BAM T4-2025)
   dureeAns: 15,
   differeAns: 0,
 };
@@ -188,6 +189,7 @@ const FISCALITE = {
   tvaTaux: 0.10,             // taux réduit hébergement touristique
   isTaux: 0.20,              // IS société marocaine
   caDevisesPct: 0.40,        // part du CA en devises (exonérée IS) — à confirmer
+  amortissementAns: 20,      // bâtiment amorti linéairement sur 20 ans (5%/an) — terrain non amortissable
   exoEquipementsMois: 36,    // exonération TVA équipements
   exoTaxeProAns: 5,          // exonération taxe pro nouvelles constructions
   residenceFiscale: "UAE",   // pas d'impôt sur le revenu aux UAE
@@ -261,5 +263,184 @@ const RISKS = [
   { name: "Gestion à distance (UAE)",            prob: 0.5, impact: 0.5, mitigation: "Société gestion locale, outils digitaux, caméras" },
   { name: "Pression tarifaire (offre x2 en 3 ans)", prob: 0.5, impact: 0.5, mitigation: "Qualité supérieure, avis clients, fidélisation" },
 ];
+
+// ======= SUBVENTIONS & AIDES =======
+const SUBVENTIONS = [
+  {
+    name: "MDM Invest",
+    institution: "Tamwilcom / Ministère MRE",
+    type: "national",
+    offer: "Subvention 10% du projet (plafond 5 MDH) + garantie financement 40%",
+    montantEstime: 700_000,
+    eligible: true,
+    eligibilityNote: "MRE, investissement tourisme, min 1 MDH, apport devises 25%",
+    process: "Via banque partenaire → validation Tamwilcom (21j ouvrés + 5j)",
+    source: "tamwilcom.ma",
+  },
+  {
+    name: "Go Siyaha",
+    institution: "Maroc PME / Min. Tourisme",
+    type: "sectoriel",
+    offer: "5-30% du projet (base 5%, +25% si éco-responsable). Assistance technique 90%",
+    montantEstime: 350_000, // base 5%, peut aller à 2.1M avec eco
+    montantMax: 2_100_000,
+    eligible: true,
+    eligibilityNote: "Hébergement touristique, plus de seuil minimum depuis 2025, 1.5 emploi/MDH",
+    process: "Via CRI ou plateforme Maroc PME → évaluation régionale → versement 50/50",
+    source: "marocpme.gov.ma",
+  },
+  {
+    name: "ANAPEC TAHFIZ",
+    institution: "ANAPEC",
+    type: "emploi",
+    offer: "Exonération IR + CNSS employeur + taxe formation pendant 24 mois (max 10 employés)",
+    montantEstime: 1_500_000, // économie sur 24 mois, 8 employés
+    eligible: true,
+    eligibilityNote: "SARL créée entre 2015-2026, CDI, max 10 employés, 24 mois",
+    process: "Inscription SARL → demande ANAPEC avec contrats CDI → avantages sur paie",
+    source: "anapec.org",
+  },
+  {
+    name: "Go Siyaha Digital",
+    institution: "Maroc PME / Min. Tourisme",
+    type: "sectoriel",
+    offer: "90% des coûts d'infrastructure digitale (booking, CRM, paiement, WiFi)",
+    montantEstime: 100_000,
+    eligible: true,
+    eligibilityNote: "Entreprise touristique, systèmes pour expérience client et gestion",
+    process: "Inclus dans programme Go Siyaha, budget 720 MDH lancé 2024",
+    source: "marocpme.gov.ma",
+  },
+  {
+    name: "ADEREE/AMEE Énergie",
+    institution: "AMEE (Agence Marocaine Efficacité Énergétique)",
+    type: "green",
+    offer: "30% de subvention sur investissements décarbonation (solaire, LED, isolation)",
+    montantEstime: 150_000, // si ~500K investissement vert
+    eligible: true,
+    eligibilityNote: "PME hôtelière avec projet efficacité énergétique, audit requis",
+    process: "Audit énergétique certifié → projet avec calculs → soumission AMEE → 30%",
+    source: "amee.ma",
+  },
+  {
+    name: "Charte Investissement 2023",
+    institution: "CRI Casablanca-Settat",
+    type: "national",
+    offer: "Prime sectorielle tourisme 5% + primes additionnelles (emploi, genre, durabilité)",
+    montantEstime: 350_000,
+    eligible: "partial",
+    eligibilityNote: "Seuils élevés (150 emplois ou 50 MDH + 50 emplois). Prime base 5% accessible",
+    process: "Dossier au CRI → convention d'investissement → versement à 50% et 100% avancement",
+    source: "casainvest.ma",
+  },
+  {
+    name: "SMIT Appui Financier",
+    institution: "SMIT / Min. Tourisme",
+    type: "sectoriel",
+    offer: "Subvention jusqu'à 3% de l'investissement + appui technique (études, expertise)",
+    montantEstime: 210_000,
+    eligible: true,
+    eligibilityNote: "Projet hébergement touristique, min 500K MAD, zone prioritaire",
+    process: "Inscription banqueprojetstourisme.ma → évaluation SMIT → appui technique + financier",
+    source: "smit.gov.ma",
+  },
+  {
+    name: "Exonération TVA Équipements",
+    institution: "Administration fiscale",
+    type: "fiscal",
+    offer: "Exonération TVA sur biens d'équipement acquis pendant 36 mois",
+    montantEstime: 200_000, // estimation TVA sur équipements
+    eligible: true,
+    eligibilityNote: "Automatique, convention d'investissement requise, 36 mois",
+    process: "Signature convention investissement → attestation exonération → import/achat HT",
+    source: "Code Général des Impôts",
+  },
+  {
+    name: "IS Exonéré sur CA Devises",
+    institution: "Administration fiscale",
+    type: "fiscal",
+    offer: "100% exonération IS sur revenus en devises (5 ans), puis taux réduit",
+    montantEstime: 500_000, // estimation sur 5 ans
+    eligible: true,
+    eligibilityNote: "Clientèle internationale payant en EUR/USD (83% de la clientèle Airbnb)",
+    process: "Automatique si comptabilité sépare revenus devises vs MAD",
+    source: "Code Général des Impôts, art. 6-I-B-4",
+  },
+];
+
+// MDM Invest & Tamwil detailed process
+const MDM_PROCESS = {
+  invest: {
+    name: "MDM Invest",
+    timeline: {
+      officiel: "26 jours ouvrés (21j banque + 5j Tamwilcom)",
+      reel: "4 à 7+ mois selon retours d'expérience",
+    },
+    steps: [
+      { step: 1, desc: "Dépôt dossier complet à la banque partenaire", delai: "J0" },
+      { step: 2, desc: "Analyse et vérification par la banque (éligibilité, business plan, apport devises)", delai: "21 jours ouvrés" },
+      { step: 3, desc: "Transmission du dossier approuvé à Tamwilcom/CCG", delai: "J+21" },
+      { step: 4, desc: "Validation Tamwilcom et notification", delai: "5 jours ouvrés" },
+      { step: 5, desc: "Déblocage des fonds (subvention + prêt Tamwilkom)", delai: "5 jours après validation" },
+    ],
+    documents: [
+      "Business plan détaillé et étude de faisabilité",
+      "Justificatif d'apport en devises (≥ 25% du projet)",
+      "Statuts de la société et PV de modification",
+      "Contrat de bail ou titre de propriété",
+      "Déclarations fiscales des 3 dernières années",
+      "Relevés bancaires et situation des engagements",
+      "Prévisionnel de trésorerie sur 3 ans",
+      "Carte de séjour / résidence à l'étranger valide",
+    ],
+    banquesPartenaires: ["Attijariwafa Bank", "Crédit Agricole du Maroc", "Bank of Africa", "BMCE Bank"],
+    changements2024: [
+      "Apport minimum réduit de 25% à 20% (juillet 2024)",
+      "Prime maintenue à 10%, plafond 5 MDH",
+      "Nouveaux secteurs éligibles ajoutés",
+      "Investissement minimum confirmé : 1 MDH",
+    ],
+  },
+  tamwil: {
+    name: "MDM Tamwil (Tamwilkom)",
+    conditions: {
+      taux: "2,5% HT/an (~2,75% TTC)",
+      duree: "7 ans maximum",
+      differe: "2 ans sur principal",
+      montant: "1 à 5 MDH",
+      maxProjet: "40% du coût projet",
+      minProjet: "2,5 MDH",
+    },
+  },
+  feedbacks: {
+    positifs: [
+      "Structure attractive sur le papier (10% subvention + taux bas)",
+      "Tamwilkom à 2,5% HT = très compétitif vs banque classique",
+      "Pas de remboursement de la subvention si maintien 5 ans",
+    ],
+    negatifs: [
+      "Seulement 48 dossiers approuvés entre 2002 et 2022 (sur des milliers attendus)",
+      "Délais réels : 4-7+ mois au lieu de 5 semaines officielles",
+      "Cas documenté : fonds bloqués 7 mois sans déblocage (Yabiladi)",
+      "Bureaucratie lourde : paperasse difficile à obtenir depuis l'étranger",
+      "Mauvaise communication du programme — beaucoup de MRE ne connaissent pas",
+      "Seulement 2,9% des MRE investissent au Maroc (HCP 2022)",
+      "Clause 5 ans rigide : pas de flexibilité si changement de circonstances",
+      "Pas de processus d'appel transparent en cas de rejet",
+    ],
+    sources: [
+      "Yabiladi.com — forums MRE (discussions approfondies)",
+      "LesEco.ma — nouveautés financement MRE 2024",
+      "Medias24 — annonces Tamwilcom juillet 2024",
+      "HCP 2022 — étude migration et investissement",
+    ],
+    risques: [
+      { risque: "Délai excessif", prob: 0.7, detail: "4-7 mois vs 5 semaines officielles" },
+      { risque: "Rejet du dossier", prob: 0.3, detail: "Documentation incomplète ou non conforme" },
+      { risque: "Banque non coopérative", prob: 0.4, detail: "Certaines agences peu formées sur MDM" },
+      { risque: "Clause 5 ans bloquante", prob: 0.5, detail: "Revente/restructuration impossible sans remboursement" },
+    ],
+  },
+};
 
 const PROJECTION_YEARS = 10;

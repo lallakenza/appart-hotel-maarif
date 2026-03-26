@@ -147,16 +147,64 @@ tr:hover td{background:#f8fafc}
 .ctt-divider{border-top:1px solid rgba(255,255,255,.12);margin:5px 0}
 
 /* Verdict banner */
-.verdict-banner{border-radius:16px;padding:24px 28px;margin-bottom:24px;display:flex;gap:24px;align-items:center;border:2px solid;animation:fadeUp .5s ease both}
-.verdict-banner.verdict-go{background:#f0fdf4;border-color:#16a34a;color:#065f46}
-.verdict-banner.verdict-caution{background:#fffbeb;border-color:#d97706;color:#78350f}
-.verdict-banner.verdict-nogo{background:#fef2f2;border-color:#dc2626;color:#7f1d1d}
-.verdict-icon{font-size:3rem;flex-shrink:0}
-.verdict-content{flex:1}
-.verdict-title{font-family:'Instrument Serif',serif;font-size:1.5rem;margin-bottom:4px}
-.verdict-subtitle{font-size:.95rem;opacity:.85;line-height:1.5}
-.verdict-metrics{display:flex;gap:20px;margin-top:12px;flex-wrap:wrap}
-.verdict-metric{background:rgba(0,0,0,.06);padding:6px 14px;border-radius:8px;font-size:.82rem;font-weight:600}
+.verdict-banner{border-radius:16px;padding:28px 32px;margin-bottom:24px;display:flex;gap:24px;align-items:flex-start;border:2px solid;animation:fadeUp .5s ease both;position:relative;overflow:hidden}
+.verdict-banner::before{content:'';position:absolute;top:0;left:0;width:6px;height:100%;border-radius:16px 0 0 16px}
+.verdict-banner.verdict-go{background:linear-gradient(135deg,#f0fdf4 0%,#dcfce7 100%);border-color:#16a34a;color:#065f46}
+.verdict-banner.verdict-go::before{background:#16a34a}
+.verdict-banner.verdict-caution{background:linear-gradient(135deg,#fffbeb 0%,#fef3c7 100%);border-color:#d97706;color:#78350f}
+.verdict-banner.verdict-caution::before{background:#d97706}
+.verdict-banner.verdict-nogo{background:linear-gradient(135deg,#fef2f2 0%,#fecaca 100%);border-color:#dc2626;color:#7f1d1d}
+.verdict-banner.verdict-nogo::before{background:#dc2626}
+.verdict-icon-wrap{width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.verdict-go .verdict-icon-wrap{background:#16a34a}
+.verdict-caution .verdict-icon-wrap{background:#d97706}
+.verdict-nogo .verdict-icon-wrap{background:#dc2626}
+.verdict-icon-wrap svg{width:28px;height:28px;stroke:#fff;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.verdict-content{flex:1;min-width:0}
+.verdict-header{display:flex;align-items:center;gap:12px;margin-bottom:6px;flex-wrap:wrap}
+.verdict-title{font-family:'Instrument Serif',serif;font-size:1.5rem;line-height:1.2}
+.verdict-score-badge{display:inline-flex;align-items:center;gap:4px;padding:4px 12px;border-radius:20px;font-size:.78rem;font-weight:700;letter-spacing:.3px}
+.verdict-go .verdict-score-badge{background:rgba(22,163,74,.15);color:#16a34a}
+.verdict-caution .verdict-score-badge{background:rgba(217,119,6,.15);color:#d97706}
+.verdict-nogo .verdict-score-badge{background:rgba(220,38,38,.15);color:#dc2626}
+.verdict-subtitle{font-size:.9rem;opacity:.8;line-height:1.6;margin-bottom:14px}
+.verdict-metrics{display:flex;gap:8px;flex-wrap:wrap}
+.verdict-metric{display:flex;align-items:center;gap:6px;padding:6px 14px;border-radius:8px;font-size:.8rem;font-weight:600;background:rgba(255,255,255,.7);backdrop-filter:blur(4px);border:1px solid rgba(0,0,0,.06)}
+.verdict-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.verdict-dot.dot-ok{background:#16a34a}
+.verdict-dot.dot-warn{background:#d97706}
+.verdict-dot.dot-bad{background:#dc2626}
+.verdict-score-bar{display:flex;gap:3px;margin-left:2px}
+.verdict-score-bar span{width:12px;height:12px;border-radius:3px;background:rgba(0,0,0,.1)}
+.verdict-go .verdict-score-bar span.filled{background:#16a34a}
+.verdict-caution .verdict-score-bar span.filled{background:#d97706}
+.verdict-nogo .verdict-score-bar span.filled{background:#dc2626}
+
+/* Subventions */
+.sub-timeline{display:flex;flex-direction:column;gap:0;position:relative;padding-left:24px}
+.sub-step{position:relative;padding:12px 0 12px 20px;border-left:3px solid var(--gold)}
+.sub-step:last-child{border-left-color:transparent}
+.sub-step::before{content:'';position:absolute;left:-9px;top:16px;width:14px;height:14px;border-radius:50%;background:var(--gold);border:3px solid #fff;box-shadow:0 0 0 2px var(--gold)}
+.sub-step-num{font-weight:700;color:var(--gold);font-size:.8rem;margin-bottom:2px}
+.sub-step-desc{font-size:.88rem;color:var(--text)}
+.sub-step-delai{font-size:.78rem;color:var(--muted);margin-top:2px}
+.sub-doc-list{padding-left:20px;margin-top:8px;font-size:.85rem;line-height:1.8;color:var(--text)}
+.sub-doc-list li{margin-bottom:2px}
+.sub-feedback-list{list-style:none;padding:0;margin:0;font-size:.85rem;line-height:1.7}
+.sub-feedback-list li{padding:6px 0;border-bottom:1px solid rgba(0,0,0,.04)}
+.sub-feedback-list li:last-child{border-bottom:none}
+.sub-feedback-list li::before{content:'';display:inline-block;width:6px;height:6px;border-radius:50%;margin-right:8px;vertical-align:middle}
+#mdm-fb-positifs li::before{background:var(--green)}
+#mdm-fb-negatifs li::before{background:var(--red)}
+.sub-type-badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:.72rem;font-weight:600;text-transform:uppercase;letter-spacing:.3px}
+.sub-type-national{background:#e0f2fe;color:#0369a1}
+.sub-type-sectoriel{background:#fef3c7;color:#92400e}
+.sub-type-emploi{background:#ede9fe;color:#6d28d9}
+.sub-type-green{background:#dcfce7;color:#166534}
+.sub-type-fiscal{background:#f3e8ff;color:#7c3aed}
+.sub-elig-yes{color:var(--green);font-weight:600}
+.sub-elig-partial{color:var(--amber);font-weight:600}
+.sub-elig-no{color:var(--red);font-weight:600}
 
 /* Animations */
 @keyframes slideDown{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
@@ -166,7 +214,7 @@ tr:hover td{background:#f8fafc}
 @media print{.header,.nav,.scenario-bar,.control-panel,.ctrl-toggle{display:none!important}.main{padding:0}.card{break-inside:avoid;page-break-inside:avoid;box-shadow:none;border:1px solid #ddd}}
 
 /* Responsive */
-@media(max-width:900px){.kpi-grid{grid-template-columns:repeat(2,1fr)}.grid-2,.grid-3{grid-template-columns:1fr}.verdict-banner{flex-direction:column;text-align:center}}
+@media(max-width:900px){.kpi-grid{grid-template-columns:repeat(2,1fr)}.grid-2,.grid-3{grid-template-columns:1fr}.verdict-banner{flex-direction:column;text-align:center}.verdict-header{justify-content:center}.verdict-metrics{justify-content:center}}
 @media(max-width:600px){.kpi-grid{grid-template-columns:1fr}.header-inner{flex-direction:column;gap:10px;text-align:center}.nav-inner{padding:0 8px}}
 </style>
 </head>
@@ -194,6 +242,7 @@ tr:hover td{background:#f8fafc}
     <button class="nav-btn" data-nav="marche">Étude de Marché</button>
     <button class="nav-btn" data-nav="fiscalite">Fiscalité & TVA</button>
     <button class="nav-btn" data-nav="risques">Analyse de Risques</button>
+    <button class="nav-btn" data-nav="subventions">Subventions & Aides</button>
   </div>
 </nav>
 
@@ -242,8 +291,8 @@ tr:hover td{background:#f8fafc}
     <div class="ctrl-group">
       <label class="ctrl-label">Taux crédit banque</label>
       <div class="ctrl-row">
-        <input type="range" class="ctrl-range" id="ctrl-taux" min="2.0" max="8.0" step="0.1" value="4.5">
-        <div class="ctrl-input-wrap"><input type="number" class="ctrl-input" id="ctrl-taux-val" min="2.0" max="8.0" step="0.1" value="4.5"><span class="ctrl-unit">%</span></div>
+        <input type="range" class="ctrl-range" id="ctrl-taux" min="3.0" max="8.0" step="0.1" value="5.25">
+        <div class="ctrl-input-wrap"><input type="number" class="ctrl-input" id="ctrl-taux-val" min="3.0" max="8.0" step="0.1" value="5.25"><span class="ctrl-unit">%</span></div>
       </div>
     </div>
   </div>
@@ -253,9 +302,14 @@ tr:hover td{background:#f8fafc}
 <div data-view="overview">
   <!-- VERDICT GO / NO-GO -->
   <div class="verdict-banner verdict-caution" id="verdict-banner">
-    <div class="verdict-icon" id="verdict-icon">⚠️</div>
+    <div class="verdict-icon-wrap" id="verdict-icon-wrap">
+      <svg id="verdict-svg" viewBox="0 0 24 24"><path d="M12 9v4m0 4h.01M12 2L2 20h20L12 2z"/></svg>
+    </div>
     <div class="verdict-content">
-      <div class="verdict-title" id="verdict-title">Analyse en cours...</div>
+      <div class="verdict-header">
+        <div class="verdict-title" id="verdict-title">Analyse en cours...</div>
+        <div class="verdict-score-badge" id="verdict-score-badge"></div>
+      </div>
       <div class="verdict-subtitle" id="verdict-subtitle"></div>
       <div class="verdict-metrics" id="verdict-metrics"></div>
     </div>
@@ -329,7 +383,7 @@ tr:hover td{background:#f8fafc}
 <!-- ==================== FINANCEMENT ==================== -->
 <div data-view="financement" class="hidden">
   <div class="kpi-grid">
-    <div class="kpi-card"><div class="kpi-label">Total Projet</div><div class="kpi-value" id="fin-total-projet">–</div></div>
+    <div class="kpi-card"><div class="kpi-label">Total Projet</div><div class="kpi-value" id="fin-total-projet">–</div><div class="kpi-sub">Terrain + Construction + Ameublement</div></div>
     <div class="kpi-card"><div class="kpi-label">Apport (Terrain)</div><div class="kpi-value" id="fin-apport">–</div><div class="kpi-sub" id="fin-pct-apport">–</div></div>
     <div class="kpi-card"><div class="kpi-label">Subvention MDM</div><div class="kpi-value kpi-green" id="fin-subvention">–</div><div class="kpi-sub">10% du projet, gratuit</div></div>
     <div class="kpi-card"><div class="kpi-label">À financer</div><div class="kpi-value kpi-amber" id="fin-montant-financer">–</div></div>
@@ -361,7 +415,7 @@ tr:hover td{background:#f8fafc}
       <div class="info-box" style="margin-top:12px;font-size:.8rem">Source : tamwilcom.ma — Prêt complémentaire MRE, ne peut excéder la part banque, max 40% du projet, plafond 5 MDH.</div>
     </div>
     <div class="card">
-      <div class="card-title">Banque Classique — ~4,25%</div>
+      <div class="card-title">Banque Classique — ~5,25%</div>
       <table>
         <tr><td>Montant</td><td class="num bold" id="fin-bq-montant">–</td></tr>
         <tr><td>Taux</td><td class="num" id="fin-bq-taux">–</td></tr>
@@ -369,7 +423,7 @@ tr:hover td{background:#f8fafc}
         <tr><td>Mensualité</td><td class="num bold" id="fin-bq-mensualite">–</td></tr>
         <tr><td>Coût total du crédit</td><td class="num" id="fin-bq-cout">–</td></tr>
       </table>
-      <div class="info-box" style="margin-top:12px;font-size:.8rem">Source : Médias24 — Taux moyen crédit investissement 2025 : 4,1%-4,35% (7-15 ans).</div>
+      <div class="info-box" style="margin-top:12px;font-size:.8rem">Source : Bank Al-Maghrib T4-2025 — Taux débiteur moyen TPME : 5,22%. Fourchette investissement : 5,17%–5,61%.</div>
     </div>
   </div>
 
@@ -437,24 +491,32 @@ tr:hover td{background:#f8fafc}
 <!-- ==================== FISCALITÉ ==================== -->
 <div data-view="fiscalite" class="hidden">
   <div class="kpi-grid">
-    <div class="kpi-card"><div class="kpi-label">TVA sur prestations</div><div class="kpi-value" id="fisc-tva-taux">–</div><div class="kpi-sub">Taux réduit hébergement</div></div>
-    <div class="kpi-card"><div class="kpi-label">TVA collectée An 1</div><div class="kpi-value" id="fisc-tva-collectee">–</div></div>
-    <div class="kpi-card"><div class="kpi-label">Exonération équipements</div><div class="kpi-value kpi-green">36 mois</div></div>
-    <div class="kpi-card"><div class="kpi-label">Exo IS devises</div><div class="kpi-value kpi-green">40%</div><div class="kpi-sub">Du CA exonéré d'IS</div></div>
+    <div class="kpi-card"><div class="kpi-label">TVA Collectée (10%)</div><div class="kpi-value" id="fisc-tva-collectee">–</div><div class="kpi-sub">Hébergement touristique</div></div>
+    <div class="kpi-card"><div class="kpi-label">TVA Déductible (20%)</div><div class="kpi-value" id="fisc-tva-deductible">–</div><div class="kpi-sub">Services & achats An 1</div></div>
+    <div class="kpi-card"><div class="kpi-label">Crédit TVA Construction</div><div class="kpi-value kpi-green" id="fisc-tva-credit">–</div><div class="kpi-sub">Reportable sur revenus futurs</div></div>
+    <div class="kpi-card"><div class="kpi-label">Durée récup. crédit TVA</div><div class="kpi-value" id="fisc-tva-recup">–</div><div class="kpi-sub" id="fisc-tva-recup-sub"></div></div>
+  </div>
+  <div class="card">
+    <div class="card-title">Mécanisme TVA — Différentiel 20% vs 10%</div>
+    <div class="info-box" style="margin-bottom:16px">
+      <strong>Construction :</strong> TVA à 20% sur les travaux (<span id="fisc-constr-ht">–</span> HT) = <strong id="fisc-tva-constr">–</strong> de crédit TVA initial.<br>
+      <strong>Exploitation :</strong> TVA collectée à 10% sur hébergement, mais TVA payée à 20% sur services (gestion, entretien, commissions, etc.) et 14% sur utilities.<br>
+      <strong>Résultat :</strong> Le solde annuel (collectée - déductible) rembourse progressivement le crédit de construction. Pas de TVA à payer tant que le crédit n'est pas épuisé.
+    </div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Année</th><th>TVA Collectée</th><th>TVA Déductible</th><th>Solde Annuel</th><th>Crédit Restant</th><th>TVA à Payer</th></tr></thead>
+      <tbody id="fisc-tva-tbody"></tbody>
+    </table></div>
   </div>
   <div class="card">
     <div class="card-title">Régime Fiscal Résidence de Tourisme</div>
     <div class="table-wrap"><table><thead><tr><th>Avantage</th><th>Détail</th><th>Durée</th></tr></thead><tbody>
-      <tr><td>TVA réduite 10%</td><td>Hébergement et restauration touristiques</td><td><span class="badge badge-green">Permanent</span></td></tr>
-      <tr><td>Exonération TVA équipements</td><td>Biens d'équipement acquis pendant 36 mois</td><td><span class="badge badge-green">3 premières années</span></td></tr>
-      <tr><td>Crédit de TVA</td><td>TVA déductible > TVA collectée = crédit reportable</td><td><span class="badge badge-amber">Premières années</span></td></tr>
-      <tr><td>IS exonéré sur CA devises</td><td>Part du CA réalisé en devises étrangères</td><td><span class="badge badge-green">Permanent</span></td></tr>
+      <tr><td>TVA réduite 10%</td><td>Hébergement et restauration touristiques (au lieu de 20%)</td><td><span class="badge badge-green">Permanent</span></td></tr>
+      <tr><td>Crédit TVA construction</td><td>TVA 20% sur construction > TVA 10% collectée = crédit reportable</td><td><span class="badge badge-amber" id="fisc-badge-recup">–</span></td></tr>
+      <tr><td>Exonération TVA équipements</td><td>Biens d'équipement acquis pendant 36 mois (convention investissement)</td><td><span class="badge badge-green">3 premières années</span></td></tr>
+      <tr><td>IS exonéré sur CA devises</td><td>Part du CA réalisé en devises étrangères (40% estimé)</td><td><span class="badge badge-green">Permanent</span></td></tr>
       <tr><td>Exonération taxe professionnelle</td><td>5 premières années nouvelles constructions</td><td><span class="badge badge-green">5 premières années</span></td></tr>
     </tbody></table></div>
-  </div>
-  <div class="card">
-    <div class="card-title">Crédit de TVA</div>
-    <div class="warn-box">Les premières années, la TVA déductible sur les équipements et la construction sera supérieure à la TVA collectée, générant un <strong>crédit de TVA</strong> reportable. TVA construction (est.) : <strong id="fisc-tva-constr">–</strong>. Crédit TVA An 1 : <strong id="fisc-tva-credit">–</strong>.</div>
   </div>
   <div class="card"><div class="card-title">Impact IS sur 10 ans</div><div class="chart-box"><canvas id="chart-is"></canvas></div></div>
 </div>
@@ -473,6 +535,78 @@ tr:hover td{background:#f8fafc}
     <div class="grid-2">
       <div class="warn-box"><strong>Points de vigilance</strong><ul style="padding-left:18px;margin-top:8px;font-size:.85rem"><li>Vérifier conformité zone B5 pour usage touristique</li><li>Obtenir autorisations avant engagement financier</li><li>Prévoir marge 10-15% sur budget construction</li><li>Anticiper gestion à distance (société de gestion)</li><li>Engagement MDM Invest : 5 ans sans désinvestissement</li></ul></div>
       <div class="info-box"><strong>Points forts du projet</strong><ul style="padding-left:18px;margin-top:8px;font-size:.85rem"><li>Emplacement premium Maarif, forte demande</li><li>Financement très avantageux (MDM Invest + Tamwil)</li><li>Fiscalité attractive (TVA 10%, exo IS devises)</li><li>Revenus diversifiés (hôtel + local commercial)</li><li>Perspective Coupe du Monde 2030</li></ul></div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== SUBVENTIONS & AIDES ==================== -->
+<div data-view="subventions" class="hidden">
+  <div class="kpi-grid">
+    <div class="kpi-card"><div class="kpi-label">Total Subventions (conservateur)</div><div class="kpi-value kpi-green" id="sub-total-conserv">–</div><div class="kpi-sub">Programmes confirmés</div></div>
+    <div class="kpi-card"><div class="kpi-label">Total Subventions (optimisé)</div><div class="kpi-value" id="sub-total-opti">–</div><div class="kpi-sub">Tous programmes éligibles</div></div>
+    <div class="kpi-card"><div class="kpi-label">% du Projet Couvert</div><div class="kpi-value" id="sub-pct-projet">–</div></div>
+    <div class="kpi-card"><div class="kpi-label">Programmes Éligibles</div><div class="kpi-value" id="sub-nb-programmes">–</div></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Programmes de Subvention & Aides Éligibles</div>
+    <div class="info-box" style="margin-bottom:16px">Ce tableau recense toutes les subventions nationales, sectorielles et fiscales auxquelles le projet est potentiellement éligible. Les montants sont des estimations basées sur un investissement de 7 MDH.</div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Programme</th><th>Institution</th><th>Type</th><th>Offre</th><th>Montant Estimé</th><th>Éligibilité</th></tr></thead>
+      <tbody id="sub-table-tbody"></tbody>
+    </table></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">MDM Invest — Processus Détaillé & Timeline</div>
+    <div class="grid-2" style="margin-bottom:16px">
+      <div class="info-box">
+        <strong>Délai officiel :</strong> <span id="mdm-timeline-officiel">–</span><br>
+        <strong>Délai réel :</strong> <span id="mdm-timeline-reel" style="color:var(--red);font-weight:600">–</span>
+      </div>
+      <div class="warn-box">
+        <strong>Banques partenaires :</strong> <span id="mdm-banques">–</span>
+      </div>
+    </div>
+    <div class="sub-timeline" id="mdm-steps"></div>
+    <div style="margin-top:16px">
+      <strong style="font-size:.9rem">Documents requis :</strong>
+      <ul class="sub-doc-list" id="mdm-docs"></ul>
+    </div>
+    <div style="margin-top:16px">
+      <strong style="font-size:.9rem">Changements 2024 :</strong>
+      <ul class="sub-doc-list" id="mdm-changes"></ul>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">MDM Tamwil (Tamwilkom) — Conditions</div>
+    <div class="table-wrap"><table>
+      <tbody id="mdm-tamwil-tbody"></tbody>
+    </table></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Retours d'Expérience MDM Invest — Feedbacks MRE</div>
+    <div class="grid-2">
+      <div>
+        <h4 style="color:var(--green);margin-bottom:8px;font-size:.9rem">Points Positifs</h4>
+        <ul class="sub-feedback-list" id="mdm-fb-positifs"></ul>
+      </div>
+      <div>
+        <h4 style="color:var(--red);margin-bottom:8px;font-size:.9rem">Points Négatifs / Risques</h4>
+        <ul class="sub-feedback-list" id="mdm-fb-negatifs"></ul>
+      </div>
+    </div>
+    <div style="margin-top:16px">
+      <strong style="font-size:.9rem">Matrice des risques MDM :</strong>
+      <div class="table-wrap" style="margin-top:8px"><table>
+        <thead><tr><th>Risque</th><th>Probabilité</th><th>Détail</th></tr></thead>
+        <tbody id="mdm-risques-tbody"></tbody>
+      </table></div>
+    </div>
+    <div class="info-box" style="margin-top:16px">
+      <strong>Sources :</strong> <span id="mdm-sources">–</span>
     </div>
   </div>
 </div>

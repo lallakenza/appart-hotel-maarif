@@ -13,7 +13,7 @@ const CTRL_FIELDS = [
   { id: "studio", key: "prixNuitStudio",  div: 1,   min: 200, max: 900 },
   { id: "loft",   key: "prixNuitLoft",    div: 1,   min: 200, max: 1200 },
   { id: "loyer",  key: "loyerCommercial", div: 1,   min: 3000, max: 20000 },
-  { id: "taux",   key: "tauxBanque",      div: 100, min: 2, max: 8 },
+  { id: "taux",   key: "tauxBanque",      div: 100, min: 3, max: 8 },
 ];
 
 // --- Core pipeline ---

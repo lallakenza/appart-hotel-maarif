@@ -74,6 +74,11 @@ function compute(scenario) {
   // --- Nuitées ---
   const nuiteesParAn = nbUnites * 365 * occ;
 
+  // --- Amortissement bâtiment (linéaire, terrain non amortissable) ---
+  // On amortit le coût de construction HT (hors terrain) sur 20 ans
+  const constructionHTForAmort = budgetConstruction / 1.20; // extraction du HT depuis TTC
+  const amortissementAnnuel = constructionHTForAmort / FISCALITE.amortissementAns;
+
   // --- Projections annuelles ---
   const projections = [];
   let cumulCF = 0; // pas d'apport cash, apport = terrain
@@ -125,14 +130,18 @@ function compute(scenario) {
 
     const debtServiceTotal = debtTK + debtBQ;
 
-    // IS (simplifié)
+    // IS — L'amortissement est une charge non-cash qui réduit le bénéfice imposable
+    // Amortissement sur 20 ans (seulement pendant la durée de vie fiscale)
+    const dotationAmort = y < FISCALITE.amortissementAns ? amortissementAnnuel : 0;
     const cashFlowAvantIS = ebitda - debtServiceTotal;
-    const beneficeImposable = Math.max(0, cashFlowAvantIS);
+    // Le bénéfice fiscal déduit l'amortissement (non-cash) et le service de dette
+    const resultatFiscal = ebitda - debtServiceTotal - dotationAmort;
+    const beneficeImposable = Math.max(0, resultatFiscal);
     const partLocale = beneficeImposable * (1 - FISCALITE.caDevisesPct);
     const is = partLocale * FISCALITE.isTaux;
-    const economieIS = beneficeImposable * FISCALITE.caDevisesPct * FISCALITE.isTaux;
+    const economieIS = dotationAmort * (1 - FISCALITE.caDevisesPct) * FISCALITE.isTaux; // économie grâce à l'amortissement
 
-    // Cash-flow net
+    // Cash-flow net (amortissement = non-cash, ne sort pas de la trésorerie)
     const cashFlowNet = cashFlowAvantIS - is;
     cumulCF += cashFlowNet;
 
@@ -142,6 +151,7 @@ function compute(scenario) {
       chargesTotal, chargesDetail,
       ebitda, margeExploitation,
       debtTK, debtBQ, debtServiceTotal,
+      dotationAmort, resultatFiscal, beneficeImposable,
       cashFlowAvantIS, is, economieIS, cashFlowNet,
       cumulCashFlow: cumulCF,
     });
@@ -159,10 +169,55 @@ function compute(scenario) {
   const paybackIdx = projections.findIndex(p => p.cumulCashFlow >= apportTerrain);
   const paybackYear = paybackIdx >= 0 ? paybackIdx + 1 : null;
 
-  // TVA
-  const tvaConstruction = budgetConstruction * 0.20 * 0.5;
-  const tvaCollecteeAn1 = y1.revBrutHotel * FISCALITE.tvaTaux;
-  const creditTVA = Math.max(0, tvaConstruction - tvaCollecteeAn1);
+  // --- TVA : modélisation complète du différentiel 20% (achats) vs 10% (ventes) ---
+  // Le terrain n'a PAS de TVA. Seul le budget construction est TTC (20%)
+  const constructionHT = budgetConstruction / 1.20;
+  const tvaConstruction = constructionHT * 0.20; // TVA payée sur construction
+
+  // TVA déductible annuelle sur charges d'exploitation (20% sur services, 14% sur utilities)
+  // Charges soumises à TVA 20%: gestion, consommables, comptable, internet, entretien, divers
+  // Charges soumises à TVA 14%: eau/électricité, assurance
+  // Charges sans TVA: salaires, taxe professionnelle
+  const tvaProjections = [];
+  let creditTVARestant = tvaConstruction; // crédit initial = TVA construction
+  for (let y = 0; y < PROJECTION_YEARS; y++) {
+    const p = projections[y];
+    const ch = p.chargesDetail;
+
+    // TVA collectée (10% hébergement touristique + 20% loyer commercial)
+    const tvaCollecteeHotel = p.revBrutHotel * 0.10;
+    const tvaCollecteeCommercial = p.revCommercial * 0.20;
+    const tvaCollectee = tvaCollecteeHotel + tvaCollecteeCommercial;
+
+    // TVA déductible sur charges (les charges sont TTC dans notre modèle)
+    const tva20Charges = (ch.gestion + ch.consommables + ch.comptable + ch.entretien + ch.divers) * 0.20 / 1.20;
+    const tva14Charges = (ch.utilities + ch.assurance) * 0.14 / 1.14;
+    const tvaPlatformes = p.commissions * 0.20 / 1.20; // commissions plateformes = service à 20%
+    const tvaDeductible = tva20Charges + tva14Charges + tvaPlatformes;
+
+    // Solde TVA annuel = collectée - déductible
+    const soldeTVA = tvaCollectee - tvaDeductible;
+
+    // Le solde positif rembourse le crédit de construction
+    if (creditTVARestant > 0 && soldeTVA > 0) {
+      creditTVARestant = Math.max(0, creditTVARestant - soldeTVA);
+    }
+
+    tvaProjections.push({
+      year: y + 1,
+      tvaCollectee,
+      tvaDeductible,
+      soldeTVA,
+      creditRestant: creditTVARestant,
+      tvaAPayer: creditTVARestant <= 0 ? Math.max(0, soldeTVA) : 0,
+    });
+  }
+
+  const tvaCollecteeAn1 = tvaProjections[0].tvaCollectee;
+  const tvaDeductibleAn1 = tvaProjections[0].tvaDeductible;
+  const creditTVA = tvaConstruction; // crédit total initial
+  const anneesRecupCredit = tvaProjections.findIndex(t => t.creditRestant <= 0);
+  const dureeRecupCredit = anneesRecupCredit >= 0 ? anneesRecupCredit + 1 : null;
 
   // DSCR (Debt Service Coverage Ratio) — An 1
   const dscr = y1.debtServiceTotal > 0 ? y1.ebitda / y1.debtServiceTotal : Infinity;
@@ -180,7 +235,8 @@ function compute(scenario) {
     const testEbitda = testRevN - testCh;
     const testDebt = interetsDiffereTK + annuiteBQ;
     const testCFavIS = testEbitda - testDebt;
-    const testIS = Math.max(0, testCFavIS) * (1 - FISCALITE.caDevisesPct) * FISCALITE.isTaux;
+    const testResultatFiscal = testCFavIS - amortissementAnnuel;
+    const testIS = Math.max(0, testResultatFiscal) * (1 - FISCALITE.caDevisesPct) * FISCALITE.isTaux;
     const testCF = testCFavIS - testIS;
     if (testCF >= 0) { breakEvenOcc = testOcc; break; }
   }
@@ -197,13 +253,15 @@ function compute(scenario) {
     const ebit = revN - ch;
     const debtY1 = interetsDiffereTK + annuiteBQ; // année 1
     const cfAvIS = ebit - debtY1;
-    const impot = Math.max(0, cfAvIS) * (1 - FISCALITE.caDevisesPct) * FISCALITE.isTaux;
+    const resFiscal = cfAvIS - amortissementAnnuel;
+    const impot = Math.max(0, resFiscal) * (1 - FISCALITE.caDevisesPct) * FISCALITE.isTaux;
     const cf = cfAvIS - impot;
     return { occ: occRate, revenu: revN, ebitda: ebit, cashFlow: cf, rendement: cf / apportTerrain };
   });
 
   return {
-    terrain: { coutTerrain, fraisTerrain, budgetConstruction, coutM2Terrain },
+    terrain: { coutTerrain, fraisTerrain, budgetConstruction, coutM2Terrain, constructionHTForAmort },
+    amortissement: { annuel: amortissementAnnuel, duree: FISCALITE.amortissementAns, total: constructionHTForAmort },
     units: { nbStudios, nbLofts, nbUnites, surfaceLocative, surfaceCommerciale },
     budget: { ameublement, totalProjet },
     financement: {
@@ -214,7 +272,7 @@ function compute(scenario) {
       pctApport, pctTamwilkom, pctBanque, pctSubvention,
     },
     kpi: { rendementBrut, rendementNet, rendementNetApport, revpar, coutParNuitee, paybackYear, nuiteesParAn, dscr, breakEvenOcc },
-    tva: { tvaConstruction, tvaCollecteeAn1, creditTVA },
+    tva: { constructionHT, tvaConstruction, tvaCollecteeAn1, tvaDeductibleAn1, creditTVA, dureeRecupCredit, tvaProjections },
     projections,
     sensitivity,
     scenario,

@@ -48,6 +48,7 @@ function render(state) {
   renderFiscalite(state);
   renderRisques(state);
   renderSensibilite(state);
+  renderSubventions(state);
 }
 
 // --- Verdict Go / No-Go ---
@@ -70,37 +71,52 @@ function renderVerdict(S) {
   if (S.kpi.paybackYear && S.kpi.paybackYear <= 10) score++;
 
   const banner = document.getElementById("verdict-banner");
-  const icon = document.getElementById("verdict-icon");
+  const svg = document.getElementById("verdict-svg");
   const title = document.getElementById("verdict-title");
   const subtitle = document.getElementById("verdict-subtitle");
   const metrics = document.getElementById("verdict-metrics");
+  const scoreBadge = document.getElementById("verdict-score-badge");
 
   if (!banner) return;
+
+  // SVG icon paths
+  const svgCheck = '<path d="M20 6L9 17l-5-5"/>';
+  const svgAlert = '<path d="M12 9v4"/><path d="M12 17h.01"/><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>';
+  const svgX = '<circle cx="12" cy="12" r="10"/><path d="M15 9l-6 6"/><path d="M9 9l6 6"/>';
 
   banner.className = "verdict-banner";
   if (score >= 4) {
     banner.classList.add("verdict-go");
-    icon.textContent = "✅";
+    svg.innerHTML = svgCheck;
     title.textContent = "Projet viable — Go conditionnel";
     subtitle.textContent = "Les fondamentaux sont solides. Le projet génère un cash-flow positif avec une marge de sécurité sur l'occupation. Attention aux risques opérationnels (gestion à distance, saturation Maarif).";
   } else if (score >= 2) {
     banner.classList.add("verdict-caution");
-    icon.textContent = "⚠️";
+    svg.innerHTML = svgAlert;
     title.textContent = "Projet fragile — Go avec réserves";
     subtitle.textContent = "Le cash-flow est positif mais la marge de sécurité est faible. Un taux d'occupation inférieur aux prévisions mettrait le projet en difficulté. Négocier de meilleures conditions de financement améliorerait significativement le profil.";
   } else {
     banner.classList.add("verdict-nogo");
-    icon.textContent = "🔴";
+    svg.innerHTML = svgX;
     title.textContent = "Projet à risque — No-Go recommandé";
     subtitle.textContent = "Le cash-flow est négatif ou le DSCR insuffisant dans ce scénario. Les conditions actuelles ne permettent pas de couvrir la dette. Reconsidérer le montage financier ou le positionnement tarifaire.";
   }
 
+  // Score badge with mini bar
+  const scoreBar = Array.from({length: 5}, (_, i) =>
+    `<span${i < score ? ' class="filled"' : ''}></span>`
+  ).join('');
+  scoreBadge.innerHTML = `<span class="verdict-score-bar">${scoreBar}</span> ${score}/5`;
+
+  // Metric helper
+  function dot(ok) { return `<span class="verdict-dot ${ok ? 'dot-ok' : 'dot-warn'}"></span>`; }
+  function dotBad(ok) { return `<span class="verdict-dot ${ok ? 'dot-ok' : 'dot-bad'}"></span>`; }
+
   metrics.innerHTML = `
-    <div class="verdict-metric">DSCR: ${dscr === Infinity ? '∞' : dscr.toFixed(2) + 'x'} ${dscrOk ? '✅' : '⚠️'}</div>
-    <div class="verdict-metric">CF An 1: ${fmtMAD(y1.cashFlowNet)} ${cfPositif ? '✅' : '🔴'}</div>
-    <div class="verdict-metric">Break-even: ${breakEven ? fmtPct(breakEven, 0) : '?'} ${margeSecurite > 0.08 ? '✅' : '⚠️'}</div>
-    <div class="verdict-metric">Rdt/apport: ${fmtPct(rdtApport)} ${rdtApport > 0.03 ? '✅' : '⚠️'}</div>
-    <div class="verdict-metric">Score: ${score}/5</div>
+    <div class="verdict-metric">${dotBad(cfPositif)} CF An 1: ${fmtMAD(y1.cashFlowNet)}</div>
+    <div class="verdict-metric">${dot(dscrOk)} DSCR: ${dscr === Infinity ? '∞' : dscr.toFixed(2) + 'x'}</div>
+    <div class="verdict-metric">${dot(margeSecurite > 0.08)} Break-even: ${breakEven ? fmtPct(breakEven, 0) : '?'}</div>
+    <div class="verdict-metric">${dot(rdtApport > 0.03)} Rdt/apport: ${fmtPct(rdtApport)}</div>
   `;
 }
 
@@ -356,10 +372,37 @@ function renderMarche(S) {
 
 // --- Fiscalité ---
 function renderFiscalite(S) {
-  setText("fisc-tva-taux",      fmtPct(FISCALITE.tvaTaux, 0));
-  setText("fisc-tva-collectee", fmtMAD(S.tva.tvaCollecteeAn1));
-  setText("fisc-tva-credit",    fmtMAD(S.tva.creditTVA));
-  setText("fisc-tva-constr",    fmtMAD(S.tva.tvaConstruction));
+  // KPI cards
+  setText("fisc-tva-collectee",  fmtMAD(S.tva.tvaCollecteeAn1));
+  setText("fisc-tva-deductible", fmtMAD(S.tva.tvaDeductibleAn1));
+  setText("fisc-tva-credit",     fmtMAD(S.tva.creditTVA));
+  const recup = S.tva.dureeRecupCredit;
+  setText("fisc-tva-recup",      recup ? recup + " ans" : "> 10 ans");
+  setText("fisc-tva-recup-sub",  recup ? "Puis TVA à payer normalement" : "Crédit non épuisé sur 10 ans");
+
+  // Info box details
+  setText("fisc-constr-ht",  fmtMAD(S.tva.constructionHT));
+  setText("fisc-tva-constr", fmtMAD(S.tva.tvaConstruction));
+  const badgeRecup = document.getElementById("fisc-badge-recup");
+  if (badgeRecup) badgeRecup.textContent = recup ? recup + " premières années" : "> 10 ans";
+
+  // TVA projection table
+  const tbody = document.getElementById("fisc-tva-tbody");
+  if (!tbody) return;
+  tbody.innerHTML = "";
+  S.tva.tvaProjections.forEach(t => {
+    const tr = document.createElement("tr");
+    const hasCredit = t.creditRestant > 0;
+    tr.innerHTML = `
+      <td>An ${t.year}</td>
+      <td class="num">${fmtMAD(t.tvaCollectee)}</td>
+      <td class="num">${fmtMAD(t.tvaDeductible)}</td>
+      <td class="num" style="color:${t.soldeTVA >= 0 ? 'var(--green)' : 'var(--red)'}">${fmtMAD(t.soldeTVA)}</td>
+      <td class="num ${hasCredit ? 'bold' : ''}" style="color:${hasCredit ? 'var(--amber)' : 'var(--green)'}">${fmtMAD(t.creditRestant)}</td>
+      <td class="num">${t.tvaAPayer > 0 ? fmtMAD(t.tvaAPayer) : '<span style="color:var(--green)">0 MAD</span>'}</td>
+    `;
+    tbody.appendChild(tr);
+  });
 }
 
 // --- Risques ---
@@ -419,6 +462,106 @@ function renderSensibilite(S) {
     `;
     tbody.appendChild(tr);
   });
+}
+
+// --- Subventions ---
+function renderSubventions(S) {
+  // KPI totals
+  const eligible = SUBVENTIONS.filter(s => s.eligible === true);
+  const totalConserv = eligible.reduce((sum, s) => sum + s.montantEstime, 0);
+  const totalOpti = eligible.reduce((sum, s) => sum + (s.montantMax || s.montantEstime), 0);
+  setText("sub-total-conserv", fmtMAD(totalConserv));
+  setText("sub-total-opti",    fmtMAD(totalOpti));
+  setText("sub-pct-projet",    fmtPct(totalConserv / S.budget.totalProjet));
+  setText("sub-nb-programmes", eligible.length + " / " + SUBVENTIONS.length);
+
+  // Table
+  const tbody = document.getElementById("sub-table-tbody");
+  if (tbody) {
+    tbody.innerHTML = "";
+    SUBVENTIONS.forEach(s => {
+      const tr = document.createElement("tr");
+      const eligClass = s.eligible === true ? "sub-elig-yes" : s.eligible === "partial" ? "sub-elig-partial" : "sub-elig-no";
+      const eligText = s.eligible === true ? "Éligible" : s.eligible === "partial" ? "Partiel" : "Non éligible";
+      tr.innerHTML = `
+        <td><strong>${s.name}</strong></td>
+        <td class="small">${s.institution}</td>
+        <td><span class="sub-type-badge sub-type-${s.type}">${s.type}</span></td>
+        <td class="small">${s.offer}</td>
+        <td class="num bold">${fmtMAD(s.montantEstime)}${s.montantMax ? '<br><small style="color:var(--muted)">max ' + fmtMAD(s.montantMax) + '</small>' : ''}</td>
+        <td><span class="${eligClass}">${eligText}</span><br><small style="color:var(--muted)">${s.eligibilityNote}</small></td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  // MDM Process timeline
+  const stepsEl = document.getElementById("mdm-steps");
+  if (stepsEl && MDM_PROCESS.invest) {
+    stepsEl.innerHTML = "";
+    MDM_PROCESS.invest.steps.forEach(s => {
+      stepsEl.innerHTML += `
+        <div class="sub-step">
+          <div class="sub-step-num">Étape ${s.step}</div>
+          <div class="sub-step-desc">${s.desc}</div>
+          <div class="sub-step-delai">${s.delai}</div>
+        </div>`;
+    });
+  }
+
+  setText("mdm-timeline-officiel", MDM_PROCESS.invest.timeline.officiel);
+  setText("mdm-timeline-reel", MDM_PROCESS.invest.timeline.reel);
+  setText("mdm-banques", MDM_PROCESS.invest.banquesPartenaires.join(", "));
+
+  // Documents
+  const docsEl = document.getElementById("mdm-docs");
+  if (docsEl) {
+    docsEl.innerHTML = MDM_PROCESS.invest.documents.map(d => `<li>${d}</li>`).join("");
+  }
+
+  // Changes 2024
+  const changesEl = document.getElementById("mdm-changes");
+  if (changesEl) {
+    changesEl.innerHTML = MDM_PROCESS.invest.changements2024.map(c => `<li>${c}</li>`).join("");
+  }
+
+  // MDM Tamwil conditions
+  const tamwilTbody = document.getElementById("mdm-tamwil-tbody");
+  if (tamwilTbody && MDM_PROCESS.tamwil) {
+    const c = MDM_PROCESS.tamwil.conditions;
+    tamwilTbody.innerHTML = `
+      <tr><td>Taux</td><td class="num bold">${c.taux}</td></tr>
+      <tr><td>Durée</td><td class="num">${c.duree}</td></tr>
+      <tr><td>Différé</td><td class="num">${c.differe}</td></tr>
+      <tr><td>Montant</td><td class="num">${c.montant}</td></tr>
+      <tr><td>Max % du projet</td><td class="num">${c.maxProjet}</td></tr>
+      <tr><td>Projet minimum</td><td class="num">${c.minProjet}</td></tr>
+    `;
+  }
+
+  // Feedbacks
+  const fbPos = document.getElementById("mdm-fb-positifs");
+  const fbNeg = document.getElementById("mdm-fb-negatifs");
+  if (fbPos) fbPos.innerHTML = MDM_PROCESS.feedbacks.positifs.map(f => `<li>${f}</li>`).join("");
+  if (fbNeg) fbNeg.innerHTML = MDM_PROCESS.feedbacks.negatifs.map(f => `<li>${f}</li>`).join("");
+
+  // Risques MDM
+  const riskTbody = document.getElementById("mdm-risques-tbody");
+  if (riskTbody) {
+    riskTbody.innerHTML = "";
+    MDM_PROCESS.feedbacks.risques.forEach(r => {
+      const probColor = r.prob >= 0.6 ? "var(--red)" : r.prob >= 0.4 ? "var(--amber)" : "var(--green)";
+      riskTbody.innerHTML += `
+        <tr>
+          <td><strong>${r.risque}</strong></td>
+          <td><div class="meter"><div class="meter-fill" style="width:${r.prob * 100}%;background:${probColor}"></div></div> ${(r.prob * 100).toFixed(0)}%</td>
+          <td class="small">${r.detail}</td>
+        </tr>`;
+    });
+  }
+
+  // Sources
+  setText("mdm-sources", MDM_PROCESS.feedbacks.sources.join(" | "));
 }
 
 // --- Utility ---
