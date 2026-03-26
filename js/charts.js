@@ -234,37 +234,70 @@ function chartChargesBreakdown(S) {
   });
 }
 
-// --- Revenus vs Charges with RICH TOOLTIP ---
+// --- Revenus vs Charges with BREAKDOWN + RICH TOOLTIP ---
+let _revChBreakdown = true; // default: show breakdown
+
 function chartRevenusVsCharges(S) {
   destroyChart("revVsCh");
   const ctx = document.getElementById("chart-rev-vs-charges")?.getContext("2d");
   if (!ctx) return;
+
+  let datasets;
+  if (_revChBreakdown) {
+    datasets = [
+      // Revenue stack
+      { label: "Studios", data: S.projections.map(p => p.revStudios - (p.commissions * p.revStudios / p.revBrutHotel)), backgroundColor: "#1e3a5f", stack: "rev" },
+      { label: "Lofts", data: S.projections.map(p => p.revLofts - (p.commissions * p.revLofts / p.revBrutHotel)), backgroundColor: "#3b6b9a", stack: "rev" },
+      { label: "Local commercial", data: S.projections.map(p => p.revCommercial), backgroundColor: "#6b9fd4", stack: "rev" },
+      // Charges stack
+      { label: "Gestion (20%)", data: S.projections.map(p => p.chargesDetail.gestion), backgroundColor: "#dc2626", stack: "ch" },
+      { label: "Salaires", data: S.projections.map(p => p.chargesDetail.salaires), backgroundColor: "#ef4444", stack: "ch" },
+      { label: "Utilities", data: S.projections.map(p => p.chargesDetail.utilities), backgroundColor: "#f87171", stack: "ch" },
+      { label: "Autres charges", data: S.projections.map(p => { const c = p.chargesDetail; return c.consommables + c.comptable + c.assurance + c.entretien + c.taxesPro + c.divers; }), backgroundColor: "#fca5a5", stack: "ch" },
+      // EBITDA
+      { label: "EBITDA", data: S.projections.map(p => p.ebitda), backgroundColor: CHART_COLORS.green, stack: "ebitda" },
+    ];
+  } else {
+    datasets = [
+      { label: "Revenus", data: S.projections.map(p => p.revTotal), backgroundColor: CHART_COLORS.primary },
+      { label: "Charges", data: S.projections.map(p => p.chargesTotal), backgroundColor: CHART_COLORS.red },
+      { label: "EBITDA",  data: S.projections.map(p => p.ebitda), backgroundColor: CHART_COLORS.green },
+    ];
+  }
+
   _charts.revVsCh = new Chart(ctx, {
     type: "bar",
     data: {
       labels: S.projections.map(p => "An " + p.year),
-      datasets: [
-        { label: "Revenus", data: S.projections.map(p => p.revTotal), backgroundColor: CHART_COLORS.primary },
-        { label: "Charges", data: S.projections.map(p => p.chargesTotal), backgroundColor: CHART_COLORS.red },
-        { label: "EBITDA",  data: S.projections.map(p => p.ebitda), backgroundColor: CHART_COLORS.green },
-      ]
+      datasets
     },
     options: {
       responsive: true, maintainAspectRatio: false,
-      scales: { y: { ticks: { callback: v => fmtK(v) } } },
+      scales: {
+        x: { stacked: true },
+        y: { stacked: true, ticks: { callback: v => fmtK(v) } }
+      },
       plugins: {
+        legend: { labels: { boxWidth: 12, font: { size: 11 } } },
         tooltip: {
           enabled: false,
           external: (ctx) => externalTooltip(ctx, (idx) => {
             const p = S.projections[idx];
             const ch = p.chargesDetail;
+            const revStudiosNet = p.revStudios - (p.commissions * p.revStudios / p.revBrutHotel);
+            const revLoftsNet = p.revLofts - (p.commissions * p.revLofts / p.revBrutHotel);
+            const autres = ch.consommables + ch.comptable + ch.assurance + ch.entretien + ch.taxesPro + ch.divers;
             return `<div class="ctt-title">An ${p.year} — Compte de résultat</div>
-              <div class="ctt-row"><span>Revenus nets</span><span class="ctt-val">${fmtMAD(p.revTotal)}</span></div>
+              <div class="ctt-row" style="color:#1e3a5f"><span>Studios (net commissions)</span><span class="ctt-val">${fmtMAD(revStudiosNet)}</span></div>
+              <div class="ctt-row" style="color:#3b6b9a"><span>Lofts (net commissions)</span><span class="ctt-val">${fmtMAD(revLoftsNet)}</span></div>
+              <div class="ctt-row" style="color:#6b9fd4"><span>Local commercial</span><span class="ctt-val">${fmtMAD(p.revCommercial)}</span></div>
+              <div class="ctt-row ctt-sub"><span>Commissions plateformes</span><span class="ctt-val" style="color:var(--muted)">-${fmtMAD(p.commissions)}</span></div>
+              <div class="ctt-row ctt-total"><span>Revenus nets</span><span class="ctt-val">${fmtMAD(p.revTotal)}</span></div>
               <div class="ctt-divider"></div>
               <div class="ctt-row ctt-neg-row"><span>Sté gestion (20%)</span><span class="ctt-val ctt-neg">-${fmtK(ch.gestion)}</span></div>
               <div class="ctt-row ctt-neg-row"><span>Salaires + charges</span><span class="ctt-val ctt-neg">-${fmtK(ch.salaires)}</span></div>
               <div class="ctt-row ctt-neg-row"><span>Utilities</span><span class="ctt-val ctt-neg">-${fmtK(ch.utilities)}</span></div>
-              <div class="ctt-row ctt-neg-row"><span>Autres</span><span class="ctt-val ctt-neg">-${fmtK(ch.consommables + ch.comptable + ch.assurance + ch.entretien + ch.taxesPro + ch.divers)}</span></div>
+              <div class="ctt-row ctt-neg-row"><span>Autres</span><span class="ctt-val ctt-neg">-${fmtK(autres)}</span></div>
               <div class="ctt-divider"></div>
               <div class="ctt-row ctt-total"><span>EBITDA</span><span class="ctt-val" style="color:#16a34a">${fmtMAD(p.ebitda)}</span></div>
               <div class="ctt-row ctt-sub"><span>Marge d'exploitation</span><span class="ctt-val">${fmtPct(p.margeExploitation)}</span></div>`;
@@ -275,25 +308,52 @@ function chartRevenusVsCharges(S) {
   });
 }
 
-// --- Debt service with RICH TOOLTIP ---
+function toggleRevChBreakdown(on) {
+  _revChBreakdown = on;
+  document.querySelectorAll(".revch-toggle-btn").forEach(b => b.classList.toggle("active", (b.dataset.mode === "breakdown") === on));
+  if (currentState) chartRevenusVsCharges(currentState);
+}
+
+// --- Debt service with RICH TOOLTIP + capital/intérêts split + monthly/annual ---
+let _debtSplit = false;  // false = total per source, true = capital + intérêts
+let _debtMonthly = false; // false = annual, true = monthly
+
 function chartDebtService(S) {
   destroyChart("debt");
   const ctx = document.getElementById("chart-debt")?.getContext("2d");
   if (!ctx) return;
+
+  const div = _debtMonthly ? 12 : 1;
+  const suffix = _debtMonthly ? "/mois" : "/an";
+  let datasets;
+
+  if (_debtSplit) {
+    datasets = [
+      { label: "TK — Capital", data: S.projections.map(p => p.capitalTK / div), backgroundColor: "#d4a017", stack: "debt" },
+      { label: "TK — Intérêts", data: S.projections.map(p => p.interetsTK / div), backgroundColor: "#f5d679", stack: "debt" },
+      { label: "BQ — Capital", data: S.projections.map(p => p.capitalBQ / div), backgroundColor: "#1e3a5f", stack: "debt" },
+      { label: "BQ — Intérêts", data: S.projections.map(p => p.interetsBQ / div), backgroundColor: "#6b9fd4", stack: "debt" },
+      { label: "EBITDA", data: S.projections.map(p => p.ebitda / div), type: "line", borderColor: CHART_COLORS.green, backgroundColor: "transparent", tension: 0.3, pointRadius: 3, borderDash: [5, 3], order: -1 },
+    ];
+  } else {
+    datasets = [
+      { label: "Tamwilkom (2,5%)", data: S.projections.map(p => p.debtTK / div), backgroundColor: CHART_COLORS.gold, stack: "debt" },
+      { label: "Banque (~5,25%)",   data: S.projections.map(p => p.debtBQ / div), backgroundColor: CHART_COLORS.primaryLight, stack: "debt" },
+      { label: "EBITDA", data: S.projections.map(p => p.ebitda / div), type: "line", borderColor: CHART_COLORS.green, backgroundColor: "transparent", tension: 0.3, pointRadius: 3, borderDash: [5, 3], order: -1 },
+    ];
+  }
+
   _charts.debt = new Chart(ctx, {
     type: "bar",
     data: {
       labels: S.projections.map(p => "An " + p.year),
-      datasets: [
-        { label: "Tamwilkom (2,5%)", data: S.projections.map(p => p.debtTK), backgroundColor: CHART_COLORS.gold, stack: "debt" },
-        { label: "Banque (~4,5%)",   data: S.projections.map(p => p.debtBQ), backgroundColor: CHART_COLORS.primaryLight, stack: "debt" },
-        { label: "EBITDA", data: S.projections.map(p => p.ebitda), type: "line", borderColor: CHART_COLORS.green, backgroundColor: "transparent", tension: 0.3, pointRadius: 3, borderDash: [5, 3], order: -1 },
-      ]
+      datasets
     },
     options: {
       responsive: true, maintainAspectRatio: false,
       scales: { x: { stacked: true }, y: { stacked: true, ticks: { callback: v => fmtK(v) } } },
       plugins: {
+        legend: { labels: { boxWidth: 12, font: { size: 11 } } },
         tooltip: {
           enabled: false,
           external: (ctx) => externalTooltip(ctx, (idx) => {
@@ -301,21 +361,34 @@ function chartDebtService(S) {
             const isDiffTK = idx < TAMWILKOM.differeAns;
             const dscr = p.debtServiceTotal > 0 ? (p.ebitda / p.debtServiceTotal) : Infinity;
             const dscrColor = dscr > 1.5 ? '#16a34a' : dscr > 1.2 ? '#d97706' : '#dc2626';
-            return `<div class="ctt-title">An ${p.year} — Service de la dette</div>
-              <div class="ctt-row"><span>Tamwilkom ${isDiffTK ? '(différé — intérêts seuls)' : '(remboursement)'}</span><span class="ctt-val">${fmtMAD(p.debtTK)}</span></div>
-              <div class="ctt-row"><span>Banque classique</span><span class="ctt-val">${fmtMAD(p.debtBQ)}</span></div>
+            return `<div class="ctt-title">An ${p.year} — Service de la dette ${_debtMonthly ? '(mensuel)' : '(annuel)'}</div>
+              <div class="ctt-row" style="color:#d4a017"><span>TK Capital</span><span class="ctt-val">${fmtMAD(p.capitalTK / div)}</span></div>
+              <div class="ctt-row" style="color:#f5d679"><span>TK Intérêts ${isDiffTK ? '(différé)' : ''}</span><span class="ctt-val">${fmtMAD(p.interetsTK / div)}</span></div>
+              <div class="ctt-row" style="color:#1e3a5f"><span>BQ Capital</span><span class="ctt-val">${fmtMAD(p.capitalBQ / div)}</span></div>
+              <div class="ctt-row" style="color:#6b9fd4"><span>BQ Intérêts</span><span class="ctt-val">${fmtMAD(p.interetsBQ / div)}</span></div>
               <div class="ctt-divider"></div>
-              <div class="ctt-row ctt-total"><span>Total dette / an</span><span class="ctt-val">${fmtMAD(p.debtServiceTotal)}</span></div>
-              <div class="ctt-row ctt-sub"><span>Mensualité</span><span class="ctt-val">${fmtMAD(p.debtServiceTotal / 12)}/mois</span></div>
+              <div class="ctt-row ctt-total"><span>Total dette ${suffix}</span><span class="ctt-val">${fmtMAD(p.debtServiceTotal / div)}</span></div>
+              <div class="ctt-row ctt-sub"><span>dont intérêts</span><span class="ctt-val" style="color:var(--muted)">${fmtMAD((p.interetsTK + p.interetsBQ) / div)}</span></div>
               <div class="ctt-divider"></div>
-              <div class="ctt-row"><span>EBITDA</span><span class="ctt-val" style="color:#16a34a">${fmtMAD(p.ebitda)}</span></div>
-              <div class="ctt-row ctt-total"><span>DSCR (EBITDA / dette)</span><span class="ctt-val" style="color:${dscrColor}">${dscr === Infinity ? '∞' : dscr.toFixed(2) + 'x'}</span></div>
-              <div class="ctt-row ctt-sub"><span>${dscr >= 1.5 ? '✅ Confortable' : dscr >= 1.2 ? '⚠️ Juste' : '🔴 Critique — risque de défaut'}</span></div>`;
+              <div class="ctt-row"><span>EBITDA</span><span class="ctt-val" style="color:#16a34a">${fmtMAD(p.ebitda / div)}</span></div>
+              <div class="ctt-row ctt-total"><span>DSCR</span><span class="ctt-val" style="color:${dscrColor}">${dscr === Infinity ? '∞' : dscr.toFixed(2) + 'x'}</span></div>`;
           })
         }
       }
     }
   });
+}
+
+function toggleDebtSplit(on) {
+  _debtSplit = on;
+  document.querySelectorAll(".debt-split-btn").forEach(b => b.classList.toggle("active", (b.dataset.mode === "split") === on));
+  if (currentState) chartDebtService(currentState);
+}
+
+function toggleDebtPeriod(monthly) {
+  _debtMonthly = monthly;
+  document.querySelectorAll(".debt-period-btn").forEach(b => b.classList.toggle("active", (b.dataset.mode === "monthly") === monthly));
+  if (currentState) chartDebtService(currentState);
 }
 
 // --- Cash-flow with RICH TOOLTIP ---

@@ -475,23 +475,71 @@ function renderSubventions(S) {
   setText("sub-pct-projet",    fmtPct(totalConserv / S.budget.totalProjet));
   setText("sub-nb-programmes", eligible.length + " / " + SUBVENTIONS.length);
 
-  // Table
+  // Table with expandable details
   const tbody = document.getElementById("sub-table-tbody");
   if (tbody) {
     tbody.innerHTML = "";
-    SUBVENTIONS.forEach(s => {
-      const tr = document.createElement("tr");
+    SUBVENTIONS.forEach((s, i) => {
       const eligClass = s.eligible === true ? "sub-elig-yes" : s.eligible === "partial" ? "sub-elig-partial" : "sub-elig-no";
       const eligText = s.eligible === true ? "Éligible" : s.eligible === "partial" ? "Partiel" : "Non éligible";
+
+      // Main row (clickable)
+      const tr = document.createElement("tr");
+      tr.className = "sub-row-clickable";
+      tr.setAttribute("data-sub-idx", i);
       tr.innerHTML = `
-        <td><strong>${s.name}</strong></td>
+        <td><strong>${s.name}</strong> <span class="sub-expand-icon">▸</span></td>
         <td class="small">${s.institution}</td>
         <td><span class="sub-type-badge sub-type-${s.type}">${s.type}</span></td>
         <td class="small">${s.offer}</td>
         <td class="num bold">${fmtMAD(s.montantEstime)}${s.montantMax ? '<br><small style="color:var(--muted)">max ' + fmtMAD(s.montantMax) + '</small>' : ''}</td>
-        <td><span class="${eligClass}">${eligText}</span><br><small style="color:var(--muted)">${s.eligibilityNote}</small></td>
+        <td><span class="${eligClass}">${eligText}</span></td>
       `;
+      tr.addEventListener("click", () => toggleSubDetail(i));
       tbody.appendChild(tr);
+
+      // Detail row (hidden by default)
+      const detailTr = document.createElement("tr");
+      detailTr.className = "sub-detail-row hidden";
+      detailTr.id = "sub-detail-" + i;
+      const conditionsHtml = (s.conditions || []).map(c => {
+        const icon = c.projet ? '<span style="color:var(--green)">✓</span>' : '<span style="color:var(--red)">✗</span>';
+        return `<div class="sub-cond-item">
+          <div class="sub-cond-status">${icon}</div>
+          <div class="sub-cond-body">
+            <div class="sub-cond-label">${c.label}${c.requis ? '' : ' <small style="color:var(--muted)">(optionnel)</small>'}</div>
+            <div class="sub-cond-detail">${c.detail}</div>
+          </div>
+        </div>`;
+      }).join("");
+
+      const verdictClass = s.eligible === true ? "sub-verdict-yes" : s.eligible === "partial" ? "sub-verdict-partial" : "sub-verdict-no";
+      const verdictIcon = s.eligible === true ? "✓" : s.eligible === "partial" ? "~" : "✗";
+      const verdictLabel = s.eligible === true ? "Éligible" : s.eligible === "partial" ? "Éligibilité partielle" : "Non éligible";
+      const verdictText = s.whyEligible || s.whyNotEligible || s.eligibilityNote;
+
+      detailTr.innerHTML = `<td colspan="6">
+        <div class="sub-detail-panel">
+          <div class="sub-detail-section">
+            <div class="sub-detail-heading">Conditions d'éligibilité</div>
+            <div class="sub-cond-list">${conditionsHtml}</div>
+          </div>
+          <div class="sub-detail-section">
+            <div class="sub-verdict ${verdictClass}">
+              <span class="sub-verdict-icon">${verdictIcon}</span>
+              <div>
+                <div class="sub-verdict-label">${verdictLabel}</div>
+                <div class="sub-verdict-text">${verdictText}</div>
+              </div>
+            </div>
+          </div>
+          <div class="sub-detail-meta">
+            <span>Processus : ${s.process}</span>
+            <span>Source : ${s.source}</span>
+          </div>
+        </div>
+      </td>`;
+      tbody.appendChild(detailTr);
     });
   }
 
@@ -562,6 +610,21 @@ function renderSubventions(S) {
 
   // Sources
   setText("mdm-sources", MDM_PROCESS.feedbacks.sources.join(" | "));
+}
+
+// --- Subvention detail toggle ---
+function toggleSubDetail(idx) {
+  const detail = document.getElementById("sub-detail-" + idx);
+  const row = document.querySelector(`tr[data-sub-idx="${idx}"]`);
+  if (!detail || !row) return;
+  const isOpen = !detail.classList.contains("hidden");
+  // Close all others
+  document.querySelectorAll(".sub-detail-row").forEach(r => r.classList.add("hidden"));
+  document.querySelectorAll(".sub-row-clickable").forEach(r => r.classList.remove("sub-row-open"));
+  if (!isOpen) {
+    detail.classList.remove("hidden");
+    row.classList.add("sub-row-open");
+  }
 }
 
 // --- Utility ---

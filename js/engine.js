@@ -120,13 +120,61 @@ function compute(scenario) {
     const ebitda = revTotal - chargesTotal;
     const margeExploitation = revTotal > 0 ? ebitda / revTotal : 0;
 
-    // Service dette Tamwilkom
+    // Service dette Tamwilkom (capital + intérêts)
     const isDiffereTK = y < TAMWILKOM.differeAns;
-    const debtTK = isDiffereTK ? interetsDiffereTK : (y < TAMWILKOM.dureeAns ? annuiteTK : 0);
+    let debtTK, interetsTK, capitalTK;
+    if (isDiffereTK) {
+      interetsTK = interetsDiffereTK;
+      capitalTK = 0;
+      debtTK = interetsTK;
+    } else if (y < TAMWILKOM.dureeAns) {
+      debtTK = annuiteTK;
+      // Approximate yearly interest on remaining balance
+      const yRemb = y - TAMWILKOM.differeAns;
+      const nTKMonths = (TAMWILKOM.dureeAns - TAMWILKOM.differeAns) * 12;
+      let balTK = montantTamwilkom;
+      for (let m = 0; m < yRemb * 12; m++) {
+        const intM = balTK * rTK;
+        balTK -= (mensualiteTK - intM);
+      }
+      let yearIntTK = 0;
+      for (let m = 0; m < 12; m++) {
+        const intM = balTK * rTK;
+        yearIntTK += intM;
+        balTK -= (mensualiteTK - intM);
+      }
+      interetsTK = yearIntTK;
+      capitalTK = debtTK - interetsTK;
+    } else {
+      debtTK = 0; interetsTK = 0; capitalTK = 0;
+    }
 
-    // Service dette Banque classique
+    // Service dette Banque classique (capital + intérêts)
     const isDiffereBQ = y < BANQUE_CLASSIQUE.differeAns;
-    const debtBQ = isDiffereBQ ? (montantBanque * BANQUE_CLASSIQUE.tauxAnnuel) : (y < BANQUE_CLASSIQUE.dureeAns ? annuiteBQ : 0);
+    let debtBQ, interetsBQ, capitalBQ;
+    if (isDiffereBQ) {
+      interetsBQ = montantBanque * BANQUE_CLASSIQUE.tauxAnnuel;
+      capitalBQ = 0;
+      debtBQ = interetsBQ;
+    } else if (y < BANQUE_CLASSIQUE.dureeAns) {
+      debtBQ = annuiteBQ;
+      const yRemb = y - BANQUE_CLASSIQUE.differeAns;
+      let balBQ = montantBanque;
+      for (let m = 0; m < yRemb * 12; m++) {
+        const intM = balBQ * rBQ;
+        balBQ -= (mensualiteBQ - intM);
+      }
+      let yearIntBQ = 0;
+      for (let m = 0; m < 12; m++) {
+        const intM = balBQ * rBQ;
+        yearIntBQ += intM;
+        balBQ -= (mensualiteBQ - intM);
+      }
+      interetsBQ = yearIntBQ;
+      capitalBQ = debtBQ - interetsBQ;
+    } else {
+      debtBQ = 0; interetsBQ = 0; capitalBQ = 0;
+    }
 
     const debtServiceTotal = debtTK + debtBQ;
 
@@ -151,6 +199,7 @@ function compute(scenario) {
       chargesTotal, chargesDetail,
       ebitda, margeExploitation,
       debtTK, debtBQ, debtServiceTotal,
+      interetsTK, capitalTK, interetsBQ, capitalBQ,
       dotationAmort, resultatFiscal, beneficeImposable,
       cashFlowAvantIS, is, economieIS, cashFlowNet,
       cumulCashFlow: cumulCF,

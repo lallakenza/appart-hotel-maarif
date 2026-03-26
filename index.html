@@ -51,6 +51,10 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);lin
 
 /* Scenario */
 .scenario-bar{display:flex;gap:8px;margin-bottom:20px}
+.toggle-group{display:inline-flex;border:1px solid var(--border);border-radius:6px;overflow:hidden}
+.toggle-btn{padding:5px 14px;border:none;background:#fff;cursor:pointer;font-size:.75rem;font-weight:600;font-family:inherit;color:var(--text-sec);transition:all .2s}
+.toggle-btn.active{background:var(--primary);color:#fff}
+.toggle-btn:hover:not(.active){background:#f0f4f8}
 .scenario-btn{padding:10px 20px;border:2px solid var(--border);border-radius:8px;background:#fff;cursor:pointer;font-weight:600;font-family:inherit;font-size:.85rem;transition:all .2s;text-align:center;line-height:1.4}
 .scenario-btn.active{border-color:var(--primary);background:var(--primary);color:#fff}
 .scenario-btn:hover:not(.active){border-color:var(--primary-light)}
@@ -206,6 +210,33 @@ tr:hover td{background:#f8fafc}
 .sub-elig-partial{color:var(--amber);font-weight:600}
 .sub-elig-no{color:var(--red);font-weight:600}
 
+/* Subventions expandable rows */
+.sub-row-clickable{cursor:pointer;transition:background .15s}
+.sub-row-clickable:hover{background:#f8fafc}
+.sub-row-clickable.sub-row-open{background:#f0f4f8;border-bottom:none}
+.sub-expand-icon{display:inline-block;font-size:.7rem;color:var(--muted);transition:transform .2s;margin-left:4px}
+.sub-row-open .sub-expand-icon{transform:rotate(90deg);color:var(--primary)}
+.sub-detail-row td{padding:0 !important;border-top:none !important}
+.sub-detail-panel{background:#f8fafc;border-left:3px solid var(--gold);padding:16px 20px;margin:0 8px 8px 8px;border-radius:0 0 8px 8px;animation:fadeUp .25s ease both}
+.sub-detail-section{margin-bottom:12px}
+.sub-detail-heading{font-weight:700;font-size:.82rem;color:var(--primary);margin-bottom:8px;text-transform:uppercase;letter-spacing:.3px}
+.sub-cond-list{display:flex;flex-direction:column;gap:6px}
+.sub-cond-item{display:flex;gap:10px;align-items:flex-start;padding:6px 8px;background:#fff;border-radius:6px;border:1px solid rgba(0,0,0,.04)}
+.sub-cond-status{font-size:.9rem;min-width:18px;text-align:center;padding-top:1px}
+.sub-cond-label{font-weight:600;font-size:.82rem;color:var(--text)}
+.sub-cond-detail{font-size:.78rem;color:var(--muted);margin-top:1px}
+.sub-verdict{display:flex;gap:12px;align-items:flex-start;padding:12px 16px;border-radius:8px;border:1px solid}
+.sub-verdict-yes{background:#f0fdf4;border-color:#bbf7d0}
+.sub-verdict-partial{background:#fffbeb;border-color:#fde68a}
+.sub-verdict-no{background:#fef2f2;border-color:#fecaca}
+.sub-verdict-icon{font-size:1.3rem;font-weight:700;min-width:28px;text-align:center}
+.sub-verdict-yes .sub-verdict-icon{color:var(--green)}
+.sub-verdict-partial .sub-verdict-icon{color:var(--amber)}
+.sub-verdict-no .sub-verdict-icon{color:var(--red)}
+.sub-verdict-label{font-weight:700;font-size:.88rem;margin-bottom:2px}
+.sub-verdict-text{font-size:.82rem;color:var(--text-sec);line-height:1.5}
+.sub-detail-meta{display:flex;flex-wrap:wrap;gap:16px;font-size:.75rem;color:var(--muted);padding-top:8px;border-top:1px solid rgba(0,0,0,.06)}
+
 /* Animations */
 @keyframes slideDown{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
 @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
@@ -213,9 +244,58 @@ tr:hover td{background:#f8fafc}
 /* Print */
 @media print{.header,.nav,.scenario-bar,.control-panel,.ctrl-toggle{display:none!important}.main{padding:0}.card{break-inside:avoid;page-break-inside:avoid;box-shadow:none;border:1px solid #ddd}}
 
-/* Responsive */
-@media(max-width:900px){.kpi-grid{grid-template-columns:repeat(2,1fr)}.grid-2,.grid-3{grid-template-columns:1fr}.verdict-banner{flex-direction:column;text-align:center}.verdict-header{justify-content:center}.verdict-metrics{justify-content:center}}
-@media(max-width:600px){.kpi-grid{grid-template-columns:1fr}.header-inner{flex-direction:column;gap:10px;text-align:center}.nav-inner{padding:0 8px}}
+/* Responsive — Tablet */
+@media(max-width:900px){
+  .kpi-grid{grid-template-columns:repeat(2,1fr)}
+  .grid-2,.grid-3{grid-template-columns:1fr}
+  .verdict-banner{flex-direction:column;text-align:center}
+  .verdict-header{justify-content:center}
+  .verdict-metrics{justify-content:center}
+  .card-title{font-size:1rem}
+}
+/* Responsive — Mobile */
+@media(max-width:600px){
+  .kpi-grid{grid-template-columns:1fr}
+  .header-inner{flex-direction:column;gap:8px;text-align:center;padding:0 12px}
+  .header h1{font-size:1.2rem}
+  .header-badge{font-size:.9rem;padding:6px 12px}
+  .nav-inner{padding:0 4px;gap:0}
+  .nav-btn{padding:10px 10px;font-size:.72rem}
+  .main{padding:12px 8px}
+  .card{padding:14px 12px;border-radius:8px;margin-bottom:14px}
+  .card-title{font-size:.95rem;margin-bottom:8px;padding-bottom:8px}
+  .kpi-card{padding:12px 10px}
+  .kpi-value{font-size:1.15rem}
+  .kpi-label{font-size:.65rem}
+  .scenario-bar{flex-wrap:wrap;gap:6px}
+  .scenario-btn{padding:8px 12px;font-size:.75rem}
+  .ctrl-toggle{padding:6px 10px;font-size:.9rem}
+  .ctrl-grid{grid-template-columns:1fr}
+  .chart-box{height:220px}
+  table{font-size:.75rem}
+  th{padding:6px 6px;font-size:.65rem}
+  td{padding:5px 6px}
+  .toggle-group{border-radius:5px}
+  .toggle-btn{padding:4px 8px;font-size:.68rem}
+  .verdict-banner{padding:16px 14px;gap:12px;border-radius:10px}
+  .verdict-icon-wrap{width:40px;height:40px}
+  .verdict-icon-wrap svg{width:20px;height:20px}
+  .verdict-title{font-size:1.15rem}
+  .verdict-subtitle{font-size:.82rem}
+  .verdict-metric{padding:4px 8px;font-size:.7rem}
+  .info-box,.warn-box{font-size:.8rem;padding:10px 12px}
+  .progress-seg{font-size:.6rem}
+  .ct-tooltip{min-width:220px;max-width:280px;font-size:11px;padding:10px 12px}
+  .ctt-title{font-size:12px}
+  .ctt-total{font-size:12px}
+  .sub-detail-panel{padding:12px 14px}
+  .sub-cond-label{font-size:.75rem}
+  .sub-cond-detail{font-size:.72rem}
+  .sub-verdict{padding:10px 12px}
+  .sub-verdict-text{font-size:.75rem}
+  .sub-detail-meta{font-size:.68rem;gap:8px}
+  .sub-expand-icon{font-size:.6rem}
+}
 </style>
 </head>
 <body>
@@ -377,7 +457,16 @@ tr:hover td{background:#f8fafc}
       <div class="table-wrap"><table><thead><tr><th>Poste</th><th>/ An</th><th>/ Mois</th><th>% Total</th></tr></thead><tbody id="charges-tbody"></tbody></table></div>
     </div>
   </div>
-  <div class="card"><div class="card-title">Revenus vs Charges sur 10 ans</div><div class="chart-box"><canvas id="chart-rev-vs-charges"></canvas></div></div>
+  <div class="card">
+    <div class="card-title" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+      <span>Revenus vs Charges sur 10 ans</span>
+      <div class="toggle-group">
+        <button class="toggle-btn revch-toggle-btn active" data-mode="breakdown" onclick="toggleRevChBreakdown(true)">Détail</button>
+        <button class="toggle-btn revch-toggle-btn" data-mode="simple" onclick="toggleRevChBreakdown(false)">Simple</button>
+      </div>
+    </div>
+    <div class="chart-box"><canvas id="chart-rev-vs-charges"></canvas></div>
+  </div>
 </div>
 
 <!-- ==================== FINANCEMENT ==================== -->
@@ -427,7 +516,22 @@ tr:hover td{background:#f8fafc}
     </div>
   </div>
 
-  <div class="card"><div class="card-title">Service de la Dette sur 15 ans</div><div class="chart-box"><canvas id="chart-debt"></canvas></div></div>
+  <div class="card">
+    <div class="card-title" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+      <span>Service de la Dette sur 15 ans</span>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <div class="toggle-group">
+          <button class="toggle-btn debt-split-btn active" data-mode="total" onclick="toggleDebtSplit(false)">Total</button>
+          <button class="toggle-btn debt-split-btn" data-mode="split" onclick="toggleDebtSplit(true)">Capital & Intérêts</button>
+        </div>
+        <div class="toggle-group">
+          <button class="toggle-btn debt-period-btn active" data-mode="annual" onclick="toggleDebtPeriod(false)">Annuel</button>
+          <button class="toggle-btn debt-period-btn" data-mode="monthly" onclick="toggleDebtPeriod(true)">Mensuel</button>
+        </div>
+      </div>
+    </div>
+    <div class="chart-box"><canvas id="chart-debt"></canvas></div>
+  </div>
 </div>
 
 <!-- ==================== CASH-FLOW ==================== -->
@@ -614,11 +718,11 @@ tr:hover td{background:#f8fafc}
 </main>
 
 <!-- Scripts — strict order: data → engine → render → charts → app -->
-<script src="js/data.js?v=3"></script>
-<script src="js/engine.js?v=3"></script>
-<script src="js/render.js?v=3"></script>
-<script src="js/charts.js?v=3"></script>
-<script src="js/app.js?v=3"></script>
+<script src="js/data.js?v=4"></script>
+<script src="js/engine.js?v=4"></script>
+<script src="js/render.js?v=4"></script>
+<script src="js/charts.js?v=4"></script>
+<script src="js/app.js?v=4"></script>
 
 </body>
 </html>
