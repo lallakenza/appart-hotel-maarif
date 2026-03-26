@@ -865,9 +865,13 @@ tr:hover td{background:#f8fafc}
       <div class="kpi-card"><div class="kpi-label">Terrasses (50%)</div><div class="kpi-value" id="su-terrasse">–</div><div class="kpi-sub" id="su-terrasse-detail">–</div></div>
       <div class="kpi-card"><div class="kpi-label">Surface utile totale</div><div class="kpi-value kpi-green" id="su-totale">–</div><div class="kpi-sub">Intérieur + ½ terrasses</div></div>
     </div>
+    <div class="kpi-grid" style="grid-template-columns:repeat(2,1fr);margin-bottom:16px">
+      <div class="kpi-card"><div class="kpi-label">Prix nu / m² utile</div><div class="kpi-value" id="su-prix-nu">–</div><div class="kpi-sub" id="su-prix-nu-sub">Terrain + construction</div></div>
+      <div class="kpi-card"><div class="kpi-label">Prix meublé / m² utile</div><div class="kpi-value kpi-green" id="su-prix-meuble">–</div><div class="kpi-sub" id="su-prix-meuble-sub">Terrain + construction + ameublement</div></div>
+    </div>
     <div class="kpi-grid" style="grid-template-columns:repeat(3,1fr)">
-      <div class="kpi-card"><div class="kpi-label">Coût / m² intérieur</div><div class="kpi-value" id="su-cout-int">–</div><div class="kpi-sub">Total projet ÷ surface int.</div></div>
-      <div class="kpi-card"><div class="kpi-label">Coût / m² utile</div><div class="kpi-value kpi-green" id="su-cout-utile">–</div><div class="kpi-sub">Total projet ÷ surface utile</div></div>
+      <div class="kpi-card"><div class="kpi-label">Prix nu / m² int.</div><div class="kpi-value" id="su-cout-int">–</div><div class="kpi-sub">Sans terrasses</div></div>
+      <div class="kpi-card"><div class="kpi-label">Prix meublé / m² int.</div><div class="kpi-value" id="su-cout-meuble-int">–</div><div class="kpi-sub">Sans terrasses</div></div>
       <div class="kpi-card"><div class="kpi-label">Benchmark Maarif</div><div class="kpi-value" id="su-benchmark">~21 000</div><div class="kpi-sub">MAD/m² studio neuf Maarif</div></div>
     </div>
     <div class="info-box" style="margin-top:12px" id="su-analyse">–</div>
@@ -1524,11 +1528,11 @@ tr:hover td{background:#f8fafc}
 </main>
 
 <!-- Scripts — strict order: data → engine → render → charts → app -->
-<script src="js/data.js?v=23"></script>
-<script src="js/engine.js?v=23"></script>
-<script src="js/render.js?v=23"></script>
-<script src="js/charts.js?v=23"></script>
-<script src="js/app.js?v=23"></script>
+<script src="js/data.js?v=24"></script>
+<script src="js/engine.js?v=24"></script>
+<script src="js/render.js?v=24"></script>
+<script src="js/charts.js?v=24"></script>
+<script src="js/app.js?v=24"></script>
 
 </body>
 </html>
