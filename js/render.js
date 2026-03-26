@@ -904,9 +904,9 @@ function renderGoSiyaha(S) {
   // KPIs
   setText("gs-budget", fmtMAD(P.budgetGlobal));
   setText("gs-taux", "40%");
-  setText("gs-entreprises", `${fmtN(P.entreprisesSoutenues)} / ${fmtN(P.objectifEntreprises)}`);
+  setText("gs-entreprises", `${fmt(P.entreprisesSoutenues)} / ${fmt(P.objectifEntreprises)}`);
   setText("gs-entreprises-sub", `${Math.round(P.entreprisesSoutenues / P.objectifEntreprises * 100)}% de l'objectif atteint`);
-  setText("gs-restant", fmtN(P.restantAides));
+  setText("gs-restant", fmt(P.restantAides));
 
   // Taux de subvention table
   const tauxTbody = document.getElementById("gs-taux-tbody");
