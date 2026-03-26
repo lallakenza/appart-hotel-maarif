@@ -154,8 +154,8 @@ function chartRevenueEvolution(S) {
     data: {
       labels: S.projections.map(p => "An " + p.year),
       datasets: [
-        { label: "Studios (net)", data: S.projections.map(p => p.revStudios * (1 - REVENUE_ASSUMPTIONS.commissionPlatformes)), backgroundColor: CHART_COLORS.primary, stack: "rev" },
-        { label: "Lofts (net)",   data: S.projections.map(p => p.revLofts * (1 - REVENUE_ASSUMPTIONS.commissionPlatformes)), backgroundColor: CHART_COLORS.primaryLight, stack: "rev" },
+        { label: "Studios (net)", data: S.projections.map(p => p.revBrutHotel > 0 ? p.revNetHotel * (p.revStudios / p.revBrutHotel) : 0), backgroundColor: CHART_COLORS.primary, stack: "rev" },
+        { label: "Lofts (net)",   data: S.projections.map(p => p.revBrutHotel > 0 ? p.revNetHotel * (p.revLofts / p.revBrutHotel) : 0), backgroundColor: CHART_COLORS.primaryLight, stack: "rev" },
         { label: "Commercial",    data: S.projections.map(p => p.revCommercial), backgroundColor: CHART_COLORS.gold, stack: "rev" },
       ]
     },
@@ -168,7 +168,7 @@ function chartRevenueEvolution(S) {
           external: (ctx) => externalTooltip(ctx, (idx) => {
             const p = S.projections[idx];
             const sc = SCENARIOS[_currentState.scenario];
-            const growth = Math.pow(1 + REVENUE_ASSUMPTIONS.commissionPlatformes === 0.15 ? 0.03 : 0.03, idx);
+            const growth = Math.pow(1 + REVENUE_ASSUMPTIONS.croissanceTarifs, idx);
             const pxS = Math.round(sc.prixNuitStudio * Math.pow(1.03, idx));
             const pxL = Math.round(sc.prixNuitLoft * Math.pow(1.03, idx));
             return `<div class="ctt-title">An ${p.year} — Revenus</div>

@@ -479,6 +479,7 @@ tr:hover td{background:#f8fafc}
         <div class="nav-dropdown-item" data-nav="financement">MDM Invest & Tamwil</div>
         <div class="nav-dropdown-item" data-nav="subventions">Subventions & Aides</div>
         <div class="nav-dropdown-item" data-nav="gosiyaha">Go Siyaha</div>
+        <div class="nav-dropdown-item" data-nav="montages">Montages Juridiques</div>
       </div>
     </div>
     <div class="nav-item" data-nav="cashflow">
@@ -1172,7 +1173,7 @@ tr:hover td{background:#f8fafc}
     <div class="kpi-card"><div class="kpi-label">Budget Programme</div><div class="kpi-value" id="gs-budget">–</div><div class="kpi-sub">Enveloppe nationale Go Siyaha</div></div>
     <div class="kpi-card"><div class="kpi-label">Taux Subvention (Éco)</div><div class="kpi-value kpi-green" id="gs-taux">–</div><div class="kpi-sub">Volet Croissance Verte</div></div>
     <div class="kpi-card"><div class="kpi-label">Entreprises Soutenues</div><div class="kpi-value" id="gs-entreprises">–</div><div class="kpi-sub" id="gs-entreprises-sub">–</div></div>
-    <div class="kpi-card"><div class="kpi-label">Places Restantes</div><div class="kpi-value" style="color:var(--red)" id="gs-restant">–</div><div class="kpi-sub">Dépôt recommandé : immédiat</div></div>
+    <div class="kpi-card"><div class="kpi-label">Places Restantes (est.)</div><div class="kpi-value" style="color:var(--red);font-size:1rem" id="gs-restant">–</div><div class="kpi-sub">Chiffres juil. 2025 — pas de bilan 2026</div></div>
   </div>
 
   <!-- Programme overview -->
@@ -1188,7 +1189,7 @@ tr:hover td{background:#f8fafc}
         <strong>Cadre :</strong> Feuille de route tourisme 2023-2026
       </div>
       <div class="warn-box">
-        <strong>⚠️ Alerte :</strong> 700 packages restants sur 1 700. Le programme n'est pas illimité. Déposer le dossier le plus tôt possible.
+        <strong>⚠️ Alerte (mars 2026) :</strong> Les derniers chiffres datent de <strong>juil. 2025</strong> (~700 places restantes). Aucun bilan 2026 publié. <strong>24 projets financés</strong> vs <strong>531 approuvés</strong> — le pipeline entre approbation et financement est lent. Programme toujours actif (feuille de route 2023-2026), mais nombre de places réel inconnu. <strong>Déposer le dossier au plus vite.</strong>
       </div>
     </div>
   </div>
@@ -1259,14 +1260,158 @@ tr:hover td{background:#f8fafc}
   </div>
 </div>
 
+<!-- ═══════ MONTAGES D'EXPLOITATION ═══════ -->
+<div data-view="montages" class="hidden">
+
+  <!-- Contexte fiscal 2026 -->
+  <div class="card">
+    <div class="card-title">Contexte Fiscal Maroc 2026 — IS</div>
+    <div class="info-box" style="margin-bottom:12px">
+      L'IS marocain est <strong>proportionnel</strong> (non progressif) : tout le bénéfice est taxé au taux de la tranche dans laquelle il tombe. Pour un appart-hôtel avec bénéfice < 100M MAD → <strong>20% fixe</strong>.
+    </div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Tranche de bénéfice</th><th>Taux IS</th><th>Note</th></tr></thead>
+      <tbody id="mt-is-tbody"></tbody>
+    </table></div>
+    <div class="grid-2" style="margin-top:12px">
+      <div class="info-box">
+        <strong>Exonération hôtelière :</strong> IS exonéré 5 ans sur CA réalisé en devises (art. 6-I-B-3 CGI). Après 5 ans : taux réduit 20%.
+        <br><strong>TVA hébergement :</strong> 10% (taux réduit). TVA sur investissements récupérable.
+        <br><strong>Taxe professionnelle :</strong> Exonérée 5 ans pour nouvelle activité.
+      </div>
+      <div class="warn-box">
+        <strong>⚠️ Attention :</strong> Seule la part du CA en devises est exonérée (CB internationales, virements étrangers, vouchers agences "client non résident"). Le CA en MAD (clients locaux) est taxé normalement dès le départ.
+        <br><strong>Cotisation minimale :</strong> 0,25% du CA, plancher 3 000 MAD/an. Exonérée 36 mois.
+      </div>
+    </div>
+  </div>
+
+  <!-- Montage 1: SARL Unique -->
+  <div class="card" style="border-left:4px solid var(--green)">
+    <div class="card-title" style="display:flex;align-items:center;gap:12px">
+      <span class="badge" style="background:var(--green)20;color:var(--green);font-weight:700;font-size:1rem">#1 Recommandé</span>
+      SARL Unique — Murs + Exploitation
+    </div>
+    <div class="info-box" style="margin-bottom:12px">
+      <strong>Schéma :</strong> Vous (PP) → SARL (murs + exploitation)<br>
+      Une seule société détient l'immeuble, gère l'exploitation, emploie le personnel, et encaisse les revenus. Structure la plus courante au Maroc pour les petits projets hôteliers.
+    </div>
+    <div id="mt-score-sarl-unique" style="margin-bottom:12px"></div>
+    <div class="grid-2">
+      <div>
+        <h4 style="color:var(--green);margin-bottom:8px">✅ Avantages</h4>
+        <ul id="mt-av-sarl-unique" style="font-size:.88rem"></ul>
+      </div>
+      <div>
+        <h4 style="color:var(--red);margin-bottom:8px">❌ Inconvénients</h4>
+        <ul id="mt-inc-sarl-unique" style="font-size:.88rem"></ul>
+      </div>
+    </div>
+    <div class="info-box" style="margin-top:12px" id="mt-fisc-sarl-unique"></div>
+  </div>
+
+  <!-- Montage 2: SCI + SARL -->
+  <div class="card" style="border-left:4px solid var(--amber)">
+    <div class="card-title" style="display:flex;align-items:center;gap:12px">
+      <span class="badge" style="background:var(--amber)20;color:var(--amber);font-weight:700;font-size:1rem">#2</span>
+      SCI + SARL Exploitation
+    </div>
+    <div class="info-box" style="margin-bottom:12px">
+      <strong>Schéma :</strong> Vous (PP) → SCI (murs) ← loyer → SARL (exploitation)<br>
+      La SCI détient l'immeuble et le loue à la SARL. Attention : au Maroc, location meublée = activité commerciale → SCI bascule automatiquement à l'IS.
+    </div>
+    <div id="mt-score-sci-sarl" style="margin-bottom:12px"></div>
+    <div class="grid-2">
+      <div>
+        <h4 style="color:var(--green);margin-bottom:8px">✅ Avantages</h4>
+        <ul id="mt-av-sci-sarl" style="font-size:.88rem"></ul>
+      </div>
+      <div>
+        <h4 style="color:var(--red);margin-bottom:8px">❌ Inconvénients</h4>
+        <ul id="mt-inc-sci-sarl" style="font-size:.88rem"></ul>
+      </div>
+    </div>
+    <div class="info-box" style="margin-top:12px" id="mt-fisc-sci-sarl"></div>
+  </div>
+
+  <!-- Montage 3: 2 SARL -->
+  <div class="card" style="border-left:4px solid var(--red)">
+    <div class="card-title" style="display:flex;align-items:center;gap:12px">
+      <span class="badge" style="background:var(--red)20;color:var(--red);font-weight:700;font-size:1rem">#4</span>
+      SARL Murs + SARL Exploitation
+    </div>
+    <div class="info-box" style="margin-bottom:12px">
+      <strong>Schéma :</strong> Vous (PP) → SARL Immo (murs) ← loyer → SARL Hôtel (exploitation)<br>
+      Deux SARL séparées. Même logique de séparation que SCI + SARL mais sans les limitations de la SCI.
+    </div>
+    <div id="mt-score-deux-sarl" style="margin-bottom:12px"></div>
+    <div class="grid-2">
+      <div>
+        <h4 style="color:var(--green);margin-bottom:8px">✅ Avantages</h4>
+        <ul id="mt-av-deux-sarl" style="font-size:.88rem"></ul>
+      </div>
+      <div>
+        <h4 style="color:var(--red);margin-bottom:8px">❌ Inconvénients</h4>
+        <ul id="mt-inc-deux-sarl" style="font-size:.88rem"></ul>
+      </div>
+    </div>
+    <div class="info-box" style="margin-top:12px" id="mt-fisc-deux-sarl"></div>
+  </div>
+
+  <!-- Montage 4: Holding -->
+  <div class="card" style="border-left:4px solid var(--text-sec)">
+    <div class="card-title" style="display:flex;align-items:center;gap:12px">
+      <span class="badge" style="background:var(--text-sec)20;color:var(--text-sec);font-weight:700;font-size:1rem">#3</span>
+      Holding + 2 SARL
+    </div>
+    <div class="info-box" style="margin-bottom:12px">
+      <strong>Schéma :</strong> Vous (PP) → Holding SARL → SARL Immo + SARL Hôtel<br>
+      La holding chapeaute les deux SARL. Dividendes filiales→holding exonérés IS 100%. Structure de groupe pour investisseurs multi-projets.
+    </div>
+    <div id="mt-score-holding" style="margin-bottom:12px"></div>
+    <div class="grid-2">
+      <div>
+        <h4 style="color:var(--green);margin-bottom:8px">✅ Avantages</h4>
+        <ul id="mt-av-holding" style="font-size:.88rem"></ul>
+      </div>
+      <div>
+        <h4 style="color:var(--red);margin-bottom:8px">❌ Inconvénients</h4>
+        <ul id="mt-inc-holding" style="font-size:.88rem"></ul>
+      </div>
+    </div>
+    <div class="info-box" style="margin-top:12px" id="mt-fisc-holding"></div>
+  </div>
+
+  <!-- Classement -->
+  <div class="card">
+    <div class="card-title">Classement des Montages</div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Rang</th><th>Montage</th><th>Score</th><th>Justification</th></tr></thead>
+      <tbody id="mt-classement-tbody"></tbody>
+    </table></div>
+  </div>
+
+  <!-- Recommandation -->
+  <div class="card" style="border-left:4px solid var(--green)">
+    <div class="card-title">Recommandation Finale</div>
+    <div id="mt-recommandation"></div>
+  </div>
+
+  <!-- Sources -->
+  <div class="card">
+    <div class="card-title">Sources</div>
+    <ul class="sub-doc-list" id="mt-sources"></ul>
+  </div>
+</div>
+
 </main>
 
 <!-- Scripts — strict order: data → engine → render → charts → app -->
-<script src="js/data.js?v=15"></script>
-<script src="js/engine.js?v=15"></script>
-<script src="js/render.js?v=15"></script>
-<script src="js/charts.js?v=15"></script>
-<script src="js/app.js?v=15"></script>
+<script src="js/data.js?v=16"></script>
+<script src="js/engine.js?v=16"></script>
+<script src="js/render.js?v=16"></script>
+<script src="js/charts.js?v=16"></script>
+<script src="js/app.js?v=16"></script>
 
 </body>
 </html>

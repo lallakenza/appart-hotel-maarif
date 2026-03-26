@@ -53,6 +53,7 @@ function render(state) {
   renderSensibilite(state);
   renderSubventions(state);
   renderGoSiyaha(state);
+  renderMontages(state);
 }
 
 // --- Header badge (dynamic total projet) ---
@@ -904,9 +905,9 @@ function renderGoSiyaha(S) {
   // KPIs
   setText("gs-budget", fmtMAD(P.budgetGlobal));
   setText("gs-taux", "40%");
-  setText("gs-entreprises", `${fmt(P.entreprisesSoutenues)} / ${fmt(P.objectifEntreprises)}`);
-  setText("gs-entreprises-sub", `${Math.round(P.entreprisesSoutenues / P.objectifEntreprises * 100)}% de l'objectif atteint`);
-  setText("gs-restant", fmt(P.restantAides));
+  setText("gs-entreprises", `${fmt(P.projetsAccompagnes)} / ${fmt(P.objectifEntreprises)}`);
+  setText("gs-entreprises-sub", `${Math.round(P.projetsAccompagnes / P.objectifEntreprises * 100)}% accompagnés (juil. 2025) — ${P.projetsFinances} financés`);
+  setText("gs-restant", P.restantEstime);
 
   // Taux de subvention table
   const tauxTbody = document.getElementById("gs-taux-tbody");
@@ -1016,7 +1017,7 @@ function renderGoSiyaha(S) {
   const projetsTbody = document.getElementById("gs-projets-tbody");
   if (projetsTbody) {
     projetsTbody.innerHTML = "";
-    P.projetsApprouves.forEach(p => {
+    (P.projetsFinancesDetail || []).forEach(p => {
       const tr = document.createElement("tr");
       tr.innerHTML = `
         <td>${p.date}</td>
@@ -1044,6 +1045,120 @@ function renderGoSiyaha(S) {
       const li = document.createElement("li");
       li.innerHTML = `<a href="${s.url}" target="_blank" style="color:var(--primary)">${s.label}</a>`;
       sourcesEl.appendChild(li);
+    });
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// MONTAGES D'EXPLOITATION
+// ═══════════════════════════════════════════════════════════════════════
+function renderMontages(S) {
+  if (typeof MONTAGES_EXPLOITATION === "undefined") return;
+  const M = MONTAGES_EXPLOITATION;
+
+  // Contexte fiscal IS 2026
+  const isBody = document.getElementById("mt-is-tbody");
+  if (isBody) {
+    isBody.innerHTML = "";
+    M.contexteFiscal.IS_2026.forEach(t => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `<td>${t.tranche}</td><td><strong>${Math.round(t.taux * 100)}%</strong></td><td>${t.note}</td>`;
+      isBody.appendChild(tr);
+    });
+  }
+
+  // Render each montage card
+  M.montages.forEach(m => {
+    // Score bars
+    const scoreEl = document.getElementById(`mt-score-${m.id}`);
+    if (scoreEl) {
+      const dims = [
+        { label: "Simplicité", val: m.scoreSimplicite },
+        { label: "Protection", val: m.scoreProtection },
+        { label: "Fiscal", val: m.scoreFiscal },
+        { label: "Flexibilité", val: m.scoreFlexibilite },
+      ];
+      scoreEl.innerHTML = dims.map(d => `
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+          <span style="width:80px;font-size:.78rem;color:#666">${d.label}</span>
+          <div style="flex:1;height:8px;background:#e5e7eb;border-radius:4px;overflow:hidden">
+            <div style="width:${d.val * 20}%;height:100%;background:${d.val >= 4 ? 'var(--green)' : d.val >= 3 ? 'var(--amber-dark)' : 'var(--red)'};border-radius:4px"></div>
+          </div>
+          <span style="font-size:.75rem;font-weight:600;width:20px;text-align:right">${d.val}/5</span>
+        </div>
+      `).join("");
+    }
+
+    // Avantages
+    const avEl = document.getElementById(`mt-av-${m.id}`);
+    if (avEl) {
+      avEl.innerHTML = "";
+      m.avantages.forEach(a => {
+        const li = document.createElement("li");
+        li.innerHTML = `<strong>${a.point}</strong> — ${a.detail}`;
+        li.style.marginBottom = "6px";
+        avEl.appendChild(li);
+      });
+    }
+
+    // Inconvénients
+    const incEl = document.getElementById(`mt-inc-${m.id}`);
+    if (incEl) {
+      incEl.innerHTML = "";
+      m.inconvenients.forEach(i => {
+        const li = document.createElement("li");
+        li.innerHTML = `<strong>${i.point}</strong> — ${i.detail}`;
+        li.style.marginBottom = "6px";
+        incEl.appendChild(li);
+      });
+    }
+
+    // Fiscalité detail
+    const fiscEl = document.getElementById(`mt-fisc-${m.id}`);
+    if (fiscEl) {
+      fiscEl.innerHTML = Object.entries(m.fiscalite).map(([k, v]) =>
+        `<div style="margin-bottom:4px"><strong>${k} :</strong> ${v}</div>`
+      ).join("");
+    }
+  });
+
+  // Classement table
+  const classBody = document.getElementById("mt-classement-tbody");
+  if (classBody) {
+    classBody.innerHTML = "";
+    M.classement.forEach(c => {
+      const m = M.montages.find(x => x.id === c.id);
+      const tr = document.createElement("tr");
+      const badgeColor = c.rang === 1 ? "var(--green)" : c.rang === 2 ? "var(--amber-dark)" : "var(--red)";
+      tr.innerHTML = `
+        <td><span class="badge" style="background:${badgeColor}20;color:${badgeColor};font-weight:700;font-size:1rem">#${c.rang}</span></td>
+        <td><strong>${m ? m.nom : c.id}</strong></td>
+        <td><span class="badge" style="background:var(--primary)20;color:var(--primary);font-weight:600">${m ? m.scoreGlobal : "–"}/5</span></td>
+        <td style="font-size:.85rem">${c.raison}</td>
+      `;
+      if (c.rang === 1) tr.style.background = "#f0fdf4";
+      classBody.appendChild(tr);
+    });
+  }
+
+  // Recommandation
+  const recoEl = document.getElementById("mt-recommandation");
+  if (recoEl) {
+    recoEl.innerHTML = `
+      <p><strong>${M.recommandation.justification}</strong></p>
+      <p style="margin-top:8px">${M.recommandation.evolutionPossible}</p>
+      <p style="margin-top:8px;color:var(--amber-dark)">${M.recommandation.attention}</p>
+    `;
+  }
+
+  // Sources
+  const srcEl = document.getElementById("mt-sources");
+  if (srcEl) {
+    srcEl.innerHTML = "";
+    M.sources.forEach(s => {
+      const li = document.createElement("li");
+      li.innerHTML = `<a href="${s.url}" target="_blank" style="color:var(--primary)">${s.label}</a>`;
+      srcEl.appendChild(li);
     });
   }
 }

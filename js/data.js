@@ -946,8 +946,9 @@ const GO_SIYAHA_ECO = {
 
 // ═══════════════════════════════════════════════════════════════════════
 // GO SIYAHA — PROGRAMME COMPLET (section dédiée)
-// Sources : Maroc PME, Ministère du Tourisme, Morocco World News,
-//           BarlAman Today, Lkelma, Invest-Time
+// Sources : Maroc PME, Ministère du Tourisme, Article19, LesEco,
+//           Maroc.ma, Morocco World News, BarlAman Today, Lkelma
+// Dernière vérification : mars 2026
 // ═══════════════════════════════════════════════════════════════════════
 const GO_SIYAHA_PROGRAMME = {
   // --- Infos générales ---
@@ -956,11 +957,27 @@ const GO_SIYAHA_PROGRAMME = {
   ministere: "Ministère du Tourisme, de l'Artisanat et de l'Économie Sociale et Solidaire",
   lancement: "Février 2024",
   budgetGlobal: 720_000_000,       // 720 MDH
-  objectifEntreprises: 1_700,      // cible 2026
-  entreprisesSoutenues: 1_000,     // juillet 2025 — 59% de l'objectif
-  restantAides: 700,               // packages restants
+  objectifEntreprises: 1_700,      // cible fin 2026
   plateforme: "https://marocpme.gov.ma/gosiyaha/",
   cadre: "Feuille de route tourisme 2023-2026",
+
+  // --- Statut actuel (mars 2026) ---
+  // IMPORTANT : distinction entre "demandes approuvées" et "projets financés"
+  // Les chiffres officiels les plus récents datent de juillet 2025.
+  // Aucune annonce de clôture — le programme s'inscrit dans la feuille de route 2023-2026.
+  statut: "actif",                   // pas d'annonce de clôture à ce jour
+  derniereMiseAJour: "Juillet 2025", // date des derniers chiffres confirmés
+  // Chiffres vérifiés par chronologie :
+  demandesApprouvees: 531,           // jan 2025, maroc.ma (processus de validation)
+  projetsFinances: 24,               // fév 2025, LesEco (ayant reçu les fonds, 58M MAD invest)
+  projetsAccompagnes: 1_000,         // juil 2025, Ministère (inclut assistance technique + pipeline)
+  actionsAssistanceTechnique: 100,   // fév 2025, LesEco (100+ actions AT, 12M MAD)
+  // Estimation restant (prudente) :
+  restantEstime: "~700 (juil. 2025) — chiffre probablement réduit depuis",
+  alerteChiffres: "⚠️ Les 1 000 'projets soutenus' incluent l'accompagnement technique, "
+    + "pas uniquement les subventions directes. Seuls 24 projets avaient reçu "
+    + "des fonds à fév. 2025. L'écart entre 'approuvé' et 'financé' est important."
+    + " Aucun bilan 2026 publié à ce jour.",
 
   // --- Taux de subvention par type ---
   subventions: [
@@ -982,15 +999,17 @@ const GO_SIYAHA_PROGRAMME = {
 
   // --- Timeline / évolution du programme ---
   timeline: [
-    { date: "Février 2024",   event: "Lancement officiel du programme Go Siyaha", detail: "Budget : 720 MDH, objectif 1 700 entreprises" },
-    { date: "Mai 2024",       event: "430 dossiers déposés", detail: "Premières candidatures en cours d'instruction" },
-    { date: "Septembre 2024", event: "12 premiers projets subventionnés", detail: "1ère vague : loisirs nautiques, éco-tourisme, hébergement distinctif, sport" },
-    { date: "Février 2025",   event: "8ème comité CPP — 11 projets éco-tourisme approuvés", detail: "23 MDH investissement total, 7 MDH subvention Go Siyaha. Projets de 130K à 10M MAD" },
-    { date: "Mars 2025",      event: "24 projets Croissance Verte approuvés", detail: "58 MDH investissement total, 20 MDH subventionné. Panneaux solaires, LED, gestion déchets" },
-    { date: "Juillet 2025",   event: "1 000 entreprises soutenues (59% objectif)", detail: "3 réformes majeures annoncées" },
-    { date: "22 juillet 2025", event: "Suppression seuil minimum investissement", detail: "Plus besoin de 1M MAD minimum — ouvert aux micro-entreprises, coopératives, jeunes" },
-    { date: "22 juillet 2025", event: "Ouverture aux entreprises existantes", detail: "Les entreprises existantes peuvent postuler si elles développent de nouvelles activités d'animation" },
-    { date: "22 juillet 2025", event: "Assistance technique dès la conception", detail: "Support disponible avant même la création de l'entreprise (structuration idée, business plan)" },
+    { date: "Février 2024",    event: "Lancement officiel du programme Go Siyaha", detail: "Budget : 720 MDH, objectif 1 700 entreprises", source: "Médias24" },
+    { date: "Mai 2024",        event: "430 dossiers déposés", detail: "Premières candidatures en cours d'instruction" },
+    { date: "Septembre 2024",  event: "12 premiers projets subventionnés", detail: "1ère vague : loisirs nautiques, éco-tourisme, hébergement distinctif, sport", source: "LesEco" },
+    { date: "Décembre 2024",   event: "500 projets approuvés / 1 300 demandes", detail: "Interview ministre Ammor (Médias24). Taux d'approbation ~38%", source: "Médias24" },
+    { date: "Janvier 2025",    event: "531 demandes approuvées", detail: "Déclaration officielle maroc.ma", source: "maroc.ma" },
+    { date: "Février 2025",    event: "8ème CPP — 24 projets financés au total", detail: "58 MDH invest, 20 MDH subvention + 100 actions AT (12 MDH). Dernière vague : 11 projets éco, 23 MDH invest, 7 MDH sub", source: "LesEco, Article19" },
+    { date: "Juillet 2025",    event: "1 000 projets accompagnés (59% objectif)", detail: "Inclut AT + projets en pipeline, pas uniquement subventions directes. 3 réformes annoncées", source: "Ministère du Tourisme" },
+    { date: "22 juillet 2025", event: "Suppression seuil minimum investissement", detail: "Plus besoin de 1M MAD minimum — ouvert aux micro-entreprises, coopératives, jeunes", source: "Article19, Ministère" },
+    { date: "22 juillet 2025", event: "Ouverture aux entreprises existantes", detail: "Les entreprises existantes peuvent postuler si elles développent de nouvelles activités d'animation", source: "Article19" },
+    { date: "22 juillet 2025", event: "Assistance technique dès la conception", detail: "Support disponible avant même la création de l'entreprise (structuration idée, business plan)", source: "Ministère" },
+    { date: "Mars 2026",       event: "⚠️ Pas de bilan 2026 publié", detail: "Programme toujours dans la feuille de route 2023-2026. Aucune annonce de clôture. Chiffres actualisés non disponibles.", source: "Vérification Claude — mars 2026" },
   ],
 
   // --- Process de candidature ---
@@ -1014,20 +1033,22 @@ const GO_SIYAHA_PROGRAMME = {
     "Certificat d'inscription au registre de commerce (ou engagement)",
   ],
 
-  // --- Projets approuvés documentés ---
-  projetsApprouves: [
-    { date: "Sept 2024", nb: 12, types: "Nautisme, éco-tourisme, hébergement distinctif, sport", investissement: null },
+  // --- Projets financés documentés (attention : chiffres cumulatifs au 8ème CPP) ---
+  projetsFinancesDetail: [
+    { date: "Sept 2024", nb: 12, types: "Nautisme, éco-tourisme, hébergement distinctif, sport", investissement: null, source: "LesEco, Médias24" },
     { date: "Fév 2025",  nb: 11, types: "Éco-tourisme (panneaux solaires, gestion énergie)", investissement: 23_000_000, subvention: 7_000_000,
       villes: "Dakhla, Berkane, Casablanca, Azilal, Tanger, Khenifra, Sefrou, M'diq, Errachidia, Marrakech",
-      fourchette: "130K MAD (maison d'hôtes solaire) à ~10M MAD (hôtel club)" },
-    { date: "Mars 2025",  nb: 24, types: "Croissance Verte (photovoltaïque, LED, déchets)", investissement: 58_000_000, subvention: 20_000_000 },
+      fourchette: "130K MAD (maison d'hôtes solaire) à ~10M MAD (hôtel club)", source: "LesEco" },
+    // NB : le cumul 24 projets / 58M MAD / 20M subv est le TOTAL depuis le lancement, pas une 3ème vague
+    { date: "Fév 2025 (cumul)", nb: 24, types: "Total tous CPP : animation + éco-tourisme", investissement: 58_000_000, subvention: 20_000_000,
+      note: "Cumul confirmé par LesEco. 100+ actions d'assistance technique (12M MAD) en complément.", source: "LesEco" },
   ],
 
   // --- Risques & alertes ---
   risques: [
     { risque: "Bureaucratie documentaire",       severite: "moyen",  detail: "Dossier complet exigé (business plan, étude de marché, devis). Rejet si incomplet." },
     { risque: "Délais de traitement",             severite: "moyen",  detail: "4-8 semaines annoncé mais peut s'allonger. Le CPP ne se réunit pas en continu." },
-    { risque: "Places limitées",                  severite: "élevé",  detail: "700 packages restants sur 1 700. Course aux dossiers — first come first served." },
+    { risque: "Places limitées — incertitude",     severite: "élevé",  detail: "~700 restants (juil. 2025, 8 mois). Chiffre probablement réduit. Aucun bilan 2026 publié. Déposer le dossier rapidement." },
     { risque: "Versement conditionnel",           severite: "moyen",  detail: "La subvention est versée sur jalons/preuves d'avancement. Pas un chèque en blanc." },
     { risque: "Éligibilité hébergement seul",     severite: "faible", detail: "Hébergement seul = 30%. Pour 40% il faut un volet éco/vert ou animation." },
     { risque: "Manque de feedback public",        severite: "info",   detail: "Très peu de retours d'expérience sur forums/réseaux. Programme récent (2024), les retours viendront." },
@@ -1051,21 +1072,217 @@ const GO_SIYAHA_PROGRAMME = {
       "Casablanca fait partie des villes où des projets ont été approuvés",
     ],
     points_vigilance: [
-      "700 packages restants — déposer le dossier rapidement",
+      "~700 packages restants (juil. 2025) — chiffre probablement réduit, déposer rapidement",
+      "Écart important entre 'approuvé' (531) et 'financé' (24) — pipeline lent",
       "Business plan et étude de marché solides requis",
       "Versement sur preuves d'avancement, pas d'avance",
       "Le CPP valide au cas par cas — pas automatique",
+      "Aucun bilan 2026 publié — statut exact inconnu",
     ],
   },
 
-  // --- Sources ---
+  // --- Sources vérifiées (mars 2026) ---
   sources: [
-    { label: "Plateforme officielle", url: "https://marocpme.gov.ma/gosiyaha/" },
-    { label: "Morocco World News — Expansion juillet 2025", url: "https://www.moroccoworldnews.com/2025/07/229756/go-siyaha-expands-access" },
-    { label: "BarlAman Today — 11 projets éco-tourisme (fév 2025)", url: "https://barlamantoday.com/2025/02/28/moroccos-go-siyaha-program-greenlights-11-eco-tourism-projects/" },
-    { label: "BarlAman Today — 12 premiers projets (sept 2024)", url: "https://barlamantoday.com/2024/09/24/twelve-new-tourism-projects-in-morocco-receive-first-go-siyaha-grants/" },
-    { label: "Lkelma — Nouvelles mesures 2025", url: "https://lkelma.com/go-siyaha-2025-nouvelles-mesures-subvention-tourisme-maroc/" },
-    { label: "Invest-Time — Vue d'ensemble", url: "https://invest-time.com/en/morocco-go-siyaha-tourism-opportunity/" },
-    { label: "Ministère du Tourisme", url: "https://mtaess.gov.ma/fr/go-siyaha-supprime-ses-barrieres-pour-les-entrepreneurs-du-tourisme/" },
+    { label: "Plateforme officielle Maroc PME", url: "https://marocpme.gov.ma/gosiyaha/" },
+    { label: "Maroc.ma — 531 demandes approuvées (jan 2025)", url: "https://www.maroc.ma/fr/actualites/programme-go-siyaha-531-demandes-approuvees-ce-jour" },
+    { label: "LesEco — 8ème CPP, 11 projets éco validés (fév 2025)", url: "https://leseco.ma/maroc/go-siyaha-11-nouveaux-projets-valides-pour-un-tourisme-plus-durable.html" },
+    { label: "Article19 — Élargissement PME et existants (juil 2025)", url: "https://article19.ma/accueil/archives/185409" },
+    { label: "Ministère du Tourisme — Suppression des barrières (juil 2025)", url: "https://mtaess.gov.ma/fr/go-siyaha-supprime-ses-barrieres-pour-les-entrepreneurs-du-tourisme/" },
+    { label: "Médias24 — Lancement 720 MDH (fév 2024)", url: "https://medias24.com/2024/02/15/go-siyaha-un-programme-a-720-mdh-pour-accompagner-plus-de-1-700-entreprises-touristiques/" },
+    { label: "Médias24 — Bilan d'étape avec Ammor (déc 2024)", url: "https://medias24.com/2024/12/11/tourisme-bilan-detape-du-programme-go-siyaha-avec-f-z-ammor-interview/" },
+    { label: "FNIH — Pourquoi il faut y croire", url: "https://www.fnih.ma/10313-2/" },
+  ],
+};
+
+// ═══════════════════════════════════════════════════════════════════════
+// MONTAGES D'EXPLOITATION — Analyse comparative
+// Contexte : MRE, appart-hôtel Casablanca, MDM Invest, Go Siyaha
+// Sources : CGI Maroc (LF 2026), Upsilon Consulting, Tax-News,
+//           LesEco, Valfoncier, Armonia Solutions, AMDE
+// Dernière vérification : mars 2026
+// ═══════════════════════════════════════════════════════════════════════
+
+const MONTAGES_EXPLOITATION = {
+  // --- Contexte fiscal Maroc 2026 ---
+  contexteFiscal: {
+    IS_2026: [
+      { tranche: "≤ 300 000 MAD", taux: 0.20, note: "Taux cible 2026 (était 17.5% en 2025)" },
+      { tranche: "300 001 – 1 000 000 MAD", taux: 0.20, note: "Unifié à 20%" },
+      { tranche: "1 000 001 – 100 000 000 MAD", taux: 0.20, note: "Convergence vers 20% (était 22.75% en 2025)" },
+      { tranche: "≥ 100 000 000 MAD", taux: 0.35, note: "Grandes entreprises" },
+    ],
+    IS_note: "L'IS marocain est PROPORTIONNEL (non progressif) : tout le bénéfice est taxé au taux de la tranche dans laquelle il tombe.",
+    cotisationMinimale: { taux: 0.0025, plancher: 3_000, exonerationCreation: "36 mois (extensible à 60 mois)" },
+    TVA_hebergement: 0.10,
+    TVA_standard: 0.20,
+    exonerationHotelDevises: {
+      duree: "5 ans (60 mois consécutifs)",
+      condition: "CA réalisé en devises dûment rapatriées (virements bancaires étrangers, CB internationales, vouchers agences 'client non résident')",
+      apres5ans: "Taux réduit de 20% sur la part devises (LF 2026)",
+      attention: "Seule la quote-part devises est exonérée. Le CA en MAD (clients locaux) est taxé normalement dès le départ."
+    },
+    taxeProfessionnelle: "Exonération 5 ans pour toute nouvelle activité",
+    droitsEnregistrement: "Exonération sur terrain nu si construction hôtelière achevée sous 6 ans, hypothèque légale État, conservation 10 ans",
+    dividendes: {
+      retenueSurce: 0.15,
+      abattementHolding: 1.00,
+      note: "Les dividendes restant dans la holding sont exonérés d'IS. Mais dès qu'ils remontent à la personne physique → 15% retenue à la source."
+    },
+  },
+
+  contrainteMDM: {
+    note: "MDM Invest ne requiert pas formellement une société, mais en pratique un appart-hôtel de cette envergure nécessite une structure sociétaire (SARL ou SA) pour : la responsabilité limitée, l'éligibilité aux subventions Go Siyaha, la récupération TVA, et l'exonération IS 5 ans devises.",
+    apportMinMRE: 0.25,
+    contributionMDM: 0.10,
+  },
+
+  montages: [
+    {
+      id: "sarl-unique",
+      rang: 1,
+      nom: "SARL Unique",
+      sousTitre: "Une seule société détient les murs ET exploite l'hôtel",
+      recommandation: "Recommandé",
+      schema: "Vous (PP) → SARL (murs + exploitation)",
+      description: "Structure la plus simple et la plus courante au Maroc pour les petits projets hôteliers. La SARL détient l'immeuble, gère l'exploitation, emploie le personnel, et encaisse les revenus.",
+      avantages: [
+        { point: "Simplicité maximale", detail: "Un seul jeu de comptabilité, une seule liasse fiscale, un seul commissaire aux comptes si CA > 50M MAD (sinon facultatif)." },
+        { point: "Coûts de création et de gestion minimaux", detail: "~5 000–8 000 MAD de frais de création. Pas de conventions réglementées inter-sociétés." },
+        { point: "Éligible Go Siyaha + MDM Invest", detail: "SARL = forme juridique standard acceptée par Maroc PME et Tamwilcom." },
+        { point: "Exonération IS 5 ans sur CA devises", detail: "La SARL exploitante bénéficie directement de l'exonération hôtelière (art. 6-I-B-3 CGI)." },
+        { point: "TVA 10% récupérable", detail: "TVA sur achats de construction et équipements récupérable. TVA hébergement à 10%." },
+        { point: "Amortissement du bâtiment", detail: "L'immeuble s'amortit sur 20-25 ans, réduisant la base imposable chaque année." },
+        { point: "Pas de problème de prix de transfert", detail: "Pas de loyer inter-sociétés à justifier auprès de l'administration fiscale." },
+      ],
+      inconvenients: [
+        { point: "Pas de protection patrimoniale", detail: "Si la SARL a des dettes d'exploitation (fournisseurs, salariés), l'immeuble peut être saisi par les créanciers de la SARL." },
+        { point: "Fiscalité sur la plus-value si cession", detail: "La plus-value est taxée comme bénéfice IS (20%), puis distribution du produit soumise à 15% retenue source." },
+        { point: "Pas de flexibilité successorale", detail: "Transmettre la SARL = transmettre murs + exploitation en bloc." },
+        { point: "Mélange des risques", detail: "Un litige d'exploitation expose directement l'actif immobilier." },
+      ],
+      fiscalite: {
+        IS: "20% sur bénéfice net (LF 2026). Exonération 5 ans sur CA devises.",
+        TVA: "10% hébergement. Récupération TVA sur investissements.",
+        cotisationMin: "0.25% du CA, min 3 000 MAD. Exonéré 36 mois.",
+        dividendes: "15% retenue à la source sur distribution PP.",
+        taxePro: "Exonéré 5 ans.",
+      },
+      scoreSimplicite: 5, scoreProtection: 2, scoreFiscal: 4, scoreFlexibilite: 2, scoreGlobal: 4,
+    },
+    {
+      id: "sci-sarl",
+      rang: 2,
+      nom: "SCI + SARL Exploitation",
+      sousTitre: "SCI détient les murs, SARL exploite l'hôtel",
+      recommandation: "Possible mais attention",
+      schema: "Vous (PP) → SCI (murs) ← loyer → SARL (exploitation)",
+      description: "La SCI détient l'immeuble et le loue à la SARL d'exploitation. Au Maroc, si la SCI perçoit des loyers meublés, elle bascule automatiquement à l'IS. Pour rester à l'IR, location NUE uniquement.",
+      avantages: [
+        { point: "Protection patrimoniale", detail: "L'immeuble dans la SCI est protégé des créanciers de la SARL d'exploitation." },
+        { point: "Flexibilité successorale", detail: "Transmission progressive des parts de la SCI aux héritiers sans toucher à l'exploitation." },
+        { point: "Loyer = charge déductible", detail: "Le loyer SARL→SCI réduit le bénéfice imposable de la SARL." },
+        { point: "Option IR pour la SCI", detail: "Si location NUE : revenus fonciers imposés à l'IR des associés. Avantageux si revenus globaux modestes." },
+      ],
+      inconvenients: [
+        { point: "Complexité administrative x2", detail: "Deux comptabilités, deux déclarations fiscales, deux AG annuelles." },
+        { point: "Coût doublé", detail: "~10 000–15 000 MAD pour les deux structures." },
+        { point: "Risque requalification fiscale", detail: "Le loyer SCI→SARL doit être au prix de marché, sinon abus de droit." },
+        { point: "SCI à l'IS si meublé", detail: "Location meublée = activité commerciale → SCI bascule à l'IS automatiquement." },
+        { point: "Pas d'exonération 5 ans pour la SCI", detail: "La SCI en location nue n'est pas un établissement hôtelier." },
+        { point: "Pas d'amortissement si IR", detail: "SCI à l'IR = revenus fonciers sans amortissement." },
+        { point: "MDM Invest = flou pour SCI", detail: "La SCI est civile. L'apport MDM irait sur la SARL, pas la SCI." },
+      ],
+      fiscalite: {
+        IS_SCI: "Option IR (location nue) : revenus fonciers IR associés. Option IS (si meublé) : 20%.",
+        IS_SARL: "20% sur bénéfice net. Exonération 5 ans CA devises.",
+        TVA: "SCI location nue : exonérée TVA. SARL : 10% hébergement.",
+        loyer: "Doit être au prix de marché. Attention prix de transfert.",
+        dividendes: "15% retenue source sur toute distribution PP.",
+      },
+      scoreSimplicite: 2, scoreProtection: 4, scoreFiscal: 3, scoreFlexibilite: 4, scoreGlobal: 3,
+    },
+    {
+      id: "deux-sarl",
+      rang: 3,
+      nom: "SARL Murs + SARL Exploitation",
+      sousTitre: "Deux SARL séparées : immobilier + gestion",
+      recommandation: "Surdimensionné",
+      schema: "Vous (PP) → SARL Immo (murs) ← loyer → SARL Hôtel (exploitation)",
+      description: "Même logique de séparation mais avec deux SARL commerciales. La SARL Immo détient l'immeuble et loue à la SARL Hôtel.",
+      avantages: [
+        { point: "Protection patrimoniale forte", detail: "L'immeuble est protégé des créanciers de l'exploitation." },
+        { point: "Amortissement dans SARL Immo", detail: "Contrairement à la SCI à l'IR, l'immeuble est amorti sur 20-25 ans." },
+        { point: "Cohérence juridique", detail: "Deux SARL = même cadre juridique, pas de complexité SCI." },
+        { point: "Loyer déductible", detail: "Même avantage que SCI + SARL." },
+      ],
+      inconvenients: [
+        { point: "Double imposition structurelle", detail: "SARL Immo paie IS sur loyers + SARL Hôtel paie IS sur bénéfice + 15% retenue sur chaque distribution PP. Triple couche." },
+        { point: "Complexité et coûts x2", detail: "Deux comptabilités, conventions réglementées, etc." },
+        { point: "Pas d'exonération devises pour SARL Immo", detail: "Location ≠ hôtellerie." },
+        { point: "Surdimensionné pour 11 unités", detail: "Se justifie pour un parc de 5+ immeubles ou CA > 10M MAD." },
+      ],
+      fiscalite: {
+        IS_Immo: "20% sur loyers nets (après amortissement). Pas d'exonération devises.",
+        IS_Hotel: "20% sur bénéfice net. Exonération 5 ans CA devises.",
+        TVA: "SARL Immo : TVA 20% sur loyers commerciaux. SARL Hôtel : 10%.",
+        dividendes: "15% retenue source × 2 sociétés.",
+      },
+      scoreSimplicite: 1, scoreProtection: 4, scoreFiscal: 2, scoreFlexibilite: 3, scoreGlobal: 2,
+    },
+    {
+      id: "holding",
+      rang: 4,
+      nom: "Holding + 2 SARL",
+      sousTitre: "Holding chapeaute SARL Immo et SARL Exploitation",
+      recommandation: "Prématuré — si expansion",
+      schema: "Vous (PP) → Holding SARL → SARL Immo + SARL Hôtel",
+      description: "La holding détient les parts des deux SARL. Dividendes filiales→holding exonérés IS 100%. Structure de groupe pour investisseurs multi-projets.",
+      avantages: [
+        { point: "Exonération dividendes 100%", detail: "Dividendes filiales→holding exonérés d'IS (art. 6-I-C-1 CGI). L'argent circule dans le groupe sans fiscalité." },
+        { point: "Réinvestissement facilité", detail: "La holding réinvestit les dividendes sans que l'argent remonte à la PP (pas de 15% retenue)." },
+        { point: "Consolidation et mutualisation", detail: "Services communs facturés par la holding. Optimisation des charges." },
+        { point: "Protection maximale", detail: "Trois niveaux de séparation patrimoine personnel / actifs." },
+        { point: "Vision expansion", detail: "Prêt pour un 2ème immeuble ou un autre business." },
+      ],
+      inconvenients: [
+        { point: "Coût et complexité x3", detail: "3 sociétés = 3 comptabilités, 3 liasses, 3 AG. ~15 000–25 000 MAD/an de gestion." },
+        { point: "Cotisation minimale x3", detail: "3 × 3 000 MAD/an minimum, même si la holding ne fait que percevoir des dividendes." },
+        { point: "Pas d'économie fiscale immédiate", detail: "Les dividendes sont exonérés dans la holding, mais in fine PP → 15%. Le gain n'existe que si réinvestissement intra-groupe." },
+        { point: "Prématuré pour un seul projet", detail: "Pour 11 unités et CA < 3M MAD, le coût de 3 structures ne se justifie pas." },
+        { point: "Complexité prix de transfert x3", detail: "3 sociétés liées = risque accru de contrôle fiscal." },
+      ],
+      fiscalite: {
+        IS_Holding: "20% sur bénéfice propre. Dividendes reçus exonérés 100%.",
+        IS_Immo: "20% sur loyers nets.",
+        IS_Hotel: "20% sur bénéfice net. Exonération 5 ans devises.",
+        dividendes: "Filiales→Holding : 0%. Holding→PP : 15%.",
+      },
+      scoreSimplicite: 1, scoreProtection: 5, scoreFiscal: 3, scoreFlexibilite: 5, scoreGlobal: 2,
+    },
+  ],
+
+  classement: [
+    { rang: 1, id: "sarl-unique", raison: "Simplicité, coût minimal, éligibilité directe Go Siyaha + MDM Invest + exonération 5 ans devises. Pour un seul immeuble de 11 unités, c'est le choix rationnel." },
+    { rang: 2, id: "sci-sarl", raison: "Intéressant SI objectif successoral fort. Mais complexité et risque requalification fiscale ne se justifient pas pour ce projet." },
+    { rang: 3, id: "holding", raison: "À envisager UNIQUEMENT si expansion prévue (2ème immeuble dans les 3-5 ans). L'exonération dividendes 100% ne sert que si réinvestissement intra-groupe." },
+    { rang: 4, id: "deux-sarl", raison: "Pire des deux mondes : complexité sans avantage fiscal de la holding. Pas recommandé." },
+  ],
+
+  recommandation: {
+    montageRecommande: "sarl-unique",
+    justification: "Pour un appart-hôtel de 11 unités à Casablanca avec un budget de ~6M MAD et un CA prévisionnel < 3M MAD, la SARL unique offre le meilleur rapport simplicité/avantage fiscal. L'exonération IS 5 ans sur le CA devises + la TVA 10% récupérable + l'amortissement du bâtiment couvrent l'essentiel de l'optimisation.",
+    evolutionPossible: "Si expansion prévue, vous pourrez créer une holding a posteriori et y loger la SARL existante par apport de parts.",
+    attention: "⚠️ Analyse indicative. Consulter un expert-comptable marocain spécialisé hôtellerie avant de valider.",
+  },
+
+  sources: [
+    { label: "CGI Maroc — Exonération hôtelière art. 6-I-B-3", url: "https://www.finances.gov.ma/fr/vous-orientez/Pages/vos-impots-en-bref.aspx" },
+    { label: "LesEco — Règles fiscales tourisme 2026", url: "https://leseco.ma/business/investissement-touristique-les-regles-fiscales-incontournables-de-2026.html" },
+    { label: "Upsilon — Fiscalité des hôtels au Maroc", url: "https://www.upsilon-consulting.com/quelle-fiscalite-des-hotels/" },
+    { label: "Valfoncier — SCI au Maroc", url: "https://valfoncier.ma/sci-societe-civile-immobiliere-maroc/" },
+    { label: "Armonia — Holding au Maroc 2025", url: "https://armonia-solutions.com/creation-societe/creer-holding-maroc/" },
+    { label: "Tax-News — Holding au Maroc", url: "https://tax-news.ma/pourquoi-creer-une-societe-holding-au-maroc-a-partir-du-1er-janvier-2020/" },
+    { label: "AMDE — Taux IS 2026", url: "https://amde.ma/taux-de-limpot-sur-les-societes-is-au-maroc/" },
+    { label: "Tamwilcom — MDM Invest", url: "https://www.ccg.ma/fr/votre-projet/mdm-invest" },
   ],
 };
