@@ -86,6 +86,10 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);lin
 .ctrl-section-title{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--primary);margin:10px 0 8px;padding-bottom:4px;border-bottom:1px dashed #e2e8f0}
 .ctrl-section-title:first-child{margin-top:0}
 
+/* Source links */
+.fin-source-link{display:block;font-size:.78rem;color:var(--primary);text-decoration:none;padding:4px 0;border-bottom:1px solid #f0f0f0;transition:color .2s}
+.fin-source-link:hover{color:var(--gold);text-decoration:underline}
+
 /* Cards */
 .card{background:var(--card);border-radius:12px;padding:20px;box-shadow:0 1px 3px rgba(0,0,0,.06);border:1px solid var(--border);margin-bottom:20px;animation:fadeUp .4s ease both}
 .card-title{font-family:'Instrument Serif',serif;font-size:1.15rem;color:var(--primary);margin-bottom:12px;padding-bottom:10px;border-bottom:2px solid #f0d78c}
@@ -662,8 +666,18 @@ tr:hover td{background:#f8fafc}
   </div>
 
   <div class="card">
+    <div class="card-title">Alertes & Retours d'expérience MDM</div>
+    <div id="fin-feedback"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Sources vérifiées</div>
+    <div id="fin-sources"></div>
+  </div>
+
+  <div class="card">
     <div class="card-title" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
-      <span>Service de la Dette sur 15 ans</span>
+      <span id="debt-chart-title">Service de la Dette sur 15 ans</span>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
         <div class="toggle-group">
           <button class="toggle-btn debt-split-btn active" data-mode="total" onclick="toggleDebtSplit(false)">Total</button>
@@ -863,11 +877,11 @@ tr:hover td{background:#f8fafc}
 </main>
 
 <!-- Scripts — strict order: data → engine → render → charts → app -->
-<script src="js/data.js?v=6"></script>
-<script src="js/engine.js?v=6"></script>
-<script src="js/render.js?v=6"></script>
-<script src="js/charts.js?v=6"></script>
-<script src="js/app.js?v=6"></script>
+<script src="js/data.js?v=7"></script>
+<script src="js/engine.js?v=7"></script>
+<script src="js/render.js?v=7"></script>
+<script src="js/charts.js?v=7"></script>
+<script src="js/app.js?v=7"></script>
 
 </body>
 </html>

@@ -28,9 +28,9 @@ function compute(scenario) {
   const surfaceLocative = locatifs.reduce((s, u) => s + u.surface, 0);
   const surfaceCommerciale = UNITS.find(u => u.category === "commercial")?.surface || 0;
 
-  // --- Budget total (ameublement inclus dans totalTTC) ---
+  // --- Budget total (ameublement EN PLUS du 7M) ---
   const ameublement = BUDGET.ameublementParUnite * nbUnites;
-  const totalProjet = BUDGET.totalTTC; // 7M TTC tout compris
+  const totalProjet = BUDGET.totalTTC + ameublement; // 7M + ameublement
 
   // --- MDM Invest ---
   const subventionMDM = Math.min(totalProjet * MDM_INVEST.tauxSubvention, MDM_INVEST.plafond);
@@ -308,6 +308,57 @@ function compute(scenario) {
     return { occ: occRate, revenu: revN, ebitda: ebit, cashFlow: cf, rendement: cf / apportTerrain };
   });
 
+  // --- Debt projections for full loan duration (max of TK and BQ) ---
+  const maxLoanYears = Math.max(TAMWILKOM.dureeAns, BANQUE_CLASSIQUE.dureeAns);
+  const debtProjections = [];
+  for (let y = 0; y < maxLoanYears; y++) {
+    const growth = Math.pow(1 + REVENUE_ASSUMPTIONS.croissanceTarifs, y);
+    const prixS = sc.prixNuitStudio * growth;
+    const prixL = sc.prixNuitLoft * growth;
+    const revH = (nbStudios * prixS + nbLofts * prixL) * 365 * occ;
+    const revN = revH * (1 - REVENUE_ASSUMPTIONS.commissionPlatformes) + sc.loyerCommercial * 12;
+    const gestionY = revH * CHARGES.tauxGestion;
+    const utilitiesY = (CHARGES.eauElectricite + CHARGES.internetTv) * 12;
+    const salairesY = CHARGES.salaireEmploye * CHARGES.nbEmployes * 12 * (1 + CHARGES.chargesSociales);
+    const taxesProY = y < FISCALITE.exoTaxeProAns ? 0 : CHARGES.taxesPro;
+    const chTotal = gestionY + CHARGES.consommables * 12 + CHARGES.comptable * 12 + utilitiesY +
+      CHARGES.assurance + CHARGES.entretien + salairesY + taxesProY + CHARGES.divers;
+    const ebitdaY = revN - chTotal;
+
+    // TK debt
+    const isDiffTK = y < TAMWILKOM.differeAns;
+    let dTK, iTK, cTK;
+    if (isDiffTK) { iTK = interetsDiffereTK; cTK = 0; dTK = iTK; }
+    else if (y < TAMWILKOM.dureeAns) {
+      dTK = annuiteTK;
+      let bTK = montantTamwilkom;
+      for (let m = 0; m < (y - TAMWILKOM.differeAns) * 12; m++) { const im = bTK * rTK; bTK -= (mensualiteTK - im); }
+      let yiTK = 0;
+      for (let m = 0; m < 12; m++) { const im = bTK * rTK; yiTK += im; bTK -= (mensualiteTK - im); }
+      iTK = yiTK; cTK = dTK - iTK;
+    } else { dTK = 0; iTK = 0; cTK = 0; }
+
+    // BQ debt
+    const isDiffBQ = y < BANQUE_CLASSIQUE.differeAns;
+    let dBQ, iBQ, cBQ;
+    if (isDiffBQ) { iBQ = montantBanque * BANQUE_CLASSIQUE.tauxAnnuel; cBQ = 0; dBQ = iBQ; }
+    else if (y < BANQUE_CLASSIQUE.dureeAns) {
+      dBQ = annuiteBQ;
+      let bBQ = montantBanque;
+      for (let m = 0; m < (y - BANQUE_CLASSIQUE.differeAns) * 12; m++) { const im = bBQ * rBQ; bBQ -= (mensualiteBQ - im); }
+      let yiBQ = 0;
+      for (let m = 0; m < 12; m++) { const im = bBQ * rBQ; yiBQ += im; bBQ -= (mensualiteBQ - im); }
+      iBQ = yiBQ; cBQ = dBQ - iBQ;
+    } else { dBQ = 0; iBQ = 0; cBQ = 0; }
+
+    debtProjections.push({
+      year: y + 1, ebitda: ebitdaY,
+      debtTK: dTK, interetsTK: iTK, capitalTK: cTK,
+      debtBQ: dBQ, interetsBQ: iBQ, capitalBQ: cBQ,
+      debtServiceTotal: dTK + dBQ,
+    });
+  }
+
   return {
     terrain: { coutTerrain, fraisTerrain, budgetConstruction, coutM2Terrain, constructionHTForAmort },
     amortissement: { annuel: amortissementAnnuel, duree: FISCALITE.amortissementAns, total: constructionHTForAmort },
@@ -323,6 +374,7 @@ function compute(scenario) {
     kpi: { rendementBrut, rendementNet, rendementNetApport, revpar, coutParNuitee, paybackYear, nuiteesParAn, dscr, breakEvenOcc },
     tva: { constructionHT, tvaConstruction, tvaCollecteeAn1, tvaDeductibleAn1, creditTVA, dureeRecupCredit, tvaProjections },
     projections,
+    debtProjections,
     sensitivity,
     scenario,
   };

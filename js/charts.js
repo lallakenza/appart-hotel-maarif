@@ -323,30 +323,37 @@ function chartDebtService(S) {
   const ctx = document.getElementById("chart-debt")?.getContext("2d");
   if (!ctx) return;
 
+  // Use debtProjections (full loan duration) instead of projections (10 years)
+  const dp = S.debtProjections || S.projections;
   const div = _debtMonthly ? 12 : 1;
   const suffix = _debtMonthly ? "/mois" : "/an";
+
+  // Update chart title with actual duration
+  const titleEl = document.getElementById("debt-chart-title");
+  if (titleEl) titleEl.textContent = "Service de la Dette sur " + dp.length + " ans";
+
   let datasets;
 
   if (_debtSplit) {
     datasets = [
-      { label: "TK — Capital", data: S.projections.map(p => p.capitalTK / div), backgroundColor: "#d4a017", stack: "debt" },
-      { label: "TK — Intérêts", data: S.projections.map(p => p.interetsTK / div), backgroundColor: "#f5d679", stack: "debt" },
-      { label: "BQ — Capital", data: S.projections.map(p => p.capitalBQ / div), backgroundColor: "#1e3a5f", stack: "debt" },
-      { label: "BQ — Intérêts", data: S.projections.map(p => p.interetsBQ / div), backgroundColor: "#6b9fd4", stack: "debt" },
-      { label: "EBITDA", data: S.projections.map(p => p.ebitda / div), type: "line", borderColor: CHART_COLORS.green, backgroundColor: "transparent", tension: 0.3, pointRadius: 3, borderDash: [5, 3], order: -1 },
+      { label: "TK — Capital", data: dp.map(p => p.capitalTK / div), backgroundColor: "#d4a017", stack: "debt" },
+      { label: "TK — Intérêts", data: dp.map(p => p.interetsTK / div), backgroundColor: "#f5d679", stack: "debt" },
+      { label: "BQ — Capital", data: dp.map(p => p.capitalBQ / div), backgroundColor: "#1e3a5f", stack: "debt" },
+      { label: "BQ — Intérêts", data: dp.map(p => p.interetsBQ / div), backgroundColor: "#6b9fd4", stack: "debt" },
+      { label: "EBITDA", data: dp.map(p => p.ebitda / div), type: "line", borderColor: CHART_COLORS.green, backgroundColor: "transparent", tension: 0.3, pointRadius: 3, borderDash: [5, 3], order: -1 },
     ];
   } else {
     datasets = [
-      { label: "Tamwilkom (2,5%)", data: S.projections.map(p => p.debtTK / div), backgroundColor: CHART_COLORS.gold, stack: "debt" },
-      { label: "Banque (~5,25%)",   data: S.projections.map(p => p.debtBQ / div), backgroundColor: CHART_COLORS.primaryLight, stack: "debt" },
-      { label: "EBITDA", data: S.projections.map(p => p.ebitda / div), type: "line", borderColor: CHART_COLORS.green, backgroundColor: "transparent", tension: 0.3, pointRadius: 3, borderDash: [5, 3], order: -1 },
+      { label: "Tamwilkom (2,5%)", data: dp.map(p => p.debtTK / div), backgroundColor: CHART_COLORS.gold, stack: "debt" },
+      { label: "Banque (~5,25%)",   data: dp.map(p => p.debtBQ / div), backgroundColor: CHART_COLORS.primaryLight, stack: "debt" },
+      { label: "EBITDA", data: dp.map(p => p.ebitda / div), type: "line", borderColor: CHART_COLORS.green, backgroundColor: "transparent", tension: 0.3, pointRadius: 3, borderDash: [5, 3], order: -1 },
     ];
   }
 
   _charts.debt = new Chart(ctx, {
     type: "bar",
     data: {
-      labels: S.projections.map(p => "An " + p.year),
+      labels: dp.map(p => "An " + p.year),
       datasets
     },
     options: {
@@ -357,7 +364,8 @@ function chartDebtService(S) {
         tooltip: {
           enabled: false,
           external: (ctx) => externalTooltip(ctx, (idx) => {
-            const p = S.projections[idx];
+            const p = dp[idx];
+            if (!p) return "";
             const isDiffTK = idx < TAMWILKOM.differeAns;
             const dscr = p.debtServiceTotal > 0 ? (p.ebitda / p.debtServiceTotal) : Infinity;
             const dscrColor = dscr > 1.5 ? '#16a34a' : dscr > 1.2 ? '#d97706' : '#dc2626';

@@ -32,8 +32,8 @@ const TERRAIN = {
 
 // ======= BUDGET =======
 const BUDGET = {
-  totalTTC: 7_000_000,           // terrain + frais + construction + ameublement
-  ameublementParUnite: 40_000,   // MAD par unité locative (achat en gros 11 unités)
+  totalTTC: 7_000_000,           // terrain + frais + construction (HORS ameublement)
+  ameublementParUnite: 40_000,   // MAD par unité locative (achat en gros 11 unités) — EN PLUS du 7M
 };
 
 // ======= PROGRAMME ARCHITECTURAL =======
@@ -158,31 +158,41 @@ const CHARGES = {
 // Structure : Apport = Terrain | Reste financé 50% Tamwilkom + 50% Banque classique
 
 // MDM Invest — subvention étatique via Tamwilcom
-// Source : tamwilcom.ma, finances.gov.ma
-// Condition OBLIGATOIRE : apport en devises ≥ 25% du projet
+// Sources multiples vérifiées (voir FINANCEMENT_SOURCES)
+// Prime d'investissement : 10% du coût du projet, plafonnée à 5 MDH
+// Condition : apport en devises ≥ 25% du projet (réforme en cours pour passer à 20% + dirhams)
 // Engagement : 5 ans sans désinvestissement, sinon remboursement intégral
-// Secteur hébergement touristique = éligible
-// Délai réponse banque : 21 jours ouvrables, versement sous 5 jours après validation
+// Secteurs éligibles : industrie, éducation, hébergement/tourisme, santé, transport, énergie, green economy, IT
+// Délai réponse banque : 21 jours ouvrables, versement Tamwilcom sous 5 jours
+// Projet min : 1 MDH | Versement par tranches selon avancement de l'investissement
+// ATTENTION : programme historiquement sous-performant (48 dossiers validés entre 2002-2022)
 const MDM_INVEST = {
   tauxSubvention: 0.10,
   plafond: 5_000_000,
-  apportDevisesMin: 0.25,    // 25% du projet en devises — CONFIRMÉ par propriétaire
+  apportDevisesMin: 0.25,    // 25% du projet en devises — réforme en cours pour baisser à 20% + dirhams
   engagementAnnees: 5,
+  projetMin: 1_000_000,      // 1 MDH minimum
+  delaiReponseBanque: 21,    // jours ouvrables
+  delaiVersementTamwilcom: 5, // jours ouvrables après validation
 };
 
 // Tamwilkom (MDM Tamwil) — cofinancement avec banque
-// Source : tamwilcom.ma — programme MDM Tamwil
-// Taux : 2,5% HT/an (confirmé par propriétaire)
-// Durée max : 7 ans
-// Différé max : 2 ans sur principal
-// Plafond : 5 MDH, max 40% du coût projet, ne peut excéder la part banque
-// Min projet : 2,5 MDH (OK — notre projet = 7 MDH)
+// Sources multiples vérifiées (voir FINANCEMENT_SOURCES)
+// Taux : 2,5% HT/an (fixe, portion Tamwilcom)
+// Taux banque : librement négocié avec la banque
+// Durée max : 7 ans | Différé max : 2 ans sur principal
+// Plafond : 5 MDH | Min : 1 MDH | max 40% du coût projet, ne peut excéder la part banque
+// Projet min : 2,5 MDH (OK — notre projet = 7 MDH)
+// Éligibilité MRE : titre de séjour valide OU retour définitif < 1 an
+// Commercialisé via les banques partenaires marocaines
 const TAMWILKOM = {
-  tauxAnnuel: 0.025,         // HT (confirmé)
+  tauxAnnuel: 0.025,         // HT (confirmé Tamwilcom)
   dureeAns: 7,
   differeAns: 2,
   plafond: 5_000_000,
+  plancher: 1_000_000,       // min 1 MDH
   maxPctProjet: 0.40,        // max 40% du coût projet
+  projetMin: 2_500_000,      // 2,5 MDH minimum
 };
 
 // Banque classique — crédit investissement ENTREPRISE
@@ -196,6 +206,70 @@ const BANQUE_CLASSIQUE = {
   tauxAnnuel: 0.0525,        // estimation médiane TPME investissement (BAM T4-2025)
   dureeAns: 15,
   differeAns: 0,
+};
+
+// ======= SOURCES & FEEDBACK FINANCEMENT MDM =======
+const FINANCEMENT_SOURCES = {
+  mdmInvest: [
+    { label: "Tamwilcom — Page officielle MDM Invest", url: "https://www.tamwilcom.ma/fr/votre-projet/mdm-invest" },
+    { label: "Ministère des Finances — Fonds MDM Invest", url: "https://www.finances.gov.ma/fr/Pages/detail-actualite.aspx?fiche=1489" },
+    { label: "CRI Tanger — Fiche MDM Invest", url: "https://investangier.com/mdm-invest/" },
+    { label: "Bladi.net — Aide méconnue pour les MRE", url: "https://www.bladi.net/vous-etes-mre-comment-obtenir-subvention-maroc,116133.html" },
+    { label: "LesEco.ma — Tamwilcom nouveautés 2024", url: "https://leseco.ma/maroc/financement-des-projets-mre-tamwilcom-devoile-de-nouveaux-outils-financiers-pour-booster-linvestissement.html" },
+    { label: "Le360 — Ce qui va changer pour MDM Invest", url: "https://fr.le360.ma/economie/investissements-des-mre-au-maroc-ce-qui-va-changer-pour-le-fonds-mdm-invest-233775/" },
+    { label: "La Vie Éco — MDM Invest levier stratégique", url: "https://www.lavieeco.com/argent/programme-mdm-invest-un-levier-strategique-pour-canaliser-lepargne-des-marocains-du-monde/" },
+  ],
+  mdmTamwil: [
+    { label: "Tamwilcom — Page officielle MDM Tamwil", url: "https://www.tamwilcom.ma/fr/votre-projet/mdm-tamwil" },
+    { label: "LesEco.ma — Nouveaux outils financiers MRE", url: "https://leseco.ma/maroc/financement-des-projets-mre-tamwilcom-devoile-de-nouveaux-outils-financiers-pour-booster-linvestissement.html" },
+    { label: "L'Économiste — Nouveaux mécanismes MRE", url: "https://www.leconomiste.com/flash-infos/tamwilcom-lance-de-nouveaux-mecanismes-de-financement-pour-les-mre" },
+    { label: "OnnVision — Guide MDM Tamwil", url: "https://onnvision.com/investir-au-maroc-partie-4-mdm-tamwil-nouveau-financement-pour-les-mre/" },
+    { label: "Le Matin — Tamwilcom mécanismes MRE", url: "https://lematin.ma/economie/tamwilcom-presente-les-mecanismes-dedies-au-financement-des-projets-des-mre/235857" },
+  ],
+  feedback: [
+    {
+      type: "warning",
+      title: "Programme historiquement sous-performant",
+      detail: "Seulement 48 dossiers validés entre 2002 et 2022 sur MDM Invest. Selon le HCP (2022), seuls 2,9% des MRE ont réalisé un investissement au Maroc.",
+      source: "Bladi.net / HCP 2022",
+      url: "https://www.bladi.net/investir-maroc-oui-mais-mre-veulent-garanties,115462.html",
+    },
+    {
+      type: "warning",
+      title: "Complexité administrative",
+      detail: "Les MRE dénoncent la complexité des procédures, l'absence de guichet unique, le manque d'accompagnement et de visibilité fiscale.",
+      source: "Bladi.net / CESE",
+      url: "https://www.bladi.net/investir-maroc-oui-mais-mre-veulent-garanties,115462.html",
+    },
+    {
+      type: "info",
+      title: "Réforme en cours (2024+)",
+      detail: "Baisse du seuil d'apport (de 25% vers 20%), possibilité d'apport en dirhams (plus seulement en devises), élargissement des secteurs éligibles (énergie, transport, green economy, IT). Couplage possible avec Intelaka et Fonds Innov Invest.",
+      source: "Le360 / LesEco.ma",
+      url: "https://fr.le360.ma/economie/investissements-des-mre-au-maroc-ce-qui-va-changer-pour-le-fonds-mdm-invest-233775/",
+    },
+    {
+      type: "positive",
+      title: "Hébergement touristique = secteur éligible",
+      detail: "L'hébergement touristique fait partie des secteurs explicitement éligibles à MDM Invest et MDM Tamwil, confirmé par Tamwilcom et le CRI Tanger.",
+      source: "Tamwilcom / CRI Tanger",
+      url: "https://investangier.com/mdm-invest/",
+    },
+    {
+      type: "info",
+      title: "Versement par tranches",
+      detail: "La subvention MDM Invest est versée par tranches selon l'avancement de l'investissement, pas en une seule fois. La banque est le point d'entrée unique pour le dépôt de dossier.",
+      source: "Bladi.net",
+      url: "https://www.bladi.net/vous-etes-mre-comment-obtenir-subvention-maroc,116133.html",
+    },
+    {
+      type: "warning",
+      title: "Engagement 5 ans strict",
+      detail: "En cas de désinvestissement dans les 5 ans suivant le dernier versement, la subvention doit être remboursée intégralement. Condition non négociable.",
+      source: "Tamwilcom",
+      url: "https://www.tamwilcom.ma/fr/votre-projet/mdm-invest",
+    },
+  ],
 };
 
 // ======= FISCALITÉ =======

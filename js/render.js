@@ -317,6 +317,37 @@ function renderFinancement(S) {
       <div class="progress-seg" style="width:${F.pctSubvention * 100}%;background:var(--green)" title="Subvention MDM Invest">MDM ${fmtPct(F.pctSubvention, 0)}</div>
     `;
   }
+
+  // --- Feedback & Alertes MDM ---
+  const feedbackEl = document.getElementById("fin-feedback");
+  if (feedbackEl && typeof FINANCEMENT_SOURCES !== "undefined") {
+    const iconMap = { warning: "⚠️", info: "ℹ️", positive: "✅" };
+    const colorMap = { warning: "#fff3cd", info: "#e8f4fd", positive: "#d4edda" };
+    const borderMap = { warning: "#f0c36d", info: "#7cb9e8", positive: "#82c785" };
+    let html = "";
+    FINANCEMENT_SOURCES.feedback.forEach(fb => {
+      html += `<div class="fin-feedback-item" style="background:${colorMap[fb.type]};border-left:4px solid ${borderMap[fb.type]};padding:10px 14px;border-radius:6px;margin-bottom:8px">
+        <div style="font-weight:700;font-size:.85rem;margin-bottom:4px">${iconMap[fb.type]} ${fb.title}</div>
+        <div style="font-size:.8rem;color:#333;line-height:1.5">${fb.detail}</div>
+        <a href="${fb.url}" target="_blank" rel="noopener" style="font-size:.72rem;color:#5a7;margin-top:4px;display:inline-block">📎 ${fb.source}</a>
+      </div>`;
+    });
+    feedbackEl.innerHTML = html;
+  }
+
+  // --- Sources avec liens ---
+  const srcEl = document.getElementById("fin-sources");
+  if (srcEl && typeof FINANCEMENT_SOURCES !== "undefined") {
+    let html = "<div style='margin-bottom:8px'><strong style='font-size:.8rem;color:var(--primary)'>MDM Invest</strong></div>";
+    FINANCEMENT_SOURCES.mdmInvest.forEach(s => {
+      html += `<a href="${s.url}" target="_blank" rel="noopener" class="fin-source-link">🔗 ${s.label}</a>`;
+    });
+    html += "<div style='margin:10px 0 8px'><strong style='font-size:.8rem;color:var(--primary)'>MDM Tamwil</strong></div>";
+    FINANCEMENT_SOURCES.mdmTamwil.forEach(s => {
+      html += `<a href="${s.url}" target="_blank" rel="noopener" class="fin-source-link">🔗 ${s.label}</a>`;
+    });
+    srcEl.innerHTML = html;
+  }
 }
 
 // --- Cash-Flow ---
