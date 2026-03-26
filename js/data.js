@@ -38,6 +38,13 @@ const BUDGET = {
 
 // ======= PROGRAMME ARCHITECTURAL =======
 // Surfaces d'après plans architecte Jad (Nour Architects) — version finale
+// Exposition d'après plan cadastral TF 17527/d (sept 2012) + plans archi O3 RT
+//
+// ORIENTATION BÂTIMENT (d'après plan cadastral) :
+//   Façade rue (entrée principale) = Nord-Ouest → Rue des Camélias
+//   Fond du bâtiment               = Sud-Est    → Intérieur îlot / cour
+//   Côté gauche des plans archi     = Côté RUE (NW)
+//   Côté droit des plans archi      = Côté INTÉRIEUR (SE)
 //
 // TERMINOLOGIE MAROC :
 //   Studio = T2 en France : chambre séparée + salon/cuisine → unités premium, plus grandes
@@ -46,20 +53,20 @@ const BUDGET = {
 // Étage 1/2/3 : même layout (2 studios par étage)
 // Étage 4/5 : 1 loft + 1 studio par étage (lofts avec terrasse)
 const UNITS = [
-  { floor: "Sous-sol", type: "Services",          surface: null,  category: "service",    label: "Buanderie / Vestiaires / Réfectoire" },
-  { floor: "RDC",      type: "Local commercial",  surface: 40.00, category: "commercial", label: "Local commercial (~40 m² + extension sous-sol)" },
-  { floor: "RDC",      type: "Studio",            surface: 46.10, category: "studio",     label: "Studio RDC — 46,10 m²" },
-  { floor: "RDC",      type: "Réception",         surface: null,  category: "service",    label: "Hall & réception" },
-  { floor: "Étage 1",  type: "Studio A",          surface: 37.41, category: "studio",     label: "Studio A — 37,41 m²" },
-  { floor: "Étage 1",  type: "Studio B",          surface: 32.75, category: "studio",     label: "Studio B — 32,75 m²" },
-  { floor: "Étage 2",  type: "Studio A",          surface: 37.41, category: "studio",     label: "Studio A — 37,41 m²" },
-  { floor: "Étage 2",  type: "Studio B",          surface: 32.75, category: "studio",     label: "Studio B — 32,75 m²" },
-  { floor: "Étage 3",  type: "Studio A",          surface: 37.41, category: "studio",     label: "Studio A — 37,41 m²" },
-  { floor: "Étage 3",  type: "Studio B",          surface: 32.75, category: "studio",     label: "Studio B — 32,75 m²" },
-  { floor: "Étage 4",  type: "Loft",              surface: 28.55, category: "loft",       label: "Loft — 28,55 m² (+ terrasse)" },
-  { floor: "Étage 4",  type: "Studio",            surface: 32.75, category: "studio",     label: "Studio — 32,75 m²" },
-  { floor: "Étage 5",  type: "Loft",              surface: 22.63, category: "loft",       label: "Loft — 22,63 m² (+ terrasse 15,77 m²)" },
-  { floor: "Étage 5",  type: "Studio",            surface: 32.75, category: "studio",     label: "Studio — 32,75 m²" },
+  { floor: "Sous-sol", type: "Services",          surface: null,  category: "service",    label: "Buanderie / Vestiaires / Réfectoire",                position: "Sous-sol",    exposition: null },
+  { floor: "RDC",      type: "Local commercial",  surface: 40.00, category: "commercial", label: "Local commercial (~40 m² + extension sous-sol)",      position: "Rue",         exposition: "Nord-Ouest", note: "Vitrine sur Rue des Camélias + extension sous-sol" },
+  { floor: "RDC",      type: "Studio",            surface: 46.10, category: "studio",     label: "Studio RDC — 46,10 m²",                               position: "Intérieur",   exposition: "Sud-Est",    note: "Fond du RDC, derrière réception" },
+  { floor: "RDC",      type: "Réception",         surface: null,  category: "service",    label: "Hall & réception",                                     position: "Rue",         exposition: "Nord-Ouest", note: "Entrée principale côté rue" },
+  { floor: "Étage 1",  type: "Studio A",          surface: 37.41, category: "studio",     label: "Studio A — 37,41 m²",                                  position: "Rue",         exposition: "Nord-Ouest", note: "Côté Rue des Camélias, vue dégagée" },
+  { floor: "Étage 1",  type: "Studio B",          surface: 32.75, category: "studio",     label: "Studio B — 32,75 m²",                                  position: "Intérieur",   exposition: "Sud-Est",    note: "Côté intérieur îlot, plus calme" },
+  { floor: "Étage 2",  type: "Studio A",          surface: 37.41, category: "studio",     label: "Studio A — 37,41 m²",                                  position: "Rue",         exposition: "Nord-Ouest", note: "Côté Rue des Camélias, vue dégagée" },
+  { floor: "Étage 2",  type: "Studio B",          surface: 32.75, category: "studio",     label: "Studio B — 32,75 m²",                                  position: "Intérieur",   exposition: "Sud-Est",    note: "Côté intérieur îlot, plus calme" },
+  { floor: "Étage 3",  type: "Studio A",          surface: 37.41, category: "studio",     label: "Studio A — 37,41 m²",                                  position: "Rue",         exposition: "Nord-Ouest", note: "Côté Rue des Camélias, vue dégagée" },
+  { floor: "Étage 3",  type: "Studio B",          surface: 32.75, category: "studio",     label: "Studio B — 32,75 m²",                                  position: "Intérieur",   exposition: "Sud-Est",    note: "Côté intérieur îlot, plus calme" },
+  { floor: "Étage 4",  type: "Loft",              surface: 28.55, category: "loft",       label: "Loft — 28,55 m² (+ terrasse)",                         position: "Rue",         exposition: "Nord-Ouest", note: "Côté rue + terrasse, vue dégagée étage élevé" },
+  { floor: "Étage 4",  type: "Studio",            surface: 32.75, category: "studio",     label: "Studio — 32,75 m²",                                    position: "Intérieur",   exposition: "Sud-Est",    note: "Côté intérieur îlot" },
+  { floor: "Étage 5",  type: "Loft",              surface: 22.63, category: "loft",       label: "Loft — 22,63 m² (+ terrasse 15,77 m²)",                position: "Rue",         exposition: "Nord-Ouest", note: "Dernier étage côté rue + grande terrasse 15,77 m², meilleure vue" },
+  { floor: "Étage 5",  type: "Studio",            surface: 32.75, category: "studio",     label: "Studio — 32,75 m²",                                    position: "Intérieur",   exposition: "Sud-Est",    note: "Côté intérieur, dernier étage" },
 ];
 
 // ======= HYPOTHÈSES DE REVENUS =======
@@ -415,9 +422,14 @@ const FISCALITE = {
 };
 
 // ======= DONNÉES MARCHÉ =======
-// Sources : AirDNA, Airbtics, AirROI, SandsOfWealth, ANIT, Observatoire du Tourisme
+// Sources : AirDNA, Airbtics, AirROI, SandsOfWealth, ANIT, Observatoire du Tourisme,
+//           AirBoo Rentabilité, EasyHost, Medias24, ONMT, Challenge.ma
 const MARKET_DATA = {
-  // Tourisme national
+  // Tourisme national (ONMT / Observatoire du Tourisme 2025)
+  visiteurs2025: 19_800_000,          // Record historique — ONMT
+  nuitees2025: 43_400_000,            // +9% vs 2024
+  recettesDevises2025: 138_000_000_000, // MAD — record
+  tauxOccupNational2025: 0.58,        // +3 pts vs 2024
   visiteurs2024: 17_400_000,
   nuitees2024: 28_700_000,
   croissanceNuitees: 0.12,
@@ -425,16 +437,55 @@ const MARKET_DATA = {
 
   // Données Airbnb Casablanca (multi-sources 2025-2026)
   airbnbData: {
-    source: "AirDNA, Airbtics (fév 2025 – jan 2026), AirROI 2026, SandsOfWealth 2026",
+    source: "AirDNA, Airbtics (fév 2025 – jan 2026), AirROI 2026, SandsOfWealth 2026, AirBoo, EasyHost",
     totalListingsCasa: 5_209,          // AirDNA (+47.1% YoY)
     listingsMaarif: 1_348,             // Airbtics — quartier le plus saturé
     croissanceListings: 0.50,          // +50% YoY — forte pression concurrentielle
-    adrMaarifMAD: 627,                 // Airbtics — ADR médiane Maarif
-    adrRangeMaarif: { min: 450, max: 850 },  // SandsOfWealth
-    occupancyMedianeCasa: 0.49,        // Airbtics
-    occupancyMedianeAirROI: 0.358,     // AirROI (plus conservateur)
-    occupancyTop25: 0.58,              // AirROI
-    occupancyTop10: 0.76,              // AirROI
+    adrMaarifMAD: 600,                 // SandsOfWealth 2026 — ADR moyenne Casa ~600, médiane 500-550
+    adrRangeMaarif: { min: 450, max: 850 },  // SandsOfWealth — Maarif spécifique
+    adrStudioT2: { min: 550, max: 780, median: 650 },  // Studios avec chambre séparée (32-46 m²)
+    adrLoftKitchenette: { min: 380, max: 580, median: 480 },  // Kitchenettes espace ouvert (22-28 m²)
+
+    // ═══ TAUX D'OCCUPATION — SYNTHÈSE MULTI-SOURCES ═══
+    // Données Airbnb/STR (plateformes analytics)
+    occupancyMedianeCasa: 0.49,        // Airbtics (fév 2025 – jan 2026)
+    occupancyMedianeAirROI: 0.358,     // AirROI (oct 2024 – sept 2025) — plus conservateur
+    occupancySandsOfWealth: 0.45,      // SandsOfWealth 2026 — fourchette réaliste 38-55%
+    occupancyEasyHost: 0.60,           // EasyHost (optimiste, 600 MAD/nuit)
+    occupancyTop25: 0.58,              // AirROI — top quartile
+    occupancyTop10: 0.76,              // AirROI — top décile
+    occupancyBreakEven: { min: 0.25, max: 0.30 },  // SandsOfWealth — 8-10 nuits/mois
+    // Données par quartier (AirBoo Rentabilité 2025 — biens pro, note 4.5+/5)
+    occupancyByQuartier: {
+      source: "AirBoo Rentabilité 2025 — profils pro gérés efficacement, note 4.5+/5",
+      centreVille: { taux: 0.75, prixNuit: 850 },   // MAD
+      maarif:      { taux: 0.72, prixNuit: 800 },
+      anfa:        { taux: 0.78, prixNuit: 950 },
+      ainDiab:     { taux: 0.70, prixNuit: 1000 },
+      bourgogne:   { taux: 0.65, prixNuit: 700 },
+      californie:  { taux: 0.60, prixNuit: 750 },
+    },
+    // Hôtellerie classée (Observatoire du Tourisme / ONMT / Medias24)
+    occupancyHotelCasa: {
+      t1_2025_moyen: 0.53,            // Medias24 — Jan-Mars 2025, +8 pts vs 2024
+      mars_2025: 0.46,                // Challenge.ma — recul saisonnier Ramadan, -9 pts vs 2024
+      source: "Medias24, Challenge.ma, Observatoire du Tourisme",
+    },
+    // Saisonnalité (AirROI)
+    occupancySaisonnier: {
+      peak: { mois: "Août, Déc, Juil", occupancy: 0.428, adr: 780 },    // MAD
+      shoulder: { mois: "Oct, Nov, Avr, Jun", occupancy: 0.374, adr: 740 },
+      low: { mois: "Fév, Mars, Mai", occupancy: 0.367, adr: 670 },
+      highest: { mois: "Best month", occupancy: 0.459, adr: 850 },
+      lowest: { mois: "Worst month", occupancy: 0.318, adr: 650 },
+    },
+    // Tendance : occupation en baisse, tarifs en hausse (Airbtics)
+    occupancyTrend: {
+      variation1an: -0.039,            // -3,9% sur 1 an
+      variation3ans: -0.109,           // -10,9% sur 3 ans (saturation marché)
+      tarifVariation1an: +0.103,       // +10,3% — montée en gamme compense
+      revenueVariation1an: +0.060,     // +6% — revenue progresse malgré occupation en baisse
+    },
     revenueMedianMensuel: 7_500,       // SandsOfWealth — MAD/mois
     revenueTop: 16_000,                // SandsOfWealth — top performers MAD/mois
     saisonHaute: { mois: "Juin-Sept", boost: 0.40 },     // +40% revenu
@@ -442,15 +493,34 @@ const MARKET_DATA = {
     clienteleInternationale: 0.83,     // 83% international (AirROI)
     origineTop: "France (29.5%)",
     dureeSejourMoyenne: 3.8,           // nuits
+    // Segments par prix (Airbtics — occupancy par gamme)
+    occupancyByPricing: {
+      budget:   { small: 0.58, medium: 0.64, large: 0.62 },
+      midScale: { small: 0.65, medium: 0.70, large: 0.68 },  // Notre positionnement
+      luxury:   { small: 0.52, medium: 0.58, large: 0.60 },
+    },
   },
 
-  // Occupancy par segment hôtelier (Observatoire du Tourisme)
+  // Occupancy par segment — croisement hôtelier + STR + quartiers
   occupancyBySegment: [
-    { segment: "Luxe / Haut de gamme",      taux: 0.623 },
-    { segment: "Milieu de gamme (4*)",       taux: 0.50  },
-    { segment: "Économique (3-4* B)",        taux: 0.45  },
-    { segment: "Airbnb médiane Casa",        taux: 0.49  },
-    { segment: "Airbnb top 25% Casa",        taux: 0.58  },
+    // Hôtellerie classée (Observatoire du Tourisme / ONMT 2025)
+    { segment: "National 2025 (classé)",          taux: 0.58,  source: "ONMT" },
+    { segment: "Luxe / Haut de gamme Casa",       taux: 0.623, source: "Observatoire" },
+    { segment: "Milieu de gamme (4*)",             taux: 0.50,  source: "Observatoire" },
+    { segment: "Casa T1 2025 (classé)",            taux: 0.53,  source: "Medias24" },
+    // STR / Airbnb (multi-sources 2025-2026)
+    { segment: "Airbnb médiane Casa (Airbtics)",   taux: 0.49,  source: "Airbtics" },
+    { segment: "Airbnb médiane Casa (AirROI)",     taux: 0.358, source: "AirROI" },
+    { segment: "Airbnb moyenne Casa (SandsOfWealth)", taux: 0.45, source: "SandsOfWealth" },
+    { segment: "Airbnb top 25% Casa",              taux: 0.58,  source: "AirROI" },
+    { segment: "Airbnb top 10% Casa",              taux: 0.76,  source: "AirROI" },
+    // Biens gérés pro (AirBoo 2025 — note 4.5+/5)
+    { segment: "Pro géré — Maarif (AirBoo)",       taux: 0.72,  source: "AirBoo" },
+    { segment: "Pro géré — Anfa (AirBoo)",          taux: 0.78,  source: "AirBoo" },
+    { segment: "Pro géré — Centre-ville (AirBoo)",  taux: 0.75,  source: "AirBoo" },
+    // Mid-scale segment (Airbtics — notre positionnement)
+    { segment: "Mid-scale small (Airbtics)",        taux: 0.65,  source: "Airbtics" },
+    { segment: "Mid-scale medium (Airbtics)",       taux: 0.70,  source: "Airbtics" },
   ],
 
   // Positionnement tarifaire (moyenne pondérée Studios T2 + Lofts)
@@ -493,13 +563,29 @@ const BENCHMARK = {
     luxe2BR: { min: 1000, median: 1175, max: 1490, label: "2BR+ Luxe (85m²+)" },
   },
   occupancy: {
-    casaAverage: 0.46,
-    casaMedianAirbtics: 0.49,
-    casaMedianAirROI: 0.358,
-    casaTop25: 0.58,
-    hotel4Stars: 0.50,
-    luxeSegment: 0.623,
-    source: "AirROI, Airbtics, SandsOfWealth, Observatoire du Tourisme",
+    // STR / Airbnb — multiples sources pour triangulation
+    casaMedianAirbtics: 0.49,          // Airbtics (fév 2025 – jan 2026) — 3649 annonces
+    casaMedianAirROI: 0.358,           // AirROI (oct 2024 – sept 2025) — 1973 annonces
+    casaMoyenneSandsOfWealth: 0.45,    // SandsOfWealth 2026 — fourchette 38-55%
+    casaEasyHost: 0.60,                // EasyHost — données optimistes
+    casaTop25: 0.58,                   // AirROI — top quartile
+    casaTop10: 0.76,                   // AirROI — top décile
+    casaTopPerformers: 0.65,           // SandsOfWealth — top performers 55-65%
+    // Biens pro gérés (AirBoo — note 4.5+/5)
+    maarifProGere: 0.72,              // AirBoo Rentabilité 2025 — Maarif, bien géré
+    casaMoyenneProGere: 0.68,         // AirBoo — moyenne quartiers centraux
+    // Hôtellerie classée (ONMT / Observatoire)
+    hotel4Stars: 0.50,                // Observatoire du Tourisme
+    luxeSegment: 0.623,               // Observatoire du Tourisme
+    nationalClasse2025: 0.58,         // ONMT — taux national classé 2025
+    casaT1_2025: 0.53,               // Medias24 — Casa T1 2025
+    // Villes comparables (EasyHost)
+    marrakech: 0.65,
+    agadir: 0.62,
+    tanger: 0.58,
+    rabat: 0.55,
+    fes: 0.50,
+    source: "AirROI, Airbtics, SandsOfWealth, AirBoo, EasyHost, ONMT, Medias24, Observatoire du Tourisme",
   },
   insights: [
     "StayHere domine avec 3 propriétés (Maarif, Palmier, Oasis) — marque forte, volumes élevés",
@@ -508,6 +594,34 @@ const BENCHMARK = {
     "Les propriétés avec services hôteliers (petit-déj, conciergerie) justifient +15-25% de premium",
     "Segment ultra-luxe (piscine/jacuzzi privé) atteint 1490 MAD/n mais niche très restreinte",
   ],
+  // ═══ ANALYSE TAUX D'OCCUPATION — CONCLUSION ═══
+  // Croisement de 8+ sources indépendantes (mars 2026)
+  //
+  // FOURCHETTE MÉDIANE MARCHÉ (annonce lambda non pro) : 35-49%
+  //   → AirROI médiane : 35.8%, Airbtics médiane : 49%, SandsOfWealth : 45%
+  //   → Tendance : occupation en baisse -3.9%/an (saturation +50% listings/an)
+  //
+  // FOURCHETTE BIEN PRO GÉRÉ (note 4.5+/5, multi-canal) : 55-72%
+  //   → AirBoo Maarif pro : 72%, AirROI top 25% : 58%
+  //   → Mid-scale segment (Airbtics) : 65-70%
+  //   → C'EST NOTRE CIBLE avec un appart-hôtel structuré
+  //
+  // TOP 10% (marketing, review 4.8+, brand, volume) : 76%+
+  //   → AirROI top 10% : 76%+, Anfa pro : 78%
+  //
+  // HÔTELLERIE CLASSÉE CASA : 46-53% (T1 2025)
+  //   → National 2025 : 58%, Marrakech : 73%
+  //
+  // CALIBRATION SCÉNARIOS :
+  //   Pessimiste (35%) = médiane AirROI — annonce non optimisée
+  //   Prudent (42%)    = entre médiane AirROI et Airbtics
+  //   Réaliste (48%)   = médiane Airbtics — bien géré sans être top
+  //   Favorable (54%)  = début top 25% — bonne réputation établie
+  //   Optimiste (60%)  = top performers SandsOfWealth — brand forte
+  //
+  // NOTE : les données AirBoo (72% Maarif) correspondent à un bien noté 4.5+/5 géré
+  //   professionnellement, ce qui justifie notre scénario favorable/optimiste.
+  //   Les chiffres AirROI (35.8%) incluent TOUS les listings, y compris inactifs et mal gérés.
 };
 
 // ======= RISQUES =======
@@ -827,5 +941,131 @@ const GO_SIYAHA_ECO = {
     "leseco.ma — 11 nouveaux projets validés pour un tourisme plus durable",
     "medias24.com — Go Siyaha 720 MDH pour 1 700 entreprises",
     "lkelma.com — Ce qu'il offre aux entreprises touristiques marocaines",
+  ],
+};
+
+// ═══════════════════════════════════════════════════════════════════════
+// GO SIYAHA — PROGRAMME COMPLET (section dédiée)
+// Sources : Maroc PME, Ministère du Tourisme, Morocco World News,
+//           BarlAman Today, Lkelma, Invest-Time
+// ═══════════════════════════════════════════════════════════════════════
+const GO_SIYAHA_PROGRAMME = {
+  // --- Infos générales ---
+  nom: "Go Siyaha",
+  gestionnaire: "Maroc PME (Agence nationale de développement des PME)",
+  ministere: "Ministère du Tourisme, de l'Artisanat et de l'Économie Sociale et Solidaire",
+  lancement: "Février 2024",
+  budgetGlobal: 720_000_000,       // 720 MDH
+  objectifEntreprises: 1_700,      // cible 2026
+  entreprisesSoutenues: 1_000,     // juillet 2025 — 59% de l'objectif
+  restantAides: 700,               // packages restants
+  plateforme: "https://marocpme.gov.ma/gosiyaha/",
+  cadre: "Feuille de route tourisme 2023-2026",
+
+  // --- Taux de subvention par type ---
+  subventions: [
+    { type: "Animation touristique",       taux: 0.35, plafondInvest: 10_000_000, detail: "Activités touristiques, loisirs, sport" },
+    { type: "Hébergement",                 taux: 0.30, plafondInvest: 10_000_000, detail: "Hôtels, riads, maisons d'hôtes avec activités d'animation" },
+    { type: "Croissance verte / Éco",      taux: 0.40, plafondInvest: 10_000_000, detail: "Équipements éco-responsables, photovoltaïque, isolation" },
+    { type: "Assistance technique",        taux: 0.90, plafondInvest: null,        detail: "Consulting, digital, stratégie financière — entreprise ne paie que 10%" },
+  ],
+
+  // --- Secteurs éligibles ---
+  secteursEligibles: [
+    "Hébergement (hôtels, riads, résidences de tourisme, maisons d'hôtes)",
+    "Agences de voyages",
+    "Transport touristique",
+    "Restauration touristique",
+    "Animation et divertissement touristique",
+    "Activités sportives et de loisirs",
+  ],
+
+  // --- Timeline / évolution du programme ---
+  timeline: [
+    { date: "Février 2024",   event: "Lancement officiel du programme Go Siyaha", detail: "Budget : 720 MDH, objectif 1 700 entreprises" },
+    { date: "Mai 2024",       event: "430 dossiers déposés", detail: "Premières candidatures en cours d'instruction" },
+    { date: "Septembre 2024", event: "12 premiers projets subventionnés", detail: "1ère vague : loisirs nautiques, éco-tourisme, hébergement distinctif, sport" },
+    { date: "Février 2025",   event: "8ème comité CPP — 11 projets éco-tourisme approuvés", detail: "23 MDH investissement total, 7 MDH subvention Go Siyaha. Projets de 130K à 10M MAD" },
+    { date: "Mars 2025",      event: "24 projets Croissance Verte approuvés", detail: "58 MDH investissement total, 20 MDH subventionné. Panneaux solaires, LED, gestion déchets" },
+    { date: "Juillet 2025",   event: "1 000 entreprises soutenues (59% objectif)", detail: "3 réformes majeures annoncées" },
+    { date: "22 juillet 2025", event: "Suppression seuil minimum investissement", detail: "Plus besoin de 1M MAD minimum — ouvert aux micro-entreprises, coopératives, jeunes" },
+    { date: "22 juillet 2025", event: "Ouverture aux entreprises existantes", detail: "Les entreprises existantes peuvent postuler si elles développent de nouvelles activités d'animation" },
+    { date: "22 juillet 2025", event: "Assistance technique dès la conception", detail: "Support disponible avant même la création de l'entreprise (structuration idée, business plan)" },
+  ],
+
+  // --- Process de candidature ---
+  process: [
+    { etape: 1, titre: "Dossier en ligne",           detail: "Soumettre le dossier sur marocpme.gov.ma/gosiyaha/, avec business plan, étude de marché, devis fournisseurs, statuts juridiques" },
+    { etape: 2, titre: "Instruction / validation",    detail: "Revue par Maroc PME, vérification éligibilité et viabilité économique" },
+    { etape: 3, titre: "Comité Public-Privé (CPP)",   detail: "Le dossier passe devant le Comité paritaire (représentants État + secteur privé)" },
+    { etape: 4, titre: "Signature convention",        detail: "Accord formel, conditions de versement, jalons à respecter" },
+    { etape: 5, titre: "Réalisation & suivi",         detail: "Mise en œuvre du projet, visites de contrôle, versement progressif de la subvention" },
+  ],
+  delaiTraitement: "4 à 8 semaines (estimation, varie selon complexité)",
+
+  // --- Documents requis ---
+  documentsRequis: [
+    "Business plan détaillé avec projections financières",
+    "Étude de marché démontrant la pertinence du projet",
+    "Devis fournisseurs pour les équipements / travaux",
+    "Statuts juridiques de la société (ou projet de statuts si pré-création)",
+    "États financiers (si entreprise existante)",
+    "Preuve de viabilité économique du projet",
+    "Certificat d'inscription au registre de commerce (ou engagement)",
+  ],
+
+  // --- Projets approuvés documentés ---
+  projetsApprouves: [
+    { date: "Sept 2024", nb: 12, types: "Nautisme, éco-tourisme, hébergement distinctif, sport", investissement: null },
+    { date: "Fév 2025",  nb: 11, types: "Éco-tourisme (panneaux solaires, gestion énergie)", investissement: 23_000_000, subvention: 7_000_000,
+      villes: "Dakhla, Berkane, Casablanca, Azilal, Tanger, Khenifra, Sefrou, M'diq, Errachidia, Marrakech",
+      fourchette: "130K MAD (maison d'hôtes solaire) à ~10M MAD (hôtel club)" },
+    { date: "Mars 2025",  nb: 24, types: "Croissance Verte (photovoltaïque, LED, déchets)", investissement: 58_000_000, subvention: 20_000_000 },
+  ],
+
+  // --- Risques & alertes ---
+  risques: [
+    { risque: "Bureaucratie documentaire",       severite: "moyen",  detail: "Dossier complet exigé (business plan, étude de marché, devis). Rejet si incomplet." },
+    { risque: "Délais de traitement",             severite: "moyen",  detail: "4-8 semaines annoncé mais peut s'allonger. Le CPP ne se réunit pas en continu." },
+    { risque: "Places limitées",                  severite: "élevé",  detail: "700 packages restants sur 1 700. Course aux dossiers — first come first served." },
+    { risque: "Versement conditionnel",           severite: "moyen",  detail: "La subvention est versée sur jalons/preuves d'avancement. Pas un chèque en blanc." },
+    { risque: "Éligibilité hébergement seul",     severite: "faible", detail: "Hébergement seul = 30%. Pour 40% il faut un volet éco/vert ou animation." },
+    { risque: "Manque de feedback public",        severite: "info",   detail: "Très peu de retours d'expérience sur forums/réseaux. Programme récent (2024), les retours viendront." },
+    { risque: "Changement de conditions",         severite: "faible", detail: "Le programme a déjà évolué 3 fois en 18 mois. Les conditions peuvent encore changer." },
+  ],
+
+  // --- Notre éligibilité ---
+  notreProjet: {
+    eligible: true,
+    volet: "Croissance verte / Éco-responsable",
+    tauxApplicable: 0.40,       // 40% car volet éco
+    investissementVise: 300_000, // ajustable via slider
+    subventionEstimee: 120_000,  // 300K × 40%
+    assistanceTechnique: true,   // on paie 10%, programme couvre 90%
+    points_forts: [
+      "SARL nouvelle → éligible sans historique",
+      "Résidence de tourisme = secteur hébergement éligible",
+      "Volet écologique (solaire, LED, isolation) → 40% au lieu de 30%",
+      "Seuil minimum supprimé (juil 2025) → pas de blocage si < 1M MAD",
+      "Assistance technique dès la conception → aide au business plan",
+      "Casablanca fait partie des villes où des projets ont été approuvés",
+    ],
+    points_vigilance: [
+      "700 packages restants — déposer le dossier rapidement",
+      "Business plan et étude de marché solides requis",
+      "Versement sur preuves d'avancement, pas d'avance",
+      "Le CPP valide au cas par cas — pas automatique",
+    ],
+  },
+
+  // --- Sources ---
+  sources: [
+    { label: "Plateforme officielle", url: "https://marocpme.gov.ma/gosiyaha/" },
+    { label: "Morocco World News — Expansion juillet 2025", url: "https://www.moroccoworldnews.com/2025/07/229756/go-siyaha-expands-access" },
+    { label: "BarlAman Today — 11 projets éco-tourisme (fév 2025)", url: "https://barlamantoday.com/2025/02/28/moroccos-go-siyaha-program-greenlights-11-eco-tourism-projects/" },
+    { label: "BarlAman Today — 12 premiers projets (sept 2024)", url: "https://barlamantoday.com/2024/09/24/twelve-new-tourism-projects-in-morocco-receive-first-go-siyaha-grants/" },
+    { label: "Lkelma — Nouvelles mesures 2025", url: "https://lkelma.com/go-siyaha-2025-nouvelles-mesures-subvention-tourisme-maroc/" },
+    { label: "Invest-Time — Vue d'ensemble", url: "https://invest-time.com/en/morocco-go-siyaha-tourism-opportunity/" },
+    { label: "Ministère du Tourisme", url: "https://mtaess.gov.ma/fr/go-siyaha-supprime-ses-barrieres-pour-les-entrepreneurs-du-tourisme/" },
   ],
 };

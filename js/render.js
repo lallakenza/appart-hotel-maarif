@@ -35,6 +35,7 @@ function badgeClass(type) {
 
 // --- Main render ---
 function render(state) {
+  renderHeader(state);
   renderVerdict(state);
   renderScenarioButtons(state);
   renderKPIs(state);
@@ -51,6 +52,12 @@ function render(state) {
   renderRisques(state);
   renderSensibilite(state);
   renderSubventions(state);
+  renderGoSiyaha(state);
+}
+
+// --- Header badge (dynamic total projet) ---
+function renderHeader(S) {
+  setText("header-badge", fmtMAD(S.budget.totalProjet));
 }
 
 // --- Verdict Go / No-Go ---
@@ -202,14 +209,15 @@ function renderKPIInsights(S) {
 
   // 2. Rendement Brut — comparison vs alternatives
   const rdtBrut = S.kpi.rendementBrut;
-  const opciRdt = 0.045; // OPCI rendement ~4.5%
-  const livretRdt = 0.028; // Livret épargne ~2.8%
-  const bondsRdt = 0.04; // Bons du trésor ~4%
+  const livretUAE = 0.0625; // Livret épargne UAE ~6.25%
+  const opciRdt = 0.045;    // OPCI rendement ~4.5%
+  const bondsRdt = 0.04;    // Bons du trésor Maroc ~4%
   setInsight("kpi-rdt-brut-insight", `
     <div style="margin-bottom:4px">vs alternatives :</div>
-    <div class="insight-row"><span class="insight-label">OPCI (~4.5%)</span><span class="insight-val ${rdtBrut > opciRdt ? 'insight-good' : 'insight-bad'}">${rdtBrut > opciRdt ? '+' : ''}${fmtPct(rdtBrut - opciRdt)}</span></div>
+    <div class="insight-row"><span class="insight-label">Livret UAE (~6.25%)</span><span class="insight-val ${rdtBrut > livretUAE ? 'insight-good' : 'insight-bad'}">${rdtBrut > livretUAE ? '+' : ''}${fmtPct(rdtBrut - livretUAE)}</span></div>
+    <div class="insight-row"><span class="insight-label">OPCI Maroc (~4.5%)</span><span class="insight-val ${rdtBrut > opciRdt ? 'insight-good' : 'insight-bad'}">${rdtBrut > opciRdt ? '+' : ''}${fmtPct(rdtBrut - opciRdt)}</span></div>
     <div class="insight-row"><span class="insight-label">Bons trésor (~4%)</span><span class="insight-val ${rdtBrut > bondsRdt ? 'insight-good' : 'insight-bad'}">${rdtBrut > bondsRdt ? '+' : ''}${fmtPct(rdtBrut - bondsRdt)}</span></div>
-    <div class="insight-row"><span class="insight-label">Livret épargne (~2.8%)</span><span class="insight-val insight-good">+${fmtPct(rdtBrut - livretRdt)}</span></div>
+    <div style="margin-top:4px;font-size:.66rem;color:var(--text-sec)">⚡ Mais : l'immobilier crée du patrimoine via le capital de crédit (effet de levier)</div>
   `);
 
   // 3. Cash-Flow Net — monthly + per unit breakdown
@@ -232,10 +240,14 @@ function renderKPIInsights(S) {
   const rdtNet = S.kpi.rendementNet;
   const rdtApport = S.kpi.rendementNetApport;
   const leverageMultiple = rdtApport > 0 && rdtNet > 0 ? rdtApport / rdtNet : 0;
+  // Capital remboursé An 1 = création de richesse via crédit
+  const capitalRembAn1 = (y1.capitalTK || 0) + (y1.capitalBQ || 0);
+  const totalCapitalCredit = S.financement.montantTamwilkom + S.financement.montantBanque;
   setInsight("kpi-rdt-apport-insight", `
     <div class="insight-row"><span class="insight-label">Rdt net / projet</span><span class="insight-val">${fmtPct(rdtNet)}</span></div>
     <div class="insight-row"><span class="insight-label">Rdt net / apport</span><span class="insight-val insight-highlight">${fmtPct(rdtApport)}</span></div>
     ${leverageMultiple > 1 ? `<div style="margin-top:4px;font-size:.68rem">Effet levier : <span class="insight-good">×${leverageMultiple.toFixed(1)}</span> — l'emprunt multiplie le rendement sur apport</div>` : `<div style="margin-top:4px;font-size:.68rem"><span class="insight-bad">Levier négatif</span> — le coût de la dette dépasse le rendement</div>`}
+    <div style="margin-top:3px;font-size:.66rem;color:var(--text-sec)">💰 Capital remboursé An 1 : <span class="insight-good">${fmtK(capitalRembAn1)}</span> → patrimoine créé via le crédit</div>
   `);
 
   // 5. DSCR — detailed
@@ -295,9 +307,9 @@ function renderKPIInsights(S) {
 
   // 8. RevPAR — vs market benchmarks
   const revpar = S.kpi.revpar;
-  const adrBudget = 525; // Budget segment Maarif
-  const adrPremium = 750; // Premium segment Maarif
-  const adrLuxe = 965; // Luxe segment Maarif
+  const adrBudget = MARKET_DATA.prixNuiteeRange.bas;
+  const adrPremium = MARKET_DATA.prixNuiteeRange.haut;
+  const adrLuxe = BENCHMARK.summary.luxe2BR.median;
   setInsight("kpi-revpar-insight", `
     <div style="margin-bottom:4px">Position marché Maarif :</div>
     <div class="insight-bar">
@@ -328,6 +340,9 @@ function renderBudget(S) {
   setText("budget-terrain-total", fmtMAD(S.terrain.coutTerrain));
   setText("budget-construction", fmtMAD(S.terrain.budgetConstruction));
   setText("budget-ameublement", fmtMAD(S.budget.ameublement));
+  // Dynamic ameublement label
+  const ameubLabel = document.getElementById("budget-ameublement-label");
+  if (ameubLabel) ameubLabel.textContent = `dont ameublement (${S.units.nbUnites} × ${fmtNum(BUDGET.ameublementParUnite / 1000)}K)`;
   setText("budget-total", fmtMAD(S.budget.totalProjet));
   setText("budget-m2", fmtNum(S.terrain.coutM2Terrain) + " MAD/m²");
 
@@ -353,10 +368,14 @@ function renderProgramme(S) {
   UNITS.forEach(u => {
     if (u.category === "service") return;
     const tr = document.createElement("tr");
+    const posIcon = u.position === "Rue" ? "🏙️" : u.position === "Intérieur" ? "🏠" : "";
+    const posClass = u.position === "Rue" ? "pos-rue" : u.position === "Intérieur" ? "pos-int" : "";
     tr.innerHTML = `
       <td>${u.floor}</td>
       <td>${u.type}</td>
       <td class="num">${u.surface ? fmtM2(u.surface) : "–"}</td>
+      <td><span class="badge-pos ${posClass}">${posIcon} ${u.position || "–"}</span></td>
+      <td>${u.exposition || "–"}</td>
       <td><span class="badge ${badgeClass(u.category)}">${u.category}</span></td>
     `;
     tbody.appendChild(tr);
@@ -366,7 +385,7 @@ function renderProgramme(S) {
   tr.innerHTML = `
     <td colspan="2"><strong>Total surface locative</strong></td>
     <td class="num"><strong>${fmtM2(S.units.surfaceLocative)}</strong></td>
-    <td><strong>${S.units.nbUnites} unités + 1 commercial</strong></td>
+    <td colspan="3"><strong>${S.units.nbUnites} unités + 1 commercial</strong></td>
   `;
   tbody.appendChild(tr);
 }
@@ -712,6 +731,10 @@ function renderSensibilite(S) {
 
 // --- Subventions ---
 function renderSubventions(S) {
+  // Dynamic info text
+  const baseBudget = SCENARIOS[S.scenario].budgetTotal || BUDGET.totalTTC;
+  setText("sub-info-text", `Ce tableau recense toutes les subventions nationales, sectorielles et fiscales auxquelles le projet est potentiellement éligible. Les montants sont des estimations basées sur un investissement de ${fmtMAD(S.budget.totalProjet)}.`);
+
   // KPI totals
   const eligible = SUBVENTIONS.filter(s => s.eligible === true);
   const totalConserv = eligible.reduce((sum, s) => sum + s.montantEstime, 0);
@@ -870,6 +893,158 @@ function toggleSubDetail(idx) {
   if (!isOpen) {
     detail.classList.remove("hidden");
     row.classList.add("sub-row-open");
+  }
+}
+
+// --- Go Siyaha section ---
+function renderGoSiyaha(S) {
+  if (typeof GO_SIYAHA_PROGRAMME === "undefined") return;
+  const P = GO_SIYAHA_PROGRAMME;
+
+  // KPIs
+  setText("gs-budget", fmtMAD(P.budgetGlobal));
+  setText("gs-taux", "40%");
+  setText("gs-entreprises", `${fmtN(P.entreprisesSoutenues)} / ${fmtN(P.objectifEntreprises)}`);
+  setText("gs-entreprises-sub", `${Math.round(P.entreprisesSoutenues / P.objectifEntreprises * 100)}% de l'objectif atteint`);
+  setText("gs-restant", fmtN(P.restantAides));
+
+  // Taux de subvention table
+  const tauxTbody = document.getElementById("gs-taux-tbody");
+  if (tauxTbody) {
+    tauxTbody.innerHTML = "";
+    P.subventions.forEach(s => {
+      const tr = document.createElement("tr");
+      const isOurs = s.taux === 0.40;
+      if (isOurs) tr.style.background = "#f0fdf4";
+      tr.innerHTML = `
+        <td>${isOurs ? "🌿 " : ""}${s.type}</td>
+        <td><strong>${Math.round(s.taux * 100)}%</strong></td>
+        <td>${s.plafondInvest ? fmtMAD(s.plafondInvest) : "Variable"}</td>
+        <td>${s.detail}</td>
+      `;
+      tauxTbody.appendChild(tr);
+    });
+  }
+
+  // Timeline
+  const timelineEl = document.getElementById("gs-timeline");
+  if (timelineEl) {
+    timelineEl.innerHTML = "";
+    P.timeline.forEach((t, i) => {
+      const step = document.createElement("div");
+      step.className = "sub-step";
+      const isLatest = i >= P.timeline.length - 3;
+      step.innerHTML = `
+        <div class="sub-step-dot" style="${isLatest ? 'background:var(--green)' : ''}"></div>
+        <div class="sub-step-content">
+          <div class="sub-step-title">${t.date} — ${t.event}</div>
+          <div class="sub-step-detail">${t.detail}</div>
+        </div>
+      `;
+      timelineEl.appendChild(step);
+    });
+  }
+
+  // Process
+  const processEl = document.getElementById("gs-process");
+  if (processEl) {
+    processEl.innerHTML = "";
+    P.process.forEach(p => {
+      const step = document.createElement("div");
+      step.className = "sub-step";
+      step.innerHTML = `
+        <div class="sub-step-dot"></div>
+        <div class="sub-step-content">
+          <div class="sub-step-title">Étape ${p.etape} — ${p.titre}</div>
+          <div class="sub-step-detail">${p.detail}</div>
+        </div>
+      `;
+      processEl.appendChild(step);
+    });
+  }
+
+  // Documents
+  const docsEl = document.getElementById("gs-docs");
+  if (docsEl) {
+    docsEl.innerHTML = "";
+    P.documentsRequis.forEach(d => {
+      const li = document.createElement("li");
+      li.textContent = d;
+      docsEl.appendChild(li);
+    });
+  }
+
+  // Points forts
+  const fortsEl = document.getElementById("gs-points-forts");
+  if (fortsEl) {
+    fortsEl.innerHTML = "";
+    P.notreProjet.points_forts.forEach(p => {
+      const li = document.createElement("li");
+      li.textContent = p;
+      fortsEl.appendChild(li);
+    });
+  }
+
+  // Points vigilance
+  const vigEl = document.getElementById("gs-points-vigilance");
+  if (vigEl) {
+    vigEl.innerHTML = "";
+    P.notreProjet.points_vigilance.forEach(p => {
+      const li = document.createElement("li");
+      li.textContent = p;
+      vigEl.appendChild(li);
+    });
+  }
+
+  // Risques table
+  const risquesTbody = document.getElementById("gs-risques-tbody");
+  if (risquesTbody) {
+    risquesTbody.innerHTML = "";
+    P.risques.forEach(r => {
+      const tr = document.createElement("tr");
+      const sevColor = r.severite === "élevé" ? "var(--red)" : r.severite === "moyen" ? "var(--amber-dark)" : "var(--green)";
+      tr.innerHTML = `
+        <td>${r.risque}</td>
+        <td><span class="badge" style="background:${sevColor}20;color:${sevColor};font-weight:600">${r.severite}</span></td>
+        <td>${r.detail}</td>
+      `;
+      risquesTbody.appendChild(tr);
+    });
+  }
+
+  // Projets approuvés
+  const projetsTbody = document.getElementById("gs-projets-tbody");
+  if (projetsTbody) {
+    projetsTbody.innerHTML = "";
+    P.projetsApprouves.forEach(p => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${p.date}</td>
+        <td><strong>${p.nb}</strong></td>
+        <td>${p.types}</td>
+        <td>${p.investissement ? fmtMAD(p.investissement) : "–"}</td>
+        <td>${p.subvention ? fmtMAD(p.subvention) : "–"}</td>
+      `;
+      if (p.villes) {
+        const tr2 = document.createElement("tr");
+        tr2.innerHTML = `<td colspan="5" style="font-size:.78rem;color:#666;padding-top:0">📍 ${p.villes}${p.fourchette ? " — Fourchette : " + p.fourchette : ""}</td>`;
+        projetsTbody.appendChild(tr);
+        projetsTbody.appendChild(tr2);
+      } else {
+        projetsTbody.appendChild(tr);
+      }
+    });
+  }
+
+  // Sources
+  const sourcesEl = document.getElementById("gs-sources");
+  if (sourcesEl) {
+    sourcesEl.innerHTML = "";
+    P.sources.forEach(s => {
+      const li = document.createElement("li");
+      li.innerHTML = `<a href="${s.url}" target="_blank" style="color:var(--primary)">${s.label}</a>`;
+      sourcesEl.appendChild(li);
+    });
   }
 }
 

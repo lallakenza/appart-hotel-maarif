@@ -159,6 +159,9 @@ tr:hover td{background:#f8fafc}
 .badge{display:inline-block;padding:2px 10px;border-radius:20px;font-size:.72rem;font-weight:600}
 .badge-green{background:#d1fae5;color:#065f46}
 .badge-amber{background:#fef3c7;color:#92400e}
+.badge-pos{display:inline-block;padding:2px 8px;border-radius:12px;font-size:.72rem;font-weight:500;white-space:nowrap}
+.pos-rue{background:#dbeafe;color:#1e40af}
+.pos-int{background:#f3e8ff;color:#6b21a8}
 .badge-red{background:#fee2e2;color:#991b1b}
 .badge-blue{background:#dbeafe;color:#1e40af}
 .badge-gray{background:#f1f5f9;color:#475569}
@@ -446,7 +449,7 @@ tr:hover td{background:#f8fafc}
       <h1>Appart'Hôtel Maarif</h1>
       <div class="header-sub">Rue des Camélias, Maarif, Casablanca &bull; R+5 &bull; 174 m²</div>
     </div>
-    <div class="header-badge">7 000 000 MAD</div>
+    <div class="header-badge" id="header-badge">–</div>
     <button class="mobile-menu-btn" id="mobile-menu-btn" aria-label="Menu"><span></span><span></span><span></span></button>
   </div>
 </header>
@@ -475,6 +478,7 @@ tr:hover td{background:#f8fafc}
       <div class="nav-dropdown">
         <div class="nav-dropdown-item" data-nav="financement">MDM Invest & Tamwil</div>
         <div class="nav-dropdown-item" data-nav="subventions">Subventions & Aides</div>
+        <div class="nav-dropdown-item" data-nav="gosiyaha">Go Siyaha</div>
       </div>
     </div>
     <div class="nav-item" data-nav="cashflow">
@@ -786,7 +790,7 @@ tr:hover td{background:#f8fafc}
         <tr><td>Frais acquisition (~6.5%)</td><td class="num" id="budget-terrain-frais">–</td></tr>
         <tr><td><strong>Terrain tout compris</strong></td><td class="num" id="budget-terrain-total">–</td></tr>
         <tr><td>Construction & aménagement</td><td class="num" id="budget-construction">–</td></tr>
-        <tr><td><em>dont ameublement (11 × 40K)</em></td><td class="num" id="budget-ameublement">–</td></tr>
+        <tr><td><em id="budget-ameublement-label">dont ameublement</em></td><td class="num" id="budget-ameublement">–</td></tr>
         <tr id="budget-eco-row" style="display:none">
           <td style="padding-left:12px"><span style="color:#16a34a">🌿</span> Éco-investissement (<span id="budget-eco-invest">–</span>)<br><small style="color:#16a34a">Subvention Go Siyaha 40% : <span id="budget-eco-subvention">–</span></small></td>
           <td class="num" id="budget-eco-net" style="color:#16a34a">–</td>
@@ -798,7 +802,7 @@ tr:hover td{background:#f8fafc}
     <div class="card"><div class="card-title">Montage Financier</div><div class="chart-box"><canvas id="chart-montage"></canvas></div></div>
   </div>
   <div class="card"><div class="card-title">Programme Architectural</div>
-    <div class="table-wrap"><table><thead><tr><th>Niveau</th><th>Type</th><th>Surface</th><th>Catégorie</th></tr></thead><tbody id="programme-tbody"></tbody></table></div>
+    <div class="table-wrap"><table><thead><tr><th>Niveau</th><th>Type</th><th>Surface</th><th>Position</th><th>Exposition</th><th>Catégorie</th></tr></thead><tbody id="programme-tbody"></tbody></table></div>
   </div>
 </div>
 
@@ -1101,7 +1105,7 @@ tr:hover td{background:#f8fafc}
 
   <div class="card">
     <div class="card-title">Programmes de Subvention & Aides Éligibles</div>
-    <div class="info-box" style="margin-bottom:16px">Ce tableau recense toutes les subventions nationales, sectorielles et fiscales auxquelles le projet est potentiellement éligible. Les montants sont des estimations basées sur un investissement de 7 MDH.</div>
+    <div class="info-box" style="margin-bottom:16px" id="sub-info-text">Ce tableau recense toutes les subventions nationales, sectorielles et fiscales auxquelles le projet est potentiellement éligible.</div>
     <div class="table-wrap"><table>
       <thead><tr><th>Programme</th><th>Institution</th><th>Type</th><th>Offre</th><th>Montant Estimé</th><th>Éligibilité</th></tr></thead>
       <tbody id="sub-table-tbody"></tbody>
@@ -1162,14 +1166,107 @@ tr:hover td{background:#f8fafc}
   </div>
 </div>
 
+<!-- ==================== GO SIYAHA — PROGRAMME DÉDIÉ ==================== -->
+<div data-view="gosiyaha" class="hidden">
+  <div class="kpi-grid">
+    <div class="kpi-card"><div class="kpi-label">Budget Programme</div><div class="kpi-value" id="gs-budget">–</div><div class="kpi-sub">Enveloppe nationale Go Siyaha</div></div>
+    <div class="kpi-card"><div class="kpi-label">Taux Subvention (Éco)</div><div class="kpi-value kpi-green" id="gs-taux">–</div><div class="kpi-sub">Volet Croissance Verte</div></div>
+    <div class="kpi-card"><div class="kpi-label">Entreprises Soutenues</div><div class="kpi-value" id="gs-entreprises">–</div><div class="kpi-sub" id="gs-entreprises-sub">–</div></div>
+    <div class="kpi-card"><div class="kpi-label">Places Restantes</div><div class="kpi-value" style="color:var(--red)" id="gs-restant">–</div><div class="kpi-sub">Dépôt recommandé : immédiat</div></div>
+  </div>
+
+  <!-- Programme overview -->
+  <div class="card">
+    <div class="card-title">Go Siyaha — Vue d'ensemble</div>
+    <div class="info-box" style="margin-bottom:12px">
+      Programme national de soutien aux entreprises touristiques, lancé en <strong>février 2024</strong> par le <strong>Ministère du Tourisme</strong> et déployé par <strong>Maroc PME</strong>. Budget total : <strong>720 MDH</strong>. Objectif : soutenir <strong>1 700 entreprises</strong> d'ici fin 2026.
+    </div>
+    <div class="grid-2" style="margin-bottom:12px">
+      <div class="info-box">
+        <strong>Gestionnaire :</strong> Maroc PME<br>
+        <strong>Plateforme :</strong> <a href="https://marocpme.gov.ma/gosiyaha/" target="_blank" style="color:var(--primary)">marocpme.gov.ma/gosiyaha</a><br>
+        <strong>Cadre :</strong> Feuille de route tourisme 2023-2026
+      </div>
+      <div class="warn-box">
+        <strong>⚠️ Alerte :</strong> 700 packages restants sur 1 700. Le programme n'est pas illimité. Déposer le dossier le plus tôt possible.
+      </div>
+    </div>
+  </div>
+
+  <!-- Taux de subvention -->
+  <div class="card">
+    <div class="card-title">Taux de Subvention par Type de Projet</div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Type de Projet</th><th>Taux</th><th>Plafond Investissement</th><th>Détail</th></tr></thead>
+      <tbody id="gs-taux-tbody"></tbody>
+    </table></div>
+  </div>
+
+  <!-- Timeline -->
+  <div class="card">
+    <div class="card-title">Timeline du Programme</div>
+    <div class="sub-timeline" id="gs-timeline"></div>
+  </div>
+
+  <!-- Process de candidature -->
+  <div class="card">
+    <div class="card-title">Processus de Candidature</div>
+    <div class="info-box" style="margin-bottom:12px"><strong>Délai de traitement estimé :</strong> 4 à 8 semaines (varie selon complexité du dossier)</div>
+    <div class="sub-timeline" id="gs-process"></div>
+    <div style="margin-top:16px">
+      <strong style="font-size:.9rem">Documents requis :</strong>
+      <ul class="sub-doc-list" id="gs-docs"></ul>
+    </div>
+  </div>
+
+  <!-- Notre éligibilité -->
+  <div class="card">
+    <div class="card-title">Notre Éligibilité — Résidence de Tourisme Maarif</div>
+    <div class="grid-2">
+      <div>
+        <h4 style="color:var(--green);margin-bottom:8px;font-size:.9rem">✅ Points Forts</h4>
+        <ul class="sub-feedback-list" id="gs-points-forts"></ul>
+      </div>
+      <div>
+        <h4 style="color:var(--amber-dark);margin-bottom:8px;font-size:.9rem">⚠️ Points de Vigilance</h4>
+        <ul class="sub-feedback-list" id="gs-points-vigilance"></ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Risques -->
+  <div class="card">
+    <div class="card-title">Risques & Alertes Go Siyaha</div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Risque</th><th>Sévérité</th><th>Détail</th></tr></thead>
+      <tbody id="gs-risques-tbody"></tbody>
+    </table></div>
+  </div>
+
+  <!-- Projets approuvés -->
+  <div class="card">
+    <div class="card-title">Projets Approuvés — Historique CPP</div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Date</th><th>Nb Projets</th><th>Types</th><th>Investissement</th><th>Subvention</th></tr></thead>
+      <tbody id="gs-projets-tbody"></tbody>
+    </table></div>
+  </div>
+
+  <!-- Sources -->
+  <div class="card">
+    <div class="card-title">Sources</div>
+    <ul class="sub-doc-list" id="gs-sources"></ul>
+  </div>
+</div>
+
 </main>
 
 <!-- Scripts — strict order: data → engine → render → charts → app -->
-<script src="js/data.js?v=14"></script>
-<script src="js/engine.js?v=14"></script>
-<script src="js/render.js?v=14"></script>
-<script src="js/charts.js?v=14"></script>
-<script src="js/app.js?v=14"></script>
+<script src="js/data.js?v=15"></script>
+<script src="js/engine.js?v=15"></script>
+<script src="js/render.js?v=15"></script>
+<script src="js/charts.js?v=15"></script>
+<script src="js/app.js?v=15"></script>
 
 </body>
 </html>
