@@ -399,11 +399,52 @@ function toggleDebtPeriod(monthly) {
   if (currentState) chartDebtService(currentState);
 }
 
-// --- Cash-flow with RICH TOOLTIP ---
+// --- Cash-flow with RICH TOOLTIP, MONTHLY TOGGLE & FILTER ---
+let _cfMonthly = false;
+let _cfFilter = "all"; // "all", "revenus", "charges"
+
+function toggleCFPeriod(monthly) {
+  _cfMonthly = monthly;
+  document.querySelectorAll(".cf-period-btn").forEach(b => b.classList.toggle("active", (b.dataset.mode === "monthly") === monthly));
+  if (_currentState) chartCashFlow(_currentState);
+}
+
+function toggleCFFilter(filter) {
+  _cfFilter = filter;
+  document.querySelectorAll(".cf-filter-btn").forEach(b => b.classList.toggle("active", b.dataset.filter === filter));
+  if (_currentState) chartCashFlow(_currentState);
+}
+
 function chartCashFlow(S) {
   destroyChart("cashflow");
   const ctx = document.getElementById("chart-cashflow")?.getContext("2d");
   if (!ctx) return;
+
+  const titleEl = document.getElementById("cf-chart-title");
+
+  // --- Filter mode: show only revenus or charges breakdown ---
+  if (_cfFilter === "revenus") {
+    if (titleEl) titleEl.textContent = _cfMonthly ? "Détail Revenus — Mensuel (An 1)" : "Détail Revenus sur 10 ans";
+    _buildCFRevenusChart(ctx, S);
+    return;
+  }
+  if (_cfFilter === "charges") {
+    if (titleEl) titleEl.textContent = _cfMonthly ? "Détail Charges — Mensuel (An 1)" : "Détail Charges sur 10 ans";
+    _buildCFChargesChart(ctx, S);
+    return;
+  }
+
+  // --- Default "all" mode ---
+  if (_cfMonthly) {
+    if (titleEl) titleEl.textContent = "Cash-Flow Net — Mensuel (An 1)";
+    _buildCFMonthlyChart(ctx, S);
+  } else {
+    if (titleEl) titleEl.textContent = "Cash-Flow Net et Cumul sur 10 ans";
+    _buildCFAnnualChart(ctx, S);
+  }
+}
+
+function _buildCFAnnualChart(ctx, S) {
   _charts.cashflow = new Chart(ctx, {
     type: "bar",
     data: {
@@ -462,6 +503,214 @@ function chartCashFlow(S) {
       }
     }
   });
+}
+
+function _buildCFMonthlyChart(ctx, S) {
+  const p = S.projections[0]; // Year 1
+  const months = ["Jan","Fév","Mar","Avr","Mai","Jun","Jul","Aoû","Sep","Oct","Nov","Déc"];
+  const cfMensuel = p.cashFlowNet / 12;
+  let cumulMensuel = 0;
+  const monthlyData = months.map(() => {
+    cumulMensuel += cfMensuel;
+    return { cf: cfMensuel, cumul: cumulMensuel };
+  });
+
+  _charts.cashflow = new Chart(ctx, {
+    type: "bar",
+    data: {
+      labels: months,
+      datasets: [
+        {
+          label: "Cash-Flow Net / mois",
+          data: monthlyData.map(m => m.cf),
+          backgroundColor: monthlyData.map(m => m.cf >= 0 ? CHART_COLORS.green : CHART_COLORS.red),
+          borderRadius: 4,
+        },
+        {
+          label: "Cumul mensuel",
+          data: monthlyData.map(m => m.cumul),
+          type: "line",
+          borderColor: CHART_COLORS.primary,
+          backgroundColor: "rgba(30,58,95,0.06)",
+          fill: true,
+          tension: 0.3,
+          pointRadius: 4,
+          pointBackgroundColor: monthlyData.map(m => m.cumul >= 0 ? CHART_COLORS.green : CHART_COLORS.red),
+          pointBorderColor: "#fff",
+          pointBorderWidth: 2,
+          order: -1,
+        },
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      scales: {
+        y: {
+          ticks: { callback: v => fmtK(v) },
+          grid: { color: (ctx) => ctx.tick.value === 0 ? 'rgba(220,38,38,0.4)' : 'rgba(0,0,0,0.05)', lineWidth: (ctx) => ctx.tick.value === 0 ? 2 : 1 }
+        }
+      },
+      plugins: {
+        tooltip: {
+          enabled: false,
+          external: (ctx) => externalTooltip(ctx, (idx) => {
+            const m = monthlyData[idx];
+            return `<div class="ctt-title">${months[idx]} — An 1</div>
+              <div class="ctt-row"><span>Revenus nets</span><span class="ctt-val">${fmtMAD(p.revTotal / 12)}</span></div>
+              <div class="ctt-row ctt-neg-row"><span>Charges</span><span class="ctt-val ctt-neg">-${fmtMAD(p.chargesTotal / 12)}</span></div>
+              <div class="ctt-row ctt-neg-row"><span>Dette</span><span class="ctt-val ctt-neg">-${fmtMAD(p.debtServiceTotal / 12)}</span></div>
+              <div class="ctt-row ctt-neg-row"><span>IS</span><span class="ctt-val ctt-neg">-${fmtMAD(p.is / 12)}</span></div>
+              <div class="ctt-divider"></div>
+              <div class="ctt-row ctt-total"><span>Cash-Flow Net</span><span class="ctt-val" style="color:${m.cf >= 0 ? '#16a34a' : '#dc2626'}">${fmtMAD(m.cf)}</span></div>
+              <div class="ctt-row"><span>Cumul</span><span class="ctt-val" style="color:${m.cumul >= 0 ? '#16a34a' : '#dc2626'}">${fmtMAD(m.cumul)}</span></div>`;
+          })
+        }
+      }
+    }
+  });
+}
+
+function _buildCFRevenusChart(ctx, S) {
+  const isMonthly = _cfMonthly;
+  const div = isMonthly ? 12 : 1;
+
+  if (isMonthly) {
+    // Monthly revenus breakdown for Year 1
+    const p = S.projections[0];
+    const months = ["Jan","Fév","Mar","Avr","Mai","Jun","Jul","Aoû","Sep","Oct","Nov","Déc"];
+    _charts.cashflow = new Chart(ctx, {
+      type: "bar",
+      data: {
+        labels: months,
+        datasets: [
+          { label: "Studios", data: months.map(() => p.revStudios / 12), backgroundColor: CHART_COLORS.primary, borderRadius: 4, stack: "rev" },
+          { label: "Lofts", data: months.map(() => p.revLofts / 12), backgroundColor: CHART_COLORS.primaryLight, borderRadius: 4, stack: "rev" },
+          { label: "Loyer commercial", data: months.map(() => p.revCommercial / 12), backgroundColor: CHART_COLORS.gold, borderRadius: 4, stack: "rev" },
+          { label: "Commissions", data: months.map(() => -p.commissions / 12), backgroundColor: CHART_COLORS.red, borderRadius: 4, stack: "rev" },
+        ]
+      },
+      options: _cfFilterChartOptions("Détail revenus mensuels — An 1", (idx) => {
+        const p = S.projections[0];
+        return `<div class="ctt-title">${months[idx]} — Revenus</div>
+          <div class="ctt-row"><span>Studios</span><span class="ctt-val">${fmtMAD(p.revStudios / 12)}</span></div>
+          <div class="ctt-row"><span>Lofts</span><span class="ctt-val">${fmtMAD(p.revLofts / 12)}</span></div>
+          <div class="ctt-row"><span>Loyer commercial</span><span class="ctt-val">${fmtMAD(p.revCommercial / 12)}</span></div>
+          <div class="ctt-row ctt-neg-row"><span>Commissions</span><span class="ctt-val ctt-neg">-${fmtMAD(p.commissions / 12)}</span></div>
+          <div class="ctt-divider"></div>
+          <div class="ctt-row ctt-total"><span>Revenu net</span><span class="ctt-val">${fmtMAD(p.revTotal / 12)}</span></div>`;
+      })
+    });
+  } else {
+    // Annual revenus breakdown over 10 years
+    _charts.cashflow = new Chart(ctx, {
+      type: "bar",
+      data: {
+        labels: S.projections.map(p => "An " + p.year),
+        datasets: [
+          { label: "Studios", data: S.projections.map(p => p.revStudios), backgroundColor: CHART_COLORS.primary, borderRadius: 4, stack: "rev" },
+          { label: "Lofts", data: S.projections.map(p => p.revLofts), backgroundColor: CHART_COLORS.primaryLight, borderRadius: 4, stack: "rev" },
+          { label: "Loyer commercial", data: S.projections.map(p => p.revCommercial), backgroundColor: CHART_COLORS.gold, borderRadius: 4, stack: "rev" },
+          { label: "Commissions", data: S.projections.map(p => -p.commissions), backgroundColor: CHART_COLORS.red, borderRadius: 4, stack: "rev" },
+          { label: "Revenu net total", data: S.projections.map(p => p.revTotal), type: "line", borderColor: CHART_COLORS.green, tension: 0.3, pointRadius: 4, pointBackgroundColor: CHART_COLORS.green, pointBorderColor: "#fff", pointBorderWidth: 2, fill: false, order: -1 },
+        ]
+      },
+      options: _cfFilterChartOptions("Détail revenus annuels", (idx) => {
+        const p = S.projections[idx];
+        return `<div class="ctt-title">An ${p.year} — Revenus</div>
+          <div class="ctt-row"><span>Studios</span><span class="ctt-val">${fmtMAD(p.revStudios)}</span></div>
+          <div class="ctt-row"><span>Lofts</span><span class="ctt-val">${fmtMAD(p.revLofts)}</span></div>
+          <div class="ctt-row"><span>Loyer commercial</span><span class="ctt-val">${fmtMAD(p.revCommercial)}</span></div>
+          <div class="ctt-row ctt-neg-row"><span>Commissions</span><span class="ctt-val ctt-neg">-${fmtMAD(p.commissions)}</span></div>
+          <div class="ctt-divider"></div>
+          <div class="ctt-row ctt-total"><span>Revenu net</span><span class="ctt-val">${fmtMAD(p.revTotal)}</span></div>`;
+      })
+    });
+  }
+}
+
+function _buildCFChargesChart(ctx, S) {
+  if (_cfMonthly) {
+    const p = S.projections[0];
+    const ch = p.chargesDetail;
+    const months = ["Jan","Fév","Mar","Avr","Mai","Jun","Jul","Aoû","Sep","Oct","Nov","Déc"];
+    _charts.cashflow = new Chart(ctx, {
+      type: "bar",
+      data: {
+        labels: months,
+        datasets: [
+          { label: "Gestion", data: months.map(() => ch.gestion / 12), backgroundColor: CHART_COLORS.primary, borderRadius: 4, stack: "ch" },
+          { label: "Salaires", data: months.map(() => ch.salaires / 12), backgroundColor: CHART_COLORS.red, borderRadius: 4, stack: "ch" },
+          { label: "Utilities", data: months.map(() => ch.utilities / 12), backgroundColor: CHART_COLORS.amber, borderRadius: 4, stack: "ch" },
+          { label: "Assurance", data: months.map(() => ch.assurance / 12), backgroundColor: CHART_COLORS.teal, borderRadius: 4, stack: "ch" },
+          { label: "Autres", data: months.map(() => (ch.entretien + ch.comptable + ch.consommables + ch.divers) / 12), backgroundColor: CHART_COLORS.gray, borderRadius: 4, stack: "ch" },
+        ]
+      },
+      options: _cfFilterChartOptions("Détail charges mensuelles — An 1", (idx) => {
+        return `<div class="ctt-title">${months[idx]} — Charges</div>
+          <div class="ctt-row"><span>Gestion</span><span class="ctt-val">${fmtMAD(ch.gestion / 12)}</span></div>
+          <div class="ctt-row"><span>Salaires</span><span class="ctt-val">${fmtMAD(ch.salaires / 12)}</span></div>
+          <div class="ctt-row"><span>Utilities</span><span class="ctt-val">${fmtMAD(ch.utilities / 12)}</span></div>
+          <div class="ctt-row"><span>Assurance</span><span class="ctt-val">${fmtMAD(ch.assurance / 12)}</span></div>
+          <div class="ctt-row"><span>Entretien</span><span class="ctt-val">${fmtMAD(ch.entretien / 12)}</span></div>
+          <div class="ctt-row"><span>Comptable</span><span class="ctt-val">${fmtMAD(ch.comptable / 12)}</span></div>
+          <div class="ctt-row"><span>Consommables</span><span class="ctt-val">${fmtMAD(ch.consommables / 12)}</span></div>
+          <div class="ctt-row"><span>Divers</span><span class="ctt-val">${fmtMAD(ch.divers / 12)}</span></div>
+          <div class="ctt-divider"></div>
+          <div class="ctt-row ctt-total"><span>Total</span><span class="ctt-val">${fmtMAD(p.chargesTotal / 12)}</span></div>`;
+      })
+    });
+  } else {
+    _charts.cashflow = new Chart(ctx, {
+      type: "bar",
+      data: {
+        labels: S.projections.map(p => "An " + p.year),
+        datasets: [
+          { label: "Gestion", data: S.projections.map(p => p.chargesDetail.gestion), backgroundColor: CHART_COLORS.primary, borderRadius: 4, stack: "ch" },
+          { label: "Salaires", data: S.projections.map(p => p.chargesDetail.salaires), backgroundColor: CHART_COLORS.red, borderRadius: 4, stack: "ch" },
+          { label: "Utilities", data: S.projections.map(p => p.chargesDetail.utilities), backgroundColor: CHART_COLORS.amber, borderRadius: 4, stack: "ch" },
+          { label: "Assurance", data: S.projections.map(p => p.chargesDetail.assurance), backgroundColor: CHART_COLORS.teal, borderRadius: 4, stack: "ch" },
+          { label: "Autres", data: S.projections.map(p => p.chargesDetail.entretien + p.chargesDetail.comptable + p.chargesDetail.consommables + p.chargesDetail.divers), backgroundColor: CHART_COLORS.gray, borderRadius: 4, stack: "ch" },
+          { label: "Total charges", data: S.projections.map(p => p.chargesTotal), type: "line", borderColor: CHART_COLORS.red, tension: 0.3, pointRadius: 4, pointBackgroundColor: CHART_COLORS.red, pointBorderColor: "#fff", pointBorderWidth: 2, fill: false, order: -1 },
+        ]
+      },
+      options: _cfFilterChartOptions("Détail charges annuelles", (idx) => {
+        const p = S.projections[idx];
+        const ch = p.chargesDetail;
+        return `<div class="ctt-title">An ${p.year} — Charges</div>
+          <div class="ctt-row"><span>Gestion</span><span class="ctt-val">${fmtMAD(ch.gestion)}</span></div>
+          <div class="ctt-row"><span>Salaires</span><span class="ctt-val">${fmtMAD(ch.salaires)}</span></div>
+          <div class="ctt-row"><span>Utilities</span><span class="ctt-val">${fmtMAD(ch.utilities)}</span></div>
+          <div class="ctt-row"><span>Assurance</span><span class="ctt-val">${fmtMAD(ch.assurance)}</span></div>
+          <div class="ctt-row"><span>Entretien</span><span class="ctt-val">${fmtMAD(ch.entretien)}</span></div>
+          <div class="ctt-row"><span>Comptable</span><span class="ctt-val">${fmtMAD(ch.comptable)}</span></div>
+          <div class="ctt-row"><span>Consommables</span><span class="ctt-val">${fmtMAD(ch.consommables)}</span></div>
+          <div class="ctt-row"><span>Divers</span><span class="ctt-val">${fmtMAD(ch.divers)}</span></div>
+          <div class="ctt-divider"></div>
+          <div class="ctt-row ctt-total"><span>Total</span><span class="ctt-val">${fmtMAD(p.chargesTotal)}</span></div>`;
+      })
+    });
+  }
+}
+
+function _cfFilterChartOptions(title, tooltipFn) {
+  return {
+    responsive: true, maintainAspectRatio: false,
+    scales: {
+      x: { stacked: true },
+      y: {
+        stacked: true,
+        ticks: { callback: v => fmtK(v) },
+        grid: { color: 'rgba(0,0,0,0.05)' }
+      }
+    },
+    plugins: {
+      legend: { position: "bottom", labels: { boxWidth: 12, padding: 12, font: { size: 11 } } },
+      tooltip: {
+        enabled: false,
+        external: (ctx) => externalTooltip(ctx, tooltipFn)
+      }
+    }
+  };
 }
 
 // --- Occupancy market ---
