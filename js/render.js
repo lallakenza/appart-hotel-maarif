@@ -43,6 +43,7 @@ function render(state) {
   renderKPIInsights(state);
   renderBudget(state);
   renderProgramme(state);
+  renderSurfaceUtile(state);
   renderScenarioComparison(state);
   renderRevenus(state);
   renderCharges(state);
@@ -451,24 +452,58 @@ function renderProgramme(S) {
     const tr = document.createElement("tr");
     const posIcon = u.position === "Rue" ? "🏙️" : u.position === "Intérieur" ? "🏠" : "";
     const posClass = u.position === "Rue" ? "pos-rue" : u.position === "Intérieur" ? "pos-int" : "";
+    const ter = u.terrasse > 0 ? fmtM2(u.terrasse) : "–";
+    const sUtile = u.surface ? (u.surface + (u.terrasse || 0) * 0.5).toFixed(2) + " m²" : "–";
     tr.innerHTML = `
       <td>${u.floor}</td>
       <td>${u.type}</td>
       <td class="num">${u.surface ? fmtM2(u.surface) : "–"}</td>
+      <td class="num">${ter}</td>
+      <td class="num" style="font-weight:600">${sUtile}</td>
       <td><span class="badge-pos ${posClass}">${posIcon} ${u.position || "–"}</span></td>
       <td>${u.exposition || "–"}</td>
       <td><span class="badge ${badgeClass(u.category)}">${u.category}</span></td>
     `;
     tbody.appendChild(tr);
   });
+  const totalUtile = S.units.surfaceUtile;
   const tr = document.createElement("tr");
   tr.className = "total-row";
   tr.innerHTML = `
-    <td colspan="2"><strong>Total surface locative</strong></td>
-    <td class="num"><strong>${fmtM2(S.units.surfaceLocative)}</strong></td>
+    <td colspan="2"><strong>Total</strong></td>
+    <td class="num"><strong>${fmtM2(S.units.surfaceLocative + S.units.surfaceCommerciale)}</strong></td>
+    <td class="num"><strong>${fmtM2(S.units.surfaceTerrasseTotale)}</strong></td>
+    <td class="num" style="color:var(--green)"><strong>${fmtM2(totalUtile)}</strong></td>
     <td colspan="3"><strong>${S.units.nbUnites} unités + 1 commercial</strong></td>
   `;
   tbody.appendChild(tr);
+}
+
+// --- Surface Utile & Coût/m² ---
+function renderSurfaceUtile(S) {
+  const u = S.units;
+  const total = S.budget.totalProjet;
+  const coutInt = u.surfaceInterieureTotale > 0 ? total / u.surfaceInterieureTotale : 0;
+  const coutUtile = u.surfaceUtile > 0 ? total / u.surfaceUtile : 0;
+
+  setText("su-interieure", fmtM2(u.surfaceInterieureTotale));
+  setText("su-terrasse", "+" + fmtM2(u.surfaceTerrasseTotale * 0.5));
+  setText("su-terrasse-detail", fmtM2(u.surfaceTerrasseTotale) + " brut × 50%");
+  setText("su-totale", fmtM2(u.surfaceUtile));
+  setText("su-cout-int", fmtNum(Math.round(coutInt)) + " MAD/m²");
+  setText("su-cout-utile", fmtNum(Math.round(coutUtile)) + " MAD/m²");
+
+  // Analyse contextuelle
+  const benchmarkMaarif = 18000;
+  const diff = ((coutUtile / benchmarkMaarif) - 1) * 100;
+  const el = document.getElementById("su-analyse");
+  if (el) {
+    if (coutUtile < benchmarkMaarif) {
+      el.innerHTML = `<strong style="color:var(--green)">Bonne affaire :</strong> votre coût au m² utile (${fmtNum(Math.round(coutUtile))} MAD) est <strong>${Math.abs(diff).toFixed(0)}% en dessous</strong> du benchmark neuf standing Maarif (~${fmtNum(benchmarkMaarif)} MAD/m²). Les terrasses (${fmtM2(u.surfaceTerrasseTotale)}) ajoutent ${fmtM2(u.surfaceTerrasseTotale * 0.5)} de surface utile, réduisant le coût effectif au m².`;
+    } else {
+      el.innerHTML = `Votre coût au m² utile (${fmtNum(Math.round(coutUtile))} MAD) est <strong>${diff.toFixed(0)}% au-dessus</strong> du benchmark neuf standing Maarif (~${fmtNum(benchmarkMaarif)} MAD/m²). Cela inclut l'ameublement hôtelier et les équipements spécifiques appart-hôtel.`;
+    }
+  }
 }
 
 // --- Revenus ---

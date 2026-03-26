@@ -28,6 +28,11 @@ function compute(scenario) {
   const surfaceLocative = locatifs.reduce((s, u) => s + u.surface, 0);
   const surfaceCommerciale = UNITS.find(u => u.category === "commercial")?.surface || 0;
 
+  // --- Surface utile (intérieur + 50% terrasse) ---
+  const surfaceTerrasseTotale = locatifs.reduce((s, u) => s + (u.terrasse || 0), 0);
+  const surfaceInterieureTotale = surfaceLocative + surfaceCommerciale;
+  const surfaceUtile = surfaceInterieureTotale + surfaceTerrasseTotale * 0.5;
+
   // --- Budget total (ameublement EN PLUS du budget de base) ---
   const baseBudget = sc.budgetTotal || BUDGET.totalTTC; // scénario peut overrider le budget
   budgetConstruction = baseBudget - coutTerrain; // recalc si budget change par scénario
@@ -515,7 +520,7 @@ function compute(scenario) {
   return {
     terrain: { coutTerrain, fraisTerrain, budgetConstruction, coutM2Terrain, constructionHTForAmort },
     amortissement: { annuel: amortissementAnnuel, duree: FISCALITE.amortissementAns, total: constructionHTForAmort },
-    units: { nbStudios, nbLofts, nbUnites, surfaceLocative, surfaceCommerciale },
+    units: { nbStudios, nbLofts, nbUnites, surfaceLocative, surfaceCommerciale, surfaceTerrasseTotale, surfaceInterieureTotale, surfaceUtile },
     budget: { ameublement, totalProjet, investissementEco, subventionEco, coutNetEco, ecoEnabled },
     financement: {
       subventionMDM, apportDevisesMin, apportTerrain,
