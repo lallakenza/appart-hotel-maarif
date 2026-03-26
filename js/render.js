@@ -38,6 +38,7 @@ function render(state) {
   renderVerdict(state);
   renderScenarioButtons(state);
   renderKPIs(state);
+  renderKPIInsights(state);
   renderBudget(state);
   renderProgramme(state);
   renderRevenus(state);
@@ -160,7 +161,7 @@ function renderKPIs(S) {
   }
 
   const paybackColor = S.kpi.paybackYear && S.kpi.paybackYear <= 7 ? "kpi-green" : S.kpi.paybackYear && S.kpi.paybackYear <= 10 ? "kpi-amber" : "kpi-red";
-  setKPI("kpi-payback", S.kpi.paybackYear ? S.kpi.paybackYear + " ans" : "> 10 ans", paybackColor);
+  setKPI("kpi-payback", S.kpi.paybackYear ? S.kpi.paybackYear + " ans" : "> " + PROJECTION_YEARS + " ans", paybackColor);
   setKPI("kpi-revpar", fmtNum(S.kpi.revpar) + " MAD");
 }
 
@@ -174,6 +175,145 @@ function setKPI(id, value, colorClass) {
   }
 }
 
+// --- KPI Insights ---
+function renderKPIInsights(S) {
+  const y1 = S.projections[0];
+  const sc = SCENARIOS[S.scenario];
+  const currentOcc = sc.tauxOccupation;
+  const breakEven = S.kpi.breakEvenOcc;
+
+  // 1. Investissement Total — breakdown
+  const pctTerrain = S.terrain.coutTerrain / S.budget.totalProjet;
+  const pctConstruction = S.terrain.budgetConstruction / S.budget.totalProjet;
+  const pctAmeub = S.budget.ameublement / S.budget.totalProjet;
+  setInsight("kpi-invest-insight", `
+    <div class="insight-row"><span class="insight-label">Terrain + frais</span><span class="insight-val">${fmtK(S.terrain.coutTerrain)} <small>(${fmtPct(pctTerrain,0)})</small></span></div>
+    <div class="insight-row"><span class="insight-label">Construction</span><span class="insight-val">${fmtK(S.terrain.budgetConstruction)} <small>(${fmtPct(pctConstruction,0)})</small></span></div>
+    <div class="insight-row"><span class="insight-label">Ameublement</span><span class="insight-val">${fmtK(S.budget.ameublement)} <small>(${fmtPct(pctAmeub,0)})</small></span></div>
+    <div style="margin-top:4px;font-size:.68rem;color:var(--text-sec)">Coût / m² terrain : <span class="insight-highlight">${fmtNum(S.terrain.coutM2Terrain)} MAD/m²</span></div>
+  `);
+
+  // 2. Rendement Brut — comparison vs alternatives
+  const rdtBrut = S.kpi.rendementBrut;
+  const opciRdt = 0.045; // OPCI rendement ~4.5%
+  const livretRdt = 0.028; // Livret épargne ~2.8%
+  const bondsRdt = 0.04; // Bons du trésor ~4%
+  setInsight("kpi-rdt-brut-insight", `
+    <div style="margin-bottom:4px">vs alternatives :</div>
+    <div class="insight-row"><span class="insight-label">OPCI (~4.5%)</span><span class="insight-val ${rdtBrut > opciRdt ? 'insight-good' : 'insight-bad'}">${rdtBrut > opciRdt ? '+' : ''}${fmtPct(rdtBrut - opciRdt)}</span></div>
+    <div class="insight-row"><span class="insight-label">Bons trésor (~4%)</span><span class="insight-val ${rdtBrut > bondsRdt ? 'insight-good' : 'insight-bad'}">${rdtBrut > bondsRdt ? '+' : ''}${fmtPct(rdtBrut - bondsRdt)}</span></div>
+    <div class="insight-row"><span class="insight-label">Livret épargne (~2.8%)</span><span class="insight-val insight-good">+${fmtPct(rdtBrut - livretRdt)}</span></div>
+  `);
+
+  // 3. Cash-Flow Net — monthly + per unit breakdown
+  const cfMensuel = y1.cashFlowNet / 12;
+  const cfParUnite = y1.cashFlowNet / S.units.nbUnites;
+  const revMensuel = y1.revTotal / 12;
+  const chgMensuel = y1.chargesTotal / 12;
+  const detteMensuel = y1.debtServiceTotal / 12;
+  setInsight("kpi-cf-net-insight", `
+    <div class="insight-row"><span class="insight-label">Revenus / mois</span><span class="insight-val" style="color:var(--green)">${fmtK(revMensuel)}</span></div>
+    <div class="insight-row"><span class="insight-label">Charges / mois</span><span class="insight-val" style="color:var(--red)">-${fmtK(chgMensuel)}</span></div>
+    <div class="insight-row"><span class="insight-label">Dette / mois</span><span class="insight-val" style="color:var(--red)">-${fmtK(detteMensuel)}</span></div>
+    <div style="border-top:1px dashed var(--border);margin-top:3px;padding-top:3px">
+      <div class="insight-row"><span class="insight-label"><strong>= CF Net / mois</strong></span><span class="insight-val" style="color:${cfMensuel >= 0 ? 'var(--green)' : 'var(--red)'}"><strong>${fmtK(cfMensuel)}</strong></span></div>
+      <div class="insight-row"><span class="insight-label">Par unité / an</span><span class="insight-val">${fmtK(cfParUnite)}</span></div>
+    </div>
+  `);
+
+  // 4. Rendement / Apport — leverage effect
+  const rdtNet = S.kpi.rendementNet;
+  const rdtApport = S.kpi.rendementNetApport;
+  const leverageMultiple = rdtApport > 0 && rdtNet > 0 ? rdtApport / rdtNet : 0;
+  setInsight("kpi-rdt-apport-insight", `
+    <div class="insight-row"><span class="insight-label">Rdt net / projet</span><span class="insight-val">${fmtPct(rdtNet)}</span></div>
+    <div class="insight-row"><span class="insight-label">Rdt net / apport</span><span class="insight-val insight-highlight">${fmtPct(rdtApport)}</span></div>
+    ${leverageMultiple > 1 ? `<div style="margin-top:4px;font-size:.68rem">Effet levier : <span class="insight-good">×${leverageMultiple.toFixed(1)}</span> — l'emprunt multiplie le rendement sur apport</div>` : `<div style="margin-top:4px;font-size:.68rem"><span class="insight-bad">Levier négatif</span> — le coût de la dette dépasse le rendement</div>`}
+  `);
+
+  // 5. DSCR — detailed
+  const dscr = S.kpi.dscr;
+  const ebitda = y1.ebitda;
+  const dette = y1.debtServiceTotal;
+  const dscrAn5 = S.projections[4] ? (S.projections[4].debtServiceTotal > 0 ? S.projections[4].ebitda / S.projections[4].debtServiceTotal : Infinity) : dscr;
+  setInsight("kpi-dscr-insight", `
+    <div class="insight-row"><span class="insight-label">EBITDA An 1</span><span class="insight-val">${fmtK(ebitda)}</span></div>
+    <div class="insight-row"><span class="insight-label">Service dette An 1</span><span class="insight-val" style="color:var(--red)">${fmtK(dette)}</span></div>
+    <div class="insight-bar">
+      <span style="font-size:.65rem">1.0x</span>
+      <div class="insight-bar-track"><div class="insight-bar-fill" style="width:${Math.min(100, (dscr / 3) * 100)}%;background:${dscr >= 1.5 ? 'var(--green)' : dscr >= 1.2 ? 'var(--amber)' : 'var(--red)'}"></div></div>
+      <span style="font-size:.65rem">3.0x</span>
+    </div>
+    <div style="font-size:.68rem;margin-top:2px">DSCR An 5 : <span class="insight-highlight">${dscrAn5 === Infinity ? '∞' : dscrAn5.toFixed(2) + 'x'}</span></div>
+  `);
+
+  // 6. Break-even — marge de sécurité
+  if (breakEven) {
+    const margin = currentOcc - breakEven;
+    const marginPts = Math.round(margin * 100);
+    const marginClass = marginPts > 10 ? "insight-good" : marginPts > 5 ? "insight-warn" : "insight-bad";
+    const marginLabel = marginPts > 10 ? "Confortable" : marginPts > 5 ? "Faible" : "Critique";
+    setInsight("kpi-breakeven-insight", `
+      <div class="insight-bar">
+        <span style="font-size:.65rem">0%</span>
+        <div class="insight-bar-track" style="position:relative">
+          <div class="insight-bar-fill" style="width:${breakEven * 100}%;background:var(--red);opacity:.3"></div>
+          <div style="position:absolute;left:${breakEven * 100}%;top:-4px;width:2px;height:12px;background:var(--red)"></div>
+          <div style="position:absolute;left:${currentOcc * 100}%;top:-4px;width:2px;height:12px;background:var(--green)"></div>
+        </div>
+        <span style="font-size:.65rem">100%</span>
+      </div>
+      <div class="insight-row" style="margin-top:4px"><span class="insight-label">Occ. actuelle</span><span class="insight-val">${fmtPct(currentOcc, 0)}</span></div>
+      <div class="insight-row"><span class="insight-label">Marge sécurité</span><span class="${marginClass}">${marginPts} pts — ${marginLabel}</span></div>
+    `);
+  } else {
+    setInsight("kpi-breakeven-insight", `<span class="insight-bad">Break-even non atteint dans la plage testée (10-100%)</span>`);
+  }
+
+  // 7. Payback — cumulative CF progress
+  const payback = S.kpi.paybackYear;
+  const apport = S.financement.apportTerrain;
+  const cumulY5 = S.projections[4] ? S.projections[4].cumulCashFlow : 0;
+  const cumulY10 = S.projections[9] ? S.projections[9].cumulCashFlow : 0;
+  const pctRecupY5 = apport > 0 ? Math.min(1, cumulY5 / apport) : 0;
+  setInsight("kpi-payback-insight", `
+    <div class="insight-row"><span class="insight-label">Apport (terrain)</span><span class="insight-val">${fmtK(apport)}</span></div>
+    <div class="insight-row"><span class="insight-label">Cumul CF An 5</span><span class="insight-val" style="color:${cumulY5 >= 0 ? 'var(--green)' : 'var(--red)'}">${fmtK(cumulY5)}</span></div>
+    <div class="insight-row"><span class="insight-label">Cumul CF An 10</span><span class="insight-val" style="color:${cumulY10 >= 0 ? 'var(--green)' : 'var(--red)'}">${fmtK(cumulY10)}</span></div>
+    <div class="insight-bar" style="margin-top:4px">
+      <div class="insight-bar-track"><div class="insight-bar-fill" style="width:${Math.max(0, pctRecupY5 * 100)}%;background:${pctRecupY5 >= 1 ? 'var(--green)' : 'var(--amber)'}"></div></div>
+      <span style="font-size:.65rem">${fmtPct(pctRecupY5, 0)} récup. An 5</span>
+    </div>
+  `);
+
+  // 8. RevPAR — vs market benchmarks
+  const revpar = S.kpi.revpar;
+  const adrBudget = 525; // Budget segment Maarif
+  const adrPremium = 750; // Premium segment Maarif
+  const adrLuxe = 965; // Luxe segment Maarif
+  setInsight("kpi-revpar-insight", `
+    <div style="margin-bottom:4px">Position marché Maarif :</div>
+    <div class="insight-bar">
+      <div class="insight-bar-track" style="position:relative;height:6px">
+        <div style="position:absolute;left:0;width:${(adrBudget / adrLuxe) * 100}%;height:100%;background:#fee2e2;border-radius:2px 0 0 2px"></div>
+        <div style="position:absolute;left:${(adrBudget / adrLuxe) * 100}%;width:${((adrPremium - adrBudget) / adrLuxe) * 100}%;height:100%;background:#fef3c7"></div>
+        <div style="position:absolute;left:${(adrPremium / adrLuxe) * 100}%;width:${((adrLuxe - adrPremium) / adrLuxe) * 100}%;height:100%;background:#d1fae5;border-radius:0 2px 2px 0"></div>
+        <div style="position:absolute;left:${Math.min(100, (revpar / adrLuxe) * 100)}%;top:-3px;width:3px;height:12px;background:var(--primary);border-radius:1px"></div>
+      </div>
+    </div>
+    <div style="display:flex;justify-content:space-between;font-size:.6rem;color:var(--text-sec);margin-top:2px">
+      <span>Budget (${adrBudget})</span><span>Premium (${adrPremium})</span><span>Luxe (${adrLuxe})</span>
+    </div>
+    <div class="insight-row" style="margin-top:4px"><span class="insight-label">Nuitées / an</span><span class="insight-val">${fmtNum(S.kpi.nuiteesParAn)}</span></div>
+    <div class="insight-row"><span class="insight-label">Coût / nuitée</span><span class="insight-val">${fmtNum(S.kpi.coutParNuitee)} MAD</span></div>
+  `);
+}
+
+function setInsight(id, html) {
+  const el = document.getElementById(id);
+  if (el) el.innerHTML = html;
+}
+
 // --- Budget ---
 function renderBudget(S) {
   setText("budget-terrain-prix", fmtMAD(TERRAIN.prix));
@@ -181,7 +321,7 @@ function renderBudget(S) {
   setText("budget-terrain-total", fmtMAD(S.terrain.coutTerrain));
   setText("budget-construction", fmtMAD(S.terrain.budgetConstruction));
   setText("budget-ameublement", fmtMAD(S.budget.ameublement));
-  setText("budget-total", fmtMAD(BUDGET.totalTTC));
+  setText("budget-total", fmtMAD(S.budget.totalProjet));
   setText("budget-m2", fmtNum(S.terrain.coutM2Terrain) + " MAD/m²");
 }
 
@@ -357,7 +497,7 @@ function renderCashFlow(S) {
   setText("cf-net-an1",     fmtMAD(y1.cashFlowNet));
   setText("cf-rdt-projet",  fmtPct(S.kpi.rendementNet));
   setText("cf-rdt-apport",  fmtPct(S.kpi.rendementNetApport));
-  setText("cf-payback",     S.kpi.paybackYear ? S.kpi.paybackYear + " ans" : "> 10 ans");
+  setText("cf-payback",     S.kpi.paybackYear ? S.kpi.paybackYear + " ans" : "> " + PROJECTION_YEARS + " ans");
 
   const tbody = document.getElementById("cf-tbody");
   if (!tbody) return;
@@ -463,14 +603,14 @@ function renderFiscalite(S) {
   setText("fisc-tva-deductible", fmtMAD(S.tva.tvaDeductibleAn1));
   setText("fisc-tva-credit",     fmtMAD(S.tva.creditTVA));
   const recup = S.tva.dureeRecupCredit;
-  setText("fisc-tva-recup",      recup ? recup + " ans" : "> 10 ans");
-  setText("fisc-tva-recup-sub",  recup ? "Puis TVA à payer normalement" : "Crédit non épuisé sur 10 ans");
+  setText("fisc-tva-recup",      recup ? recup + " ans" : "> " + PROJECTION_YEARS + " ans");
+  setText("fisc-tva-recup-sub",  recup ? "Puis TVA à payer normalement" : "Crédit non épuisé sur " + PROJECTION_YEARS + " ans");
 
   // Info box details
   setText("fisc-constr-ht",  fmtMAD(S.tva.constructionHT));
   setText("fisc-tva-constr", fmtMAD(S.tva.tvaConstruction));
   const badgeRecup = document.getElementById("fisc-badge-recup");
-  if (badgeRecup) badgeRecup.textContent = recup ? recup + " premières années" : "> 10 ans";
+  if (badgeRecup) badgeRecup.textContent = recup ? recup + " premières années" : "> " + PROJECTION_YEARS + " ans";
 
   // TVA projection table
   const tbody = document.getElementById("fisc-tva-tbody");

@@ -424,22 +424,22 @@ function chartCashFlow(S) {
 
   // --- Filter mode: show only revenus or charges breakdown ---
   if (_cfFilter === "revenus") {
-    if (titleEl) titleEl.textContent = _cfMonthly ? "Détail Revenus — Mensuel (An 1)" : "Détail Revenus sur 10 ans";
+    if (titleEl) titleEl.textContent = _cfMonthly ? "Détail Revenus — Mensuel (An 1)" : "Détail Revenus sur " + PROJECTION_YEARS + " ans";
     _buildCFRevenusChart(ctx, S);
     return;
   }
   if (_cfFilter === "charges") {
-    if (titleEl) titleEl.textContent = _cfMonthly ? "Détail Charges — Mensuel (An 1)" : "Détail Charges sur 10 ans";
+    if (titleEl) titleEl.textContent = _cfMonthly ? "Détail Charges — Mensuel (An 1)" : "Détail Charges sur " + PROJECTION_YEARS + " ans";
     _buildCFChargesChart(ctx, S);
     return;
   }
 
   // --- Default "all" mode ---
   if (_cfMonthly) {
-    if (titleEl) titleEl.textContent = "Cash-Flow Net — Mensuel (An 1)";
+    if (titleEl) titleEl.textContent = "Cash-Flow Net — Moyenne Mensuelle par Année";
     _buildCFMonthlyChart(ctx, S);
   } else {
-    if (titleEl) titleEl.textContent = "Cash-Flow Net et Cumul sur 10 ans";
+    if (titleEl) titleEl.textContent = "Cash-Flow Net et Cumul sur " + PROJECTION_YEARS + " ans";
     _buildCFAnnualChart(ctx, S);
   }
 }
@@ -506,38 +506,33 @@ function _buildCFAnnualChart(ctx, S) {
 }
 
 function _buildCFMonthlyChart(ctx, S) {
-  const p = S.projections[0]; // Year 1
-  const months = ["Jan","Fév","Mar","Avr","Mai","Jun","Jul","Aoû","Sep","Oct","Nov","Déc"];
-  const cfMensuel = p.cashFlowNet / 12;
-  let cumulMensuel = 0;
-  const monthlyData = months.map(() => {
-    cumulMensuel += cfMensuel;
-    return { cf: cfMensuel, cumul: cumulMensuel };
-  });
+  const labels = S.projections.map(p => "An " + p.year);
+  const monthlyAvg = S.projections.map(p => p.cashFlowNet / 12);
 
   _charts.cashflow = new Chart(ctx, {
     type: "bar",
     data: {
-      labels: months,
+      labels: labels,
       datasets: [
         {
-          label: "Cash-Flow Net / mois",
-          data: monthlyData.map(m => m.cf),
-          backgroundColor: monthlyData.map(m => m.cf >= 0 ? CHART_COLORS.green : CHART_COLORS.red),
+          label: "CF Net Mensuel Moyen",
+          data: monthlyAvg,
+          backgroundColor: monthlyAvg.map(v => v >= 0 ? CHART_COLORS.green : CHART_COLORS.red),
           borderRadius: 4,
         },
         {
-          label: "Cumul mensuel",
-          data: monthlyData.map(m => m.cumul),
+          label: "CF Net Annuel",
+          data: S.projections.map(p => p.cashFlowNet),
           type: "line",
           borderColor: CHART_COLORS.primary,
           backgroundColor: "rgba(30,58,95,0.06)",
           fill: true,
           tension: 0.3,
           pointRadius: 4,
-          pointBackgroundColor: monthlyData.map(m => m.cumul >= 0 ? CHART_COLORS.green : CHART_COLORS.red),
+          pointBackgroundColor: S.projections.map(p => p.cashFlowNet >= 0 ? CHART_COLORS.green : CHART_COLORS.red),
           pointBorderColor: "#fff",
           pointBorderWidth: 2,
+          yAxisID: "y1",
           order: -1,
         },
       ]
@@ -546,23 +541,38 @@ function _buildCFMonthlyChart(ctx, S) {
       responsive: true, maintainAspectRatio: false,
       scales: {
         y: {
+          position: "left",
+          title: { display: true, text: "Mensuel (MAD)", font: { size: 11 } },
           ticks: { callback: v => fmtK(v) },
           grid: { color: (ctx) => ctx.tick.value === 0 ? 'rgba(220,38,38,0.4)' : 'rgba(0,0,0,0.05)', lineWidth: (ctx) => ctx.tick.value === 0 ? 2 : 1 }
+        },
+        y1: {
+          position: "right",
+          title: { display: true, text: "Annuel (MAD)", font: { size: 11 } },
+          ticks: { callback: v => fmtK(v) },
+          grid: { drawOnChartArea: false },
         }
       },
       plugins: {
+        legend: { labels: { boxWidth: 12, font: { size: 11 } } },
         tooltip: {
           enabled: false,
           external: (ctx) => externalTooltip(ctx, (idx) => {
-            const m = monthlyData[idx];
-            return `<div class="ctt-title">${months[idx]} — An 1</div>
-              <div class="ctt-row"><span>Revenus nets</span><span class="ctt-val">${fmtMAD(p.revTotal / 12)}</span></div>
-              <div class="ctt-row ctt-neg-row"><span>Charges</span><span class="ctt-val ctt-neg">-${fmtMAD(p.chargesTotal / 12)}</span></div>
-              <div class="ctt-row ctt-neg-row"><span>Dette</span><span class="ctt-val ctt-neg">-${fmtMAD(p.debtServiceTotal / 12)}</span></div>
-              <div class="ctt-row ctt-neg-row"><span>IS</span><span class="ctt-val ctt-neg">-${fmtMAD(p.is / 12)}</span></div>
+            const p = S.projections[idx];
+            if (!p) return "";
+            const mensuel = p.cashFlowNet / 12;
+            const revMensuel = p.revTotal / 12;
+            const chgMensuel = p.chargesTotal / 12;
+            const detteMensuel = p.debtServiceTotal / 12;
+            return `<div class="ctt-title">An ${p.year} — Détail Mensuel Moyen</div>
+              <div class="ctt-row"><span>Revenus / mois</span><span class="ctt-val">${fmtMAD(revMensuel)}</span></div>
+              <div class="ctt-row ctt-neg-row"><span>Charges / mois</span><span class="ctt-val ctt-neg">-${fmtMAD(chgMensuel)}</span></div>
+              <div class="ctt-row ctt-neg-row"><span>Dette / mois</span><span class="ctt-val ctt-neg">-${fmtMAD(detteMensuel)}</span></div>
+              <div class="ctt-row ctt-neg-row"><span>IS / mois</span><span class="ctt-val ctt-neg">-${fmtMAD(p.is / 12)}</span></div>
               <div class="ctt-divider"></div>
-              <div class="ctt-row ctt-total"><span>Cash-Flow Net</span><span class="ctt-val" style="color:${m.cf >= 0 ? '#16a34a' : '#dc2626'}">${fmtMAD(m.cf)}</span></div>
-              <div class="ctt-row"><span>Cumul</span><span class="ctt-val" style="color:${m.cumul >= 0 ? '#16a34a' : '#dc2626'}">${fmtMAD(m.cumul)}</span></div>`;
+              <div class="ctt-row ctt-total"><span>CF Net / mois</span><span class="ctt-val" style="color:${mensuel >= 0 ? '#16a34a' : '#dc2626'}">${fmtMAD(mensuel)}</span></div>
+              <div class="ctt-divider"></div>
+              <div class="ctt-row ctt-sub"><span>CF Net annuel</span><span class="ctt-val">${fmtMAD(p.cashFlowNet)}</span></div>`;
           })
         }
       }

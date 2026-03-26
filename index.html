@@ -120,6 +120,17 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);lin
 .kpi-amber{color:var(--amber)!important}
 .kpi-red{color:var(--red)!important}
 .kpi-sub{font-size:.75rem;color:var(--text-sec);margin-top:2px}
+.kpi-insight{margin-top:8px;padding-top:8px;border-top:1px solid var(--border);font-size:.72rem;color:var(--text-sec);line-height:1.5}
+.kpi-insight .insight-highlight{font-weight:700;color:var(--primary)}
+.kpi-insight .insight-good{color:var(--green);font-weight:600}
+.kpi-insight .insight-warn{color:var(--amber);font-weight:600}
+.kpi-insight .insight-bad{color:var(--red);font-weight:600}
+.kpi-insight .insight-bar{display:flex;align-items:center;gap:6px;margin-top:4px}
+.kpi-insight .insight-bar-track{flex:1;height:4px;background:#e2e8f0;border-radius:2px;overflow:hidden}
+.kpi-insight .insight-bar-fill{height:100%;border-radius:2px;transition:width .5s}
+.kpi-insight .insight-row{display:flex;justify-content:space-between;gap:4px;padding:1px 0}
+.kpi-insight .insight-label{color:var(--text-sec)}
+.kpi-insight .insight-val{font-weight:600;font-variant-numeric:tabular-nums}
 
 /* Grid */
 .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:20px}
@@ -283,48 +294,140 @@ tr:hover td{background:#f8fafc}
   .verdict-metrics{justify-content:center}
   .card-title{font-size:1rem}
 }
-/* Responsive — Mobile */
+
+/* ═══════════════════════════════════════════════════ */
+/* MOBILE — Full responsive overhaul                   */
+/* ═══════════════════════════════════════════════════ */
+
+/* Hamburger button (hidden on desktop) */
+.mobile-menu-btn{display:none;background:none;border:none;cursor:pointer;padding:8px;margin-left:auto;flex-shrink:0;-webkit-tap-highlight-color:transparent}
+.mobile-menu-btn span{display:block;width:22px;height:2px;background:#fff;margin:5px 0;border-radius:2px;transition:all .3s}
+.mobile-menu-btn.open span:nth-child(1){transform:translateY(7px) rotate(45deg)}
+.mobile-menu-btn.open span:nth-child(2){opacity:0}
+.mobile-menu-btn.open span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
+
 @media(max-width:600px){
-  .kpi-grid{grid-template-columns:1fr}
-  .header-inner{flex-direction:column;gap:8px;text-align:center;padding:0 12px}
-  .header h1{font-size:1.2rem}
-  .header-badge{font-size:.9rem;padding:6px 12px}
-  .nav-inner{padding:0 4px;gap:0}
-  .nav-btn{padding:10px 10px;font-size:.72rem}
-  .main{padding:12px 8px}
-  .card{padding:14px 12px;border-radius:8px;margin-bottom:14px}
-  .card-title{font-size:.95rem;margin-bottom:8px;padding-bottom:8px}
-  .kpi-card{padding:12px 10px}
-  .kpi-value{font-size:1.15rem}
-  .kpi-label{font-size:.65rem}
-  .scenario-bar{flex-wrap:wrap;gap:6px}
-  .scenario-btn{padding:6px 6px;font-size:.68rem;flex:1}
-  .ctrl-toggle{padding:6px 10px;font-size:.9rem}
-  .ctrl-grid{grid-template-columns:1fr}
-  .chart-box{height:220px}
-  table{font-size:.75rem}
-  th{padding:6px 6px;font-size:.65rem}
-  td{padding:5px 6px}
+  /* ─── Header ─── */
+  .header{padding:10px 0}
+  .header-inner{flex-direction:row;flex-wrap:wrap;gap:4px;padding:0 12px;align-items:center}
+  .header h1{font-size:1.1rem}
+  .header-sub{font-size:.72rem;display:none}
+  .header-badge{font-size:.78rem;padding:4px 10px;border-radius:6px;order:0}
+  .mobile-menu-btn{display:flex;flex-direction:column;align-items:center;justify-content:center;order:1}
+
+  /* ─── Nav → Mobile drawer ─── */
+  .nav{position:fixed;top:0;left:-100%;width:80%;max-width:300px;height:100vh;z-index:1000;box-shadow:4px 0 20px rgba(0,0,0,.3);transition:left .3s ease;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-top:60px;border-bottom:none}
+  .nav.mobile-open{left:0}
+  .nav-inner{flex-direction:column;height:auto;padding:8px 0;gap:0;align-items:stretch}
+  .nav-item{padding:14px 20px;border-bottom:1px solid var(--border);border-bottom-width:1px;white-space:normal;font-size:.88rem;justify-content:flex-start}
+  .nav-item:last-child{border-bottom:none}
+  .nav-item.active{border-left:4px solid var(--gold);border-bottom-color:var(--border);background:#f8fafc}
+  .nav-item svg:not(.dropdown-chevron){width:18px;height:18px}
+  .nav-dropdown{position:static;border:none;border-radius:0;box-shadow:none;min-width:0;background:#f8fafc}
+  .nav-item.has-dropdown{flex-wrap:wrap}
+  .nav-item.has-dropdown .nav-dropdown{width:100%;margin-top:4px}
+  .nav-dropdown-item{padding:12px 20px 12px 44px;font-size:.84rem;border-left:none}
+  .nav-dropdown-item.active{background:#e8f0fe}
+
+  /* Overlay behind drawer */
+  .nav-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.4);z-index:999;-webkit-tap-highlight-color:transparent}
+  .nav-overlay.show{display:block}
+
+  /* ─── Main content ─── */
+  .main{padding:12px 10px;margin-top:0}
+
+  /* ─── Scenario bar ─── */
+  .scenario-bar{flex-wrap:wrap;gap:4px;margin-bottom:14px}
+  .scenario-btn{padding:8px 4px;font-size:.72rem;flex:1 1 calc(33% - 4px);min-width:0;border-radius:6px;line-height:1.2}
+  .ctrl-toggle{padding:8px 12px;font-size:1rem;flex:0 0 auto}
+
+  /* ─── Control panel ─── */
+  .control-panel{padding:12px 10px;border-radius:8px;margin-bottom:14px}
+  .ctrl-grid{grid-template-columns:1fr;gap:12px}
+  .ctrl-label{font-size:.72rem}
+  .ctrl-row{gap:8px}
+  .ctrl-range{height:8px}
+  .ctrl-range::-webkit-slider-thumb{width:22px;height:22px}
+  .ctrl-range::-moz-range-thumb{width:22px;height:22px}
+  .ctrl-input-wrap{min-width:80px;padding:6px 8px}
+  .ctrl-input{width:50px;font-size:.82rem}
+  .ctrl-unit{font-size:.72rem}
+  .ctrl-section-title{font-size:.68rem;margin:14px 0 8px}
+  .ctrl-advanced-toggle{font-size:.76rem;padding:10px 0}
+
+  /* ─── Cards ─── */
+  .card{padding:14px 12px;border-radius:10px;margin-bottom:14px}
+  .card-title{font-size:.95rem;margin-bottom:10px;padding-bottom:8px}
+
+  /* ─── KPI ─── */
+  .kpi-grid{grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px}
+  .kpi-card{padding:12px 10px;border-radius:8px}
+  .kpi-value{font-size:1.1rem}
+  .kpi-label{font-size:.62rem;letter-spacing:.03em}
+  .kpi-sub{font-size:.68rem}
+
+  /* ─── Charts ─── */
+  .chart-box{height:240px}
+
+  /* ─── Tables ─── */
+  .table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:0 -12px;padding:0 12px}
+  table{font-size:.75rem;min-width:480px}
+  th{padding:8px 8px;font-size:.65rem;white-space:nowrap}
+  td{padding:6px 8px}
+
+  /* ─── Toggle buttons ─── */
   .toggle-group{border-radius:5px}
-  .toggle-btn{padding:4px 8px;font-size:.68rem}
-  .verdict-banner{padding:16px 14px;gap:12px;border-radius:10px}
-  .verdict-icon-wrap{width:40px;height:40px}
-  .verdict-icon-wrap svg{width:20px;height:20px}
-  .verdict-title{font-size:1.15rem}
-  .verdict-subtitle{font-size:.82rem}
-  .verdict-metric{padding:4px 8px;font-size:.7rem}
+  .toggle-btn{padding:5px 8px;font-size:.68rem}
+
+  /* ─── Verdict banner ─── */
+  .verdict-banner{padding:16px 14px;gap:12px;border-radius:10px;flex-direction:column;text-align:center}
+  .verdict-icon-wrap{width:44px;height:44px;margin:0 auto}
+  .verdict-icon-wrap svg{width:22px;height:22px}
+  .verdict-title{font-size:1.2rem}
+  .verdict-subtitle{font-size:.8rem}
+  .verdict-header{justify-content:center}
+  .verdict-metrics{justify-content:center;gap:4px}
+  .verdict-metric{padding:4px 8px;font-size:.68rem}
+
+  /* ─── Info/Warn boxes ─── */
   .info-box,.warn-box{font-size:.8rem;padding:10px 12px}
-  .progress-seg{font-size:.6rem}
-  .ct-tooltip{min-width:220px;max-width:280px;font-size:11px;padding:10px 12px}
-  .ctt-title{font-size:12px}
+
+  /* ─── Progress bar ─── */
+  .progress-bar{height:24px}
+  .progress-seg{font-size:.55rem}
+
+  /* ─── Tooltips ─── */
+  .ct-tooltip{min-width:200px;max-width:260px;font-size:11px;padding:10px 12px;border-radius:8px}
+  .ctt-title{font-size:12px;margin-bottom:6px;padding-bottom:5px}
   .ctt-total{font-size:12px}
-  .sub-detail-panel{padding:12px 14px}
+  .ctt-sub{font-size:10px}
+
+  /* ─── SWOT grid ─── */
+  .grid-3{grid-template-columns:1fr;gap:10px}
+  .swot-card{padding:12px;font-size:.82rem}
+  .swot-card ul{padding-left:14px}
+
+  /* ─── Subventions detail ─── */
+  .sub-detail-panel{padding:12px 14px;margin:0 4px 4px 4px}
   .sub-cond-label{font-size:.75rem}
   .sub-cond-detail{font-size:.72rem}
   .sub-verdict{padding:10px 12px}
   .sub-verdict-text{font-size:.75rem}
   .sub-detail-meta{font-size:.68rem;gap:8px}
   .sub-expand-icon{font-size:.6rem}
+  .sub-timeline{padding-left:16px}
+  .sub-step{padding:10px 0 10px 16px}
+
+  /* ─── Gestion comparison ─── */
+  .grid-2{gap:14px}
+}
+
+/* Extra small screens */
+@media(max-width:380px){
+  .kpi-grid{grid-template-columns:1fr}
+  .scenario-btn{flex:1 1 100%;font-size:.7rem}
+  .header-badge{display:none}
+  .kpi-value{font-size:1rem}
 }
 </style>
 </head>
@@ -338,6 +441,7 @@ tr:hover td{background:#f8fafc}
       <div class="header-sub">Rue des Camélias, Maarif, Casablanca &bull; R+5 &bull; 174 m²</div>
     </div>
     <div class="header-badge">7 000 000 MAD</div>
+    <button class="mobile-menu-btn" id="mobile-menu-btn" aria-label="Menu"><span></span><span></span><span></span></button>
   </div>
 </header>
 
@@ -386,6 +490,8 @@ tr:hover td{background:#f8fafc}
     </div>
   </div>
 </nav>
+
+<div class="nav-overlay" id="nav-overlay"></div>
 
 <main class="main">
 
@@ -632,14 +738,14 @@ tr:hover td{background:#f8fafc}
   </div>
 
   <div class="kpi-grid">
-    <div class="kpi-card" id="kpi-invest"><div class="kpi-label">Investissement Total</div><div class="kpi-value">–</div><div class="kpi-sub">TTC</div></div>
-    <div class="kpi-card" id="kpi-rdt-brut"><div class="kpi-label">Rendement Brut</div><div class="kpi-value">–</div><div class="kpi-sub">Année 1</div></div>
-    <div class="kpi-card" id="kpi-cf-net"><div class="kpi-label">Cash-Flow Net An 1</div><div class="kpi-value">–</div></div>
-    <div class="kpi-card" id="kpi-rdt-apport"><div class="kpi-label">Rendement / Apport</div><div class="kpi-value">–</div><div class="kpi-sub">Effet de levier</div></div>
-    <div class="kpi-card" id="kpi-dscr"><div class="kpi-label">DSCR An 1</div><div class="kpi-value">–</div><div class="kpi-sub">Couverture dette (>1.2x requis)</div></div>
-    <div class="kpi-card" id="kpi-breakeven"><div class="kpi-label">Seuil de Rentabilité</div><div class="kpi-value">–</div><div class="kpi-sub">Occupation min. pour CF ≥ 0</div></div>
-    <div class="kpi-card" id="kpi-payback"><div class="kpi-label">Payback</div><div class="kpi-value">–</div><div class="kpi-sub">Sur apport personnel</div></div>
-    <div class="kpi-card" id="kpi-revpar"><div class="kpi-label">RevPAR</div><div class="kpi-value">–</div><div class="kpi-sub">Revenu / chambre disponible</div></div>
+    <div class="kpi-card" id="kpi-invest"><div class="kpi-label">Investissement Total</div><div class="kpi-value">–</div><div class="kpi-sub">TTC</div><div class="kpi-insight" id="kpi-invest-insight"></div></div>
+    <div class="kpi-card" id="kpi-rdt-brut"><div class="kpi-label">Rendement Brut</div><div class="kpi-value">–</div><div class="kpi-sub">Année 1</div><div class="kpi-insight" id="kpi-rdt-brut-insight"></div></div>
+    <div class="kpi-card" id="kpi-cf-net"><div class="kpi-label">Cash-Flow Net An 1</div><div class="kpi-value">–</div><div class="kpi-insight" id="kpi-cf-net-insight"></div></div>
+    <div class="kpi-card" id="kpi-rdt-apport"><div class="kpi-label">Rendement / Apport</div><div class="kpi-value">–</div><div class="kpi-sub">Effet de levier</div><div class="kpi-insight" id="kpi-rdt-apport-insight"></div></div>
+    <div class="kpi-card" id="kpi-dscr"><div class="kpi-label">DSCR An 1</div><div class="kpi-value">–</div><div class="kpi-sub">Couverture dette (>1.2x requis)</div><div class="kpi-insight" id="kpi-dscr-insight"></div></div>
+    <div class="kpi-card" id="kpi-breakeven"><div class="kpi-label">Seuil de Rentabilité</div><div class="kpi-value">–</div><div class="kpi-sub">Occupation min. pour CF ≥ 0</div><div class="kpi-insight" id="kpi-breakeven-insight"></div></div>
+    <div class="kpi-card" id="kpi-payback"><div class="kpi-label">Payback</div><div class="kpi-value">–</div><div class="kpi-sub">Sur apport personnel</div><div class="kpi-insight" id="kpi-payback-insight"></div></div>
+    <div class="kpi-card" id="kpi-revpar"><div class="kpi-label">RevPAR</div><div class="kpi-value">–</div><div class="kpi-sub">Revenu / chambre disponible</div><div class="kpi-insight" id="kpi-revpar-insight"></div></div>
   </div>
   <div class="grid-2">
     <div class="card"><div class="card-title">Répartition du Budget</div><div class="chart-box"><canvas id="chart-budget"></canvas></div>
@@ -647,9 +753,9 @@ tr:hover td{background:#f8fafc}
         <tr><td>Prix terrain</td><td class="num" id="budget-terrain-prix">–</td></tr>
         <tr><td>Frais acquisition (~6.5%)</td><td class="num" id="budget-terrain-frais">–</td></tr>
         <tr><td><strong>Terrain tout compris</strong></td><td class="num" id="budget-terrain-total">–</td></tr>
-        <tr><td>Construction & aménagement (incl. ameublement)</td><td class="num" id="budget-construction">–</td></tr>
+        <tr><td>Construction & aménagement</td><td class="num" id="budget-construction">–</td></tr>
         <tr><td><em>dont ameublement (11 × 40K)</em></td><td class="num" id="budget-ameublement">–</td></tr>
-        <tr class="total-row"><td><strong>Total TTC</strong></td><td class="num" id="budget-total">–</td></tr>
+        <tr class="total-row"><td><strong>Total Projet TTC</strong></td><td class="num" id="budget-total">–</td></tr>
         <tr><td>Prix / m² terrain</td><td class="num" id="budget-m2">–</td></tr>
       </tbody></table>
     </div>
@@ -672,7 +778,7 @@ tr:hover td{background:#f8fafc}
   </div>
   <div class="grid-2">
     <div class="card"><div class="card-title">Répartition Revenus An 1</div><div class="chart-box"><canvas id="chart-rev-breakdown"></canvas></div></div>
-    <div class="card"><div class="card-title">Projection Revenus 10 ans</div><div class="chart-box"><canvas id="chart-rev-evolution"></canvas></div></div>
+    <div class="card"><div class="card-title">Projection Revenus</div><div class="chart-box"><canvas id="chart-rev-evolution"></canvas></div></div>
   </div>
   <div class="card"><div class="card-title">Détail par Année</div>
     <div class="table-wrap"><table><thead><tr><th>Année</th><th>Rev. Brut Hôtel</th><th>Commissions</th><th>Rev. Net Hôtel</th><th>Local Commercial</th><th>Total</th></tr></thead><tbody id="rev-table-tbody"></tbody></table></div>
@@ -695,7 +801,7 @@ tr:hover td{background:#f8fafc}
   </div>
   <div class="card">
     <div class="card-title" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
-      <span>Revenus vs Charges sur 10 ans</span>
+      <span>Revenus vs Charges</span>
       <div class="toggle-group">
         <button class="toggle-btn revch-toggle-btn active" data-mode="breakdown" onclick="toggleRevChBreakdown(true)">Détail</button>
         <button class="toggle-btn revch-toggle-btn" data-mode="simple" onclick="toggleRevChBreakdown(false)">Simple</button>
@@ -927,7 +1033,7 @@ tr:hover td{background:#f8fafc}
       <tr><td>Exonération taxe professionnelle</td><td>5 premières années nouvelles constructions</td><td><span class="badge badge-green">5 premières années</span></td></tr>
     </tbody></table></div>
   </div>
-  <div class="card"><div class="card-title">Impact IS sur 10 ans</div><div class="chart-box"><canvas id="chart-is"></canvas></div></div>
+  <div class="card"><div class="card-title">Impact IS sur la durée du projet</div><div class="chart-box"><canvas id="chart-is"></canvas></div></div>
 </div>
 
 <!-- ==================== RISQUES ==================== -->
@@ -1023,11 +1129,11 @@ tr:hover td{background:#f8fafc}
 </main>
 
 <!-- Scripts — strict order: data → engine → render → charts → app -->
-<script src="js/data.js?v=11"></script>
-<script src="js/engine.js?v=11"></script>
-<script src="js/render.js?v=11"></script>
-<script src="js/charts.js?v=11"></script>
-<script src="js/app.js?v=11"></script>
+<script src="js/data.js?v=13"></script>
+<script src="js/engine.js?v=13"></script>
+<script src="js/render.js?v=13"></script>
+<script src="js/charts.js?v=13"></script>
+<script src="js/app.js?v=13"></script>
 
 </body>
 </html>

@@ -380,4 +380,43 @@ document.addEventListener("DOMContentLoaded", () => {
   document.querySelectorAll(".kpi-card").forEach((card, i) => {
     card.style.animationDelay = (i * 0.06) + "s";
   });
+
+  // --- Mobile menu ---
+  const mobileMenuBtn = document.getElementById("mobile-menu-btn");
+  const navEl = document.querySelector(".nav");
+  const navOverlay = document.getElementById("nav-overlay");
+
+  function openMobileMenu() {
+    navEl.classList.add("mobile-open");
+    navOverlay.classList.add("show");
+    mobileMenuBtn.classList.add("open");
+    document.body.style.overflow = "hidden";
+  }
+  function closeMobileMenu() {
+    navEl.classList.remove("mobile-open");
+    navOverlay.classList.remove("show");
+    mobileMenuBtn.classList.remove("open");
+    document.body.style.overflow = "";
+  }
+
+  if (mobileMenuBtn) {
+    mobileMenuBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      if (navEl.classList.contains("mobile-open")) {
+        closeMobileMenu();
+      } else {
+        openMobileMenu();
+      }
+    });
+  }
+  if (navOverlay) {
+    navOverlay.addEventListener("click", closeMobileMenu);
+  }
+
+  // Close mobile menu when navigating
+  const origSwitchView = switchView;
+  switchView = function(view) {
+    closeMobileMenu();
+    origSwitchView(view);
+  };
 });
