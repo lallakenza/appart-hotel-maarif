@@ -109,18 +109,33 @@ const SCENARIOS = {
 };
 
 // ======= CHARGES D'EXPLOITATION =======
-// (à confirmer avec le propriétaire)
 const CHARGES = {
-  menageLinge: 80,           // MAD / nuitée occupée
+  // Société de gestion — 20% du CA hébergement (confirmé)
+  // Inclut : gestion réservations, accueil, suivi opérationnel
+  tauxGestion: 0.20,
+
+  // Ménage interne (2e employé dédié ménage/linge)
+  // Plus de coût variable par nuitée — coût fixe salarial
+  menageLinge: 0,            // MAD / nuitée — internalisé via employé dédié
+
   eauElectricite: 8_000,     // MAD / mois
   internetTv: 2_000,         // MAD / mois
   assurance: 15_000,         // MAD / an
   entretien: 30_000,         // MAD / an
-  salaireEmploye: 4_000,     // MAD / mois (concierge)
-  nbEmployes: 1,
+
+  // 2 employés : 1 concierge + 1 ménage/linge
+  salaireEmploye: 4_000,     // MAD / mois
+  nbEmployes: 2,             // confirmé : concierge + ménage
   chargesSociales: 0.26,     // CNSS + AMO
+
+  // Comptable externe
+  comptable: 3_000,          // MAD / mois (estimation cabinet comptable Casablanca)
+
   taxesPro: 20_000,          // MAD / an (exo 5 ans nouvelle construction)
   divers: 20_000,            // MAD / an
+
+  // Produits ménage, linge de maison, consommables
+  consommables: 1_500,       // MAD / mois (estimé pour 11 unités)
 };
 
 // ======= FINANCEMENT =======

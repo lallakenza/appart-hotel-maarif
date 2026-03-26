@@ -159,13 +159,15 @@ function renderCharges(S) {
   setText("ch-nuitee", fmtNum(S.kpi.coutParNuitee) + " MAD");
 
   const items = [
-    { name: "Ménage & Linge",    val: ch.menage },
-    { name: "Eau + Électricité + Internet", val: ch.utilities },
-    { name: "Salaires (charges incluses)", val: ch.salaires },
-    { name: "Assurance",          val: ch.assurance },
-    { name: "Entretien",          val: ch.entretien },
-    { name: "Taxes professionnelles", val: ch.taxesPro },
-    { name: "Divers & imprévus",  val: ch.divers },
+    { name: "Société de gestion (20% CA héberg.)", val: ch.gestion },
+    { name: "Salaires 2 employés (charges incl.)",  val: ch.salaires },
+    { name: "Eau + Électricité + Internet",          val: ch.utilities },
+    { name: "Consommables ménage & linge",           val: ch.consommables },
+    { name: "Comptable externe",                     val: ch.comptable },
+    { name: "Assurance",                             val: ch.assurance },
+    { name: "Entretien & maintenance",               val: ch.entretien },
+    { name: "Taxes professionnelles",                val: ch.taxesPro },
+    { name: "Divers & imprévus",                     val: ch.divers },
   ];
   const tbody = document.getElementById("charges-tbody");
   if (!tbody) return;

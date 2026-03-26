@@ -93,13 +93,16 @@ function compute(scenario) {
     const revTotal = revNetHotel + revCommercial;
 
     // Charges
-    const menage = CHARGES.menageLinge * nuiteesParAn;
+    const gestion = revBrutHotel * CHARGES.tauxGestion;        // 20% du CA hébergement brut
+    const consommables = CHARGES.consommables * 12;
+    const comptable = CHARGES.comptable * 12;
     const utilities = (CHARGES.eauElectricite + CHARGES.internetTv) * 12;
     const salaires = CHARGES.salaireEmploye * CHARGES.nbEmployes * 12 * (1 + CHARGES.chargesSociales);
-    const chargesTotal = menage + utilities + CHARGES.assurance + CHARGES.entretien + salaires + CHARGES.taxesPro + CHARGES.divers;
+    const chargesTotal = gestion + consommables + comptable + utilities +
+      CHARGES.assurance + CHARGES.entretien + salaires + CHARGES.taxesPro + CHARGES.divers;
 
     const chargesDetail = {
-      menage, utilities, salaires,
+      gestion, consommables, comptable, utilities, salaires,
       assurance: CHARGES.assurance,
       entretien: CHARGES.entretien,
       taxesPro: CHARGES.taxesPro,
@@ -164,7 +167,8 @@ function compute(scenario) {
     const nuitees = nbUnites * 365 * occRate;
     const revH = (nbStudios * sc.prixNuitStudio + nbLofts * sc.prixNuitLoft) * 365 * occRate;
     const revN = revH * (1 - REVENUE_ASSUMPTIONS.commissionPlatformes) + sc.loyerCommercial * 12;
-    const ch = CHARGES.menageLinge * nuitees + (CHARGES.eauElectricite + CHARGES.internetTv) * 12 +
+    const ch = revH * CHARGES.tauxGestion + CHARGES.consommables * 12 + CHARGES.comptable * 12 +
+               (CHARGES.eauElectricite + CHARGES.internetTv) * 12 +
                CHARGES.salaireEmploye * CHARGES.nbEmployes * 12 * (1 + CHARGES.chargesSociales) +
                CHARGES.assurance + CHARGES.entretien + CHARGES.taxesPro + CHARGES.divers;
     const ebit = revN - ch;
