@@ -77,12 +77,39 @@ function applyOverrides() {
 // --- View management ---
 function switchView(view) {
   currentView = view;
+  // Auto-collapse control panel
+  const panel = document.getElementById("control-panel");
+  const ctrlBtn = document.getElementById("ctrl-toggle");
+  if (panel) panel.classList.remove("open");
+  if (ctrlBtn) ctrlBtn.classList.remove("open");
+  // Also collapse advanced
+  const advBody = document.getElementById("ctrl-advanced-body");
+  if (advBody) advBody.classList.remove("open");
+  const advToggle = document.getElementById("ctrl-advanced-toggle");
+  if (advToggle) advToggle.classList.remove("open");
+
   document.querySelectorAll("[data-view]").forEach(el => {
     el.classList.toggle("hidden", el.dataset.view !== view);
   });
-  document.querySelectorAll(".nav-btn").forEach(btn => {
-    btn.classList.toggle("active", btn.dataset.nav === view);
+
+  // Update nav active states (handle both top-level and dropdown items)
+  document.querySelectorAll(".nav-item").forEach(item => {
+    const directNav = item.dataset.nav;
+    const hasDropdown = item.querySelector(".nav-dropdown");
+    if (directNav) {
+      item.classList.toggle("active", directNav === view);
+    } else if (hasDropdown) {
+      const dropItems = hasDropdown.querySelectorAll("[data-nav]");
+      const isInGroup = Array.from(dropItems).some(d => d.dataset.nav === view);
+      item.classList.toggle("active", isInGroup);
+    }
   });
+
+  // Update dropdown item active states
+  document.querySelectorAll(".nav-dropdown-item").forEach(item => {
+    item.classList.toggle("active", item.dataset.nav === view);
+  });
+
   if (currentState) rebuildCharts(currentState);
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
@@ -245,6 +272,10 @@ function toggleControlPanel() {
   btn.classList.toggle("open");
 }
 
+function closeAllDropdowns() {
+  document.querySelectorAll(".nav-item.dropdown-open").forEach(d => d.classList.remove("dropdown-open"));
+}
+
 // --- Init ---
 document.addEventListener("DOMContentLoaded", () => {
   // Store original scenario data
@@ -257,10 +288,36 @@ document.addEventListener("DOMContentLoaded", () => {
     if (obj) originalAdvanced[f.id] = obj[f.key];
   });
 
-  // Bind nav
-  document.querySelectorAll(".nav-btn").forEach(btn => {
-    btn.addEventListener("click", () => switchView(btn.dataset.nav));
+  // Bind new nav items (direct navigation items)
+  document.querySelectorAll(".nav-item[data-nav]").forEach(item => {
+    item.addEventListener("click", (e) => {
+      e.stopPropagation();
+      closeAllDropdowns();
+      switchView(item.dataset.nav);
+    });
   });
+
+  // Bind dropdown toggles
+  document.querySelectorAll(".nav-item.has-dropdown").forEach(item => {
+    item.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const wasOpen = item.classList.contains("dropdown-open");
+      closeAllDropdowns();
+      if (!wasOpen) item.classList.add("dropdown-open");
+    });
+  });
+
+  // Bind dropdown items
+  document.querySelectorAll(".nav-dropdown-item[data-nav]").forEach(item => {
+    item.addEventListener("click", (e) => {
+      e.stopPropagation();
+      closeAllDropdowns();
+      switchView(item.dataset.nav);
+    });
+  });
+
+  // Close dropdowns on outside click
+  document.addEventListener("click", () => closeAllDropdowns());
 
   // Bind scenario buttons
   document.querySelectorAll(".scenario-btn[data-scenario]").forEach(btn => {

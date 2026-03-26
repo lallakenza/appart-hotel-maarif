@@ -33,18 +33,27 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);lin
 .hidden{display:none!important}
 
 /* Header */
-.header{background:linear-gradient(135deg,var(--primary) 0%,#2d5a8e 100%);color:#fff;padding:20px 0;position:sticky;top:0;z-index:100;box-shadow:0 4px 20px rgba(0,0,0,.15)}
+.header{background:linear-gradient(135deg,var(--primary) 0%,#2d5a8e 100%);color:#fff;padding:14px 0;position:sticky;top:0;z-index:100;box-shadow:0 4px 20px rgba(0,0,0,.15)}
 .header-inner{max-width:1400px;margin:0 auto;padding:0 24px;display:flex;justify-content:space-between;align-items:center}
 .header h1{font-family:'Instrument Serif',serif;font-size:1.6rem;font-weight:400}
 .header-sub{opacity:.8;font-size:.85rem;margin-top:2px}
 .header-badge{background:var(--gold);color:#fff;padding:8px 16px;border-radius:8px;font-weight:700;font-size:1.1rem}
 
 /* Nav */
-.nav{background:#fff;border-bottom:1px solid var(--border);position:sticky;top:68px;z-index:99;box-shadow:0 2px 8px rgba(0,0,0,.04)}
-.nav-inner{max-width:1400px;margin:0 auto;padding:0 24px;display:flex;gap:0;overflow-x:auto}
-.nav-btn{padding:12px 16px;background:none;border:none;border-bottom:3px solid transparent;cursor:pointer;font-size:.82rem;font-weight:500;color:var(--text-sec);white-space:nowrap;transition:all .2s;font-family:inherit}
-.nav-btn:hover{color:var(--primary);background:#f8fafc}
-.nav-btn.active{color:var(--primary);border-bottom-color:var(--gold);font-weight:600}
+.nav{background:#fff;border-bottom:1px solid var(--border);position:sticky;top:56px;z-index:99;box-shadow:0 2px 8px rgba(0,0,0,.04)}
+.nav-inner{max-width:1400px;margin:0 auto;padding:0 24px;display:flex;gap:2px;align-items:stretch;height:48px}
+.nav-item{display:flex;align-items:center;gap:7px;padding:0 16px;cursor:pointer;font-size:.82rem;font-weight:500;color:var(--text-sec);white-space:nowrap;transition:all .2s;position:relative;border-bottom:3px solid transparent;user-select:none}
+.nav-item:hover{color:var(--primary);background:#f8fafc}
+.nav-item.active{color:var(--primary);border-bottom-color:var(--gold);font-weight:600}
+.nav-item svg:not(.dropdown-chevron){opacity:.7;flex-shrink:0}
+.nav-item.active svg:not(.dropdown-chevron),.nav-item:hover svg:not(.dropdown-chevron){opacity:1}
+.dropdown-chevron{transition:transform .2s;opacity:.5;margin-left:-2px}
+.nav-item.dropdown-open .dropdown-chevron{transform:rotate(180deg);opacity:1}
+.nav-dropdown{display:none;position:absolute;top:100%;left:0;background:#fff;border:1px solid var(--border);border-radius:0 0 10px 10px;box-shadow:0 8px 24px rgba(0,0,0,.1);min-width:200px;z-index:200;overflow:hidden}
+.nav-item.dropdown-open .nav-dropdown{display:block}
+.nav-dropdown-item{padding:10px 16px;font-size:.82rem;font-weight:500;color:var(--text-sec);cursor:pointer;transition:all .15s;border-left:3px solid transparent}
+.nav-dropdown-item:hover{background:#f0f4f8;color:var(--primary);border-left-color:var(--gold)}
+.nav-dropdown-item.active{color:var(--primary);font-weight:600;background:#f8fafc;border-left-color:var(--gold)}
 
 /* Main */
 .main{max-width:1400px;margin:0 auto;padding:24px}
@@ -58,6 +67,13 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);lin
 .scenario-btn{padding:8px 14px;border:2px solid var(--border);border-radius:8px;background:#fff;cursor:pointer;font-weight:600;font-family:inherit;font-size:.8rem;transition:all .2s;text-align:center;line-height:1.4;flex:1;min-width:0}
 .scenario-btn.active{border-color:var(--primary);background:var(--primary);color:#fff}
 .scenario-btn:hover:not(.active){border-color:var(--primary-light)}
+.scenario-btn[data-scenario="prudent"]{--scenario-color:#dc2626}
+.scenario-btn[data-scenario="prudent_moyen"]{--scenario-color:#d97706}
+.scenario-btn[data-scenario="moyen"]{--scenario-color:#3b7dd8}
+.scenario-btn[data-scenario="moyen_optimiste"]{--scenario-color:#16a34a}
+.scenario-btn[data-scenario="optimiste"]{--scenario-color:#059669}
+.scenario-btn:not(.active)[data-scenario]{border-color:var(--scenario-color);color:var(--scenario-color)}
+.scenario-btn:not(.active)[data-scenario]:hover{background:color-mix(in srgb,var(--scenario-color) 10%,#fff)}
 .ctrl-toggle{padding:8px 14px;border:2px solid var(--border);border-radius:8px;background:#fff;cursor:pointer;font-size:1.1rem;transition:all .2s;margin-left:auto}
 .ctrl-toggle.open{background:var(--primary);color:#fff;border-color:var(--primary)}
 
@@ -328,16 +344,46 @@ tr:hover td{background:#f8fafc}
 <!-- ==================== NAV ==================== -->
 <nav class="nav">
   <div class="nav-inner">
-    <button class="nav-btn active" data-nav="overview">Vue d'ensemble</button>
-    <button class="nav-btn" data-nav="revenus">Revenus & Occupation</button>
-    <button class="nav-btn" data-nav="charges">Charges & Exploitation</button>
-    <button class="nav-btn" data-nav="financement">Financement MDM</button>
-    <button class="nav-btn" data-nav="cashflow">Cash-Flow & Rentabilité</button>
-    <button class="nav-btn" data-nav="gestion">Gestion propre vs Société</button>
-    <button class="nav-btn" data-nav="marche">Étude de Marché</button>
-    <button class="nav-btn" data-nav="fiscalite">Fiscalité & TVA</button>
-    <button class="nav-btn" data-nav="risques">Analyse de Risques</button>
-    <button class="nav-btn" data-nav="subventions">Subventions & Aides</button>
+    <div class="nav-item active" data-nav="overview">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      <span class="nav-label">Dashboard</span>
+    </div>
+    <div class="nav-item has-dropdown">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+      <span class="nav-label">Exploitation</span>
+      <svg class="dropdown-chevron" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+      <div class="nav-dropdown">
+        <div class="nav-dropdown-item" data-nav="revenus">Revenus & Occupation</div>
+        <div class="nav-dropdown-item" data-nav="charges">Charges & Exploitation</div>
+        <div class="nav-dropdown-item" data-nav="gestion">Gestion propre vs Société</div>
+      </div>
+    </div>
+    <div class="nav-item has-dropdown">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+      <span class="nav-label">Financement</span>
+      <svg class="dropdown-chevron" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+      <div class="nav-dropdown">
+        <div class="nav-dropdown-item" data-nav="financement">MDM Invest & Tamwil</div>
+        <div class="nav-dropdown-item" data-nav="subventions">Subventions & Aides</div>
+      </div>
+    </div>
+    <div class="nav-item" data-nav="cashflow">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      <span class="nav-label">Cash-Flow</span>
+    </div>
+    <div class="nav-item" data-nav="marche">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      <span class="nav-label">Marché</span>
+    </div>
+    <div class="nav-item has-dropdown">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      <span class="nav-label">Risques</span>
+      <svg class="dropdown-chevron" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+      <div class="nav-dropdown">
+        <div class="nav-dropdown-item" data-nav="risques">Analyse de Risques</div>
+        <div class="nav-dropdown-item" data-nav="fiscalite">Fiscalité & TVA</div>
+      </div>
+    </div>
   </div>
 </nav>
 
@@ -351,11 +397,11 @@ tr:hover td{background:#f8fafc}
   <button class="scenario-btn" data-scenario="moyen_optimiste" id="btn-moyen_optimiste">Favorable</button>
   <button class="scenario-btn" data-scenario="optimiste" id="btn-optimiste">Optimiste</button>
   <button class="scenario-btn" id="btn-custom" style="display:none;border-color:var(--gold);color:var(--gold)">Personnalisé</button>
-  <button class="ctrl-toggle open" id="ctrl-toggle" title="Paramètres">⚙</button>
+  <button class="ctrl-toggle" id="ctrl-toggle" title="Paramètres">⚙</button>
 </div>
 
 <!-- Control Panel -->
-<div class="control-panel open" id="control-panel">
+<div class="control-panel" id="control-panel">
   <div class="ctrl-grid">
     <div class="ctrl-group">
       <label class="ctrl-label">Taux d'occupation</label>
@@ -933,11 +979,11 @@ tr:hover td{background:#f8fafc}
 </main>
 
 <!-- Scripts — strict order: data → engine → render → charts → app -->
-<script src="js/data.js?v=8"></script>
-<script src="js/engine.js?v=8"></script>
-<script src="js/render.js?v=8"></script>
-<script src="js/charts.js?v=8"></script>
-<script src="js/app.js?v=8"></script>
+<script src="js/data.js?v=9"></script>
+<script src="js/engine.js?v=9"></script>
+<script src="js/render.js?v=9"></script>
+<script src="js/charts.js?v=9"></script>
+<script src="js/app.js?v=9"></script>
 
 </body>
 </html>
