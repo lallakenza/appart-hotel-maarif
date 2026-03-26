@@ -410,6 +410,8 @@ tr:hover td{background:#f8fafc}
 
   /* ─── Charts ─── */
   .chart-box{height:240px}
+  #card-budget .chart-box{display:none}
+  #card-montage{display:none}
 
   /* ─── Tables ─── */
   .table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:0 -12px;padding:0 12px}
@@ -834,7 +836,7 @@ tr:hover td{background:#f8fafc}
     <div class="kpi-card" id="kpi-revpar"><div class="kpi-label">RevPAR</div><div class="kpi-value">–</div><div class="kpi-sub">Revenu / chambre disponible</div><div class="kpi-insight" id="kpi-revpar-insight"></div></div>
   </div>
   <div class="grid-2">
-    <div class="card"><div class="card-title">Répartition du Budget</div><div class="chart-box"><canvas id="chart-budget"></canvas></div>
+    <div class="card" id="card-budget"><div class="card-title">Répartition du Budget</div><div class="chart-box"><canvas id="chart-budget"></canvas></div>
       <table style="margin-top:12px"><tbody>
         <tr><td>Prix terrain</td><td class="num" id="budget-terrain-prix">–</td></tr>
         <tr><td>Frais acquisition (~6.5%)</td><td class="num" id="budget-terrain-frais">–</td></tr>
@@ -849,7 +851,7 @@ tr:hover td{background:#f8fafc}
         <tr><td>Prix / m² terrain</td><td class="num" id="budget-m2">–</td></tr>
       </tbody></table>
     </div>
-    <div class="card"><div class="card-title">Montage Financier</div><div class="chart-box"><canvas id="chart-montage"></canvas></div></div>
+    <div class="card" id="card-montage"><div class="card-title">Montage Financier</div><div class="chart-box"><canvas id="chart-montage"></canvas></div></div>
   </div>
   <div class="card"><div class="card-title">Programme Architectural</div>
     <div class="table-wrap"><table><thead><tr><th>Niveau</th><th>Type</th><th>Surface int.</th><th>Terrasse</th><th>Surface utile</th><th>Position</th><th>Exposition</th><th>Catégorie</th></tr></thead><tbody id="programme-tbody"></tbody></table></div>
@@ -1522,11 +1524,11 @@ tr:hover td{background:#f8fafc}
 </main>
 
 <!-- Scripts — strict order: data → engine → render → charts → app -->
-<script src="js/data.js?v=22"></script>
-<script src="js/engine.js?v=22"></script>
-<script src="js/render.js?v=22"></script>
-<script src="js/charts.js?v=22"></script>
-<script src="js/app.js?v=22"></script>
+<script src="js/data.js?v=23"></script>
+<script src="js/engine.js?v=23"></script>
+<script src="js/render.js?v=23"></script>
+<script src="js/charts.js?v=23"></script>
+<script src="js/app.js?v=23"></script>
 
 </body>
 </html>
