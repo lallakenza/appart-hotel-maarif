@@ -509,6 +509,7 @@ tr:hover td{background:#f8fafc}
       <div class="nav-dropdown">
         <div class="nav-dropdown-item" data-nav="revenus">Revenus & Occupation</div>
         <div class="nav-dropdown-item" data-nav="charges">Charges & Exploitation</div>
+        <div class="nav-dropdown-item" data-nav="capex-opex">CAPEX / OPEX</div>
         <div class="nav-dropdown-item" data-nav="gestion">Gestion propre vs Société</div>
       </div>
     </div>
@@ -926,6 +927,46 @@ tr:hover td{background:#f8fafc}
       </div>
     </div>
     <div class="chart-box"><canvas id="chart-rev-vs-charges"></canvas></div>
+  </div>
+</div>
+
+<!-- ==================== CAPEX / OPEX ==================== -->
+<div data-view="capex-opex" class="hidden">
+  <div class="card">
+    <div class="card-title">CAPEX — Investissement Initial</div>
+    <div class="kpi-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:16px">
+      <div class="kpi-card"><div class="kpi-label">Total CAPEX</div><div class="kpi-value kpi-amber" id="capex-total">–</div><div class="kpi-sub">Investissement total</div></div>
+      <div class="kpi-card"><div class="kpi-label">CAPEX / unité</div><div class="kpi-value" id="capex-par-unite">–</div><div class="kpi-sub">11 unités locatives</div></div>
+      <div class="kpi-card"><div class="kpi-label">CAPEX / m² utile</div><div class="kpi-value" id="capex-par-m2">–</div><div class="kpi-sub" id="capex-m2-sub">–</div></div>
+    </div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Poste CAPEX</th><th class="num">Montant (MAD)</th><th class="num">% Total</th><th>Détail</th></tr></thead>
+      <tbody id="capex-tbody"></tbody>
+    </table></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">OPEX — Charges d'exploitation (An 1 à 3)</div>
+    <div class="kpi-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:16px">
+      <div class="kpi-card"><div class="kpi-label">OPEX An 1</div><div class="kpi-value" id="opex-an1">–</div><div class="kpi-sub" id="opex-an1-sub">–</div></div>
+      <div class="kpi-card"><div class="kpi-label">OPEX An 2</div><div class="kpi-value" id="opex-an2">–</div><div class="kpi-sub" id="opex-an2-sub">–</div></div>
+      <div class="kpi-card"><div class="kpi-label">OPEX An 3</div><div class="kpi-value" id="opex-an3">–</div><div class="kpi-sub" id="opex-an3-sub">–</div></div>
+    </div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Poste OPEX</th><th class="num">An 1</th><th class="num">An 2</th><th class="num">An 3</th><th>Nature</th></tr></thead>
+      <tbody id="opex-tbody"></tbody>
+    </table></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Synthèse CAPEX + OPEX cumulés (3 ans)</div>
+    <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:16px">
+      <div class="kpi-card"><div class="kpi-label">Total décaissé (3 ans)</div><div class="kpi-value kpi-amber" id="synthese-total-3a">–</div><div class="kpi-sub">CAPEX + OPEX cumulés</div></div>
+      <div class="kpi-card"><div class="kpi-label">Total revenus (3 ans)</div><div class="kpi-value kpi-green" id="synthese-rev-3a">–</div><div class="kpi-sub">Revenus nets encaissés</div></div>
+      <div class="kpi-card"><div class="kpi-label">Cash-flow cumulé An 3</div><div class="kpi-value" id="synthese-cf-3a">–</div><div class="kpi-sub">Position de trésorerie</div></div>
+      <div class="kpi-card"><div class="kpi-label">Ratio OPEX / Revenus</div><div class="kpi-value" id="synthese-ratio">–</div><div class="kpi-sub">Efficacité opérationnelle</div></div>
+    </div>
+    <div class="info-box" id="capex-opex-analyse">–</div>
   </div>
 </div>
 
@@ -1528,11 +1569,11 @@ tr:hover td{background:#f8fafc}
 </main>
 
 <!-- Scripts — strict order: data → engine → render → charts → app -->
-<script src="js/data.js?v=25"></script>
-<script src="js/engine.js?v=25"></script>
-<script src="js/render.js?v=25"></script>
-<script src="js/charts.js?v=25"></script>
-<script src="js/app.js?v=25"></script>
+<script src="js/data.js?v=26"></script>
+<script src="js/engine.js?v=26"></script>
+<script src="js/render.js?v=26"></script>
+<script src="js/charts.js?v=26"></script>
+<script src="js/app.js?v=26"></script>
 
 </body>
 </html>

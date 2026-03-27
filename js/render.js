@@ -57,6 +57,7 @@ function render(state) {
   renderSubventions(state);
   renderGoSiyaha(state);
   renderMontages(state);
+  renderCapexOpex(state);
 }
 
 // --- Header badge (dynamic total projet) ---
@@ -1375,6 +1376,169 @@ function renderMontages(S) {
       li.innerHTML = `<a href="${s.url}" target="_blank" style="color:var(--primary)">${s.label}</a>`;
       srcEl.appendChild(li);
     });
+  }
+}
+
+// --- CAPEX / OPEX ---
+function renderCapexOpex(S) {
+  const total = S.budget.totalProjet;
+  const ameub = S.budget.ameublement;
+  const terrainPrix = TERRAIN.prix;
+  const fraisTerrain = terrainPrix * TERRAIN.fraisAcquisition;
+  const terrainTTC = terrainPrix + fraisTerrain;
+  const construction = total - terrainTTC - ameub;
+  const ecoNet = S.budget.ecoEnabled ? S.budget.coutNetEco : 0;
+  const constructionPure = construction - ecoNet;
+
+  // ── CAPEX KPIs ──
+  setText("capex-total", fmtMAD(total));
+  setText("capex-par-unite", fmtMAD(Math.round(total / S.units.nbUnites)));
+  setText("capex-par-m2", fmtNum(Math.round(total / S.units.surfaceUtile)) + " MAD/m²");
+  setText("capex-m2-sub", fmtM2(S.units.surfaceUtile) + " utile");
+
+  // ── CAPEX table ──
+  const capexRows = [
+    { poste: "Terrain", montant: terrainPrix, detail: TERRAIN.surface + " m² × " + fmtNum(Math.round(terrainPrix / TERRAIN.surface)) + " MAD/m²" },
+    { poste: "Frais acquisition (~6,5%)", montant: fraisTerrain, detail: "Notaire, conservation, enregistrement" },
+    { poste: "Terrain tout compris", montant: terrainTTC, detail: "", total: true },
+    { poste: "Construction & aménagement", montant: constructionPure, detail: fmtNum(Math.round(constructionPure / S.units.surfaceInterieureTotale)) + " MAD/m² construit" },
+  ];
+  if (ecoNet > 0) {
+    capexRows.push({ poste: "Éco-investissement Go Siyaha (net)", montant: ecoNet, detail: "Après subvention 40%" });
+  }
+  capexRows.push(
+    { poste: "Ameublement hôtelier", montant: ameub, detail: S.units.nbUnites + " unités × " + fmtNum(Math.round(ameub / S.units.nbUnites)) + " MAD" },
+    { poste: "TOTAL CAPEX", montant: total, detail: "", total: true, grand: true }
+  );
+
+  const capexTbody = document.getElementById("capex-tbody");
+  if (capexTbody) {
+    capexTbody.innerHTML = "";
+    capexRows.forEach(r => {
+      const tr = document.createElement("tr");
+      if (r.grand) tr.style.cssText = "background:#fef3c7;font-weight:700";
+      else if (r.total) tr.style.fontWeight = "600";
+      tr.innerHTML = `
+        <td>${r.poste}</td>
+        <td class="num">${fmtMAD(r.montant)}</td>
+        <td class="num">${r.grand ? "100%" : (r.montant / total * 100).toFixed(1) + "%"}</td>
+        <td style="font-size:.82rem;color:var(--text-sec)">${r.detail}</td>
+      `;
+      capexTbody.appendChild(tr);
+    });
+  }
+
+  // ── OPEX table (An 1, 2, 3) ──
+  const p = S.projections;
+  if (p.length < 3) return;
+
+  const opexItems = [
+    { poste: "Société de gestion (20% CA héberg.)", key: "gestion", nature: "Variable" },
+    { poste: "Salaires (concierge + ménage)", key: "salaires", nature: "Fixe" },
+    { poste: "Eau + Électricité + Internet", key: "utilities", nature: "Semi-variable" },
+    { poste: "Consommables (linge, amenities)", key: "consommables", nature: "Variable" },
+    { poste: "Comptable externe", key: "comptable", nature: "Fixe" },
+    { poste: "Assurance", key: "assurance", nature: "Fixe" },
+    { poste: "Entretien & maintenance", key: "entretien", nature: "Fixe (↑ après 5 ans)" },
+    { poste: "Taxes professionnelles", key: "taxesPro", nature: "Fixe (exo. 5 ans)" },
+    { poste: "Divers & imprévus", key: "divers", nature: "Fixe" },
+  ];
+
+  const opexTbody = document.getElementById("opex-tbody");
+  if (opexTbody) {
+    opexTbody.innerHTML = "";
+    opexItems.forEach(item => {
+      const v1 = p[0].chargesDetail[item.key];
+      const v2 = p[1].chargesDetail[item.key];
+      const v3 = p[2].chargesDetail[item.key];
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${item.poste}</td>
+        <td class="num">${fmtMAD(v1)}</td>
+        <td class="num">${fmtMAD(v2)}</td>
+        <td class="num">${fmtMAD(v3)}</td>
+        <td style="font-size:.78rem;color:var(--text-sec)">${item.nature}</td>
+      `;
+      opexTbody.appendChild(tr);
+    });
+    // Service dette rows
+    for (let yi = 0; yi < 3; yi++) {
+      const yr = p[yi];
+      if (yi === 0) {
+        const trDebt = document.createElement("tr");
+        trDebt.style.cssText = "border-top:2px solid var(--border)";
+        trDebt.innerHTML = `
+          <td><strong>Service dette</strong></td>
+          <td class="num"><strong>${fmtMAD(p[0].debtServiceTotal)}</strong></td>
+          <td class="num"><strong>${fmtMAD(p[1].debtServiceTotal)}</strong></td>
+          <td class="num"><strong>${fmtMAD(p[2].debtServiceTotal)}</strong></td>
+          <td style="font-size:.78rem;color:var(--text-sec)">Tamwilkom + Banque</td>
+        `;
+        opexTbody.appendChild(trDebt);
+        // IS row
+        const trIS = document.createElement("tr");
+        trIS.innerHTML = `
+          <td>Impôt sur les sociétés (IS)</td>
+          <td class="num">${fmtMAD(p[0].is)}</td>
+          <td class="num">${fmtMAD(p[1].is)}</td>
+          <td class="num">${fmtMAD(p[2].is)}</td>
+          <td style="font-size:.78rem;color:var(--text-sec)">Exo. CA devises</td>
+        `;
+        opexTbody.appendChild(trIS);
+      }
+    }
+    // Total OPEX row
+    const totalOpex = (yi) => p[yi].chargesTotal + p[yi].debtServiceTotal + p[yi].is;
+    const trTotal = document.createElement("tr");
+    trTotal.style.cssText = "background:#fef3c7;font-weight:700";
+    trTotal.innerHTML = `
+      <td>TOTAL DÉCAISSEMENTS</td>
+      <td class="num">${fmtMAD(totalOpex(0))}</td>
+      <td class="num">${fmtMAD(totalOpex(1))}</td>
+      <td class="num">${fmtMAD(totalOpex(2))}</td>
+      <td></td>
+    `;
+    opexTbody.appendChild(trTotal);
+  }
+
+  // ── OPEX KPIs ──
+  for (let i = 0; i < 3; i++) {
+    const totalOpexAn = p[i].chargesTotal + p[i].debtServiceTotal + p[i].is;
+    setText("opex-an" + (i + 1), fmtMAD(totalOpexAn));
+    setText("opex-an" + (i + 1) + "-sub", "dont dette " + fmtK(p[i].debtServiceTotal));
+  }
+
+  // ── Synthèse 3 ans ──
+  let opex3a = 0, rev3a = 0;
+  for (let i = 0; i < 3; i++) {
+    opex3a += p[i].chargesTotal + p[i].debtServiceTotal + p[i].is;
+    rev3a += p[i].revTotal;
+  }
+  const total3a = total + opex3a;
+  const cf3a = p[2].cumulCashFlow;
+  setText("synthese-total-3a", fmtMAD(total3a));
+  setText("synthese-rev-3a", fmtMAD(rev3a));
+  const cfEl = document.getElementById("synthese-cf-3a");
+  if (cfEl) {
+    cfEl.textContent = fmtMAD(cf3a);
+    cfEl.style.color = cf3a >= 0 ? "var(--green)" : "var(--red)";
+  }
+  const ratio = rev3a > 0 ? (opex3a / rev3a * 100) : 0;
+  setText("synthese-ratio", ratio.toFixed(0) + "%");
+
+  // Analyse
+  const analyseEl = document.getElementById("capex-opex-analyse");
+  if (analyseEl) {
+    const opexAn1 = p[0].chargesTotal + p[0].debtServiceTotal + p[0].is;
+    const chargeFixe = p[0].chargesDetail.salaires + p[0].chargesDetail.comptable +
+      p[0].chargesDetail.assurance + p[0].chargesDetail.entretien + p[0].chargesDetail.divers;
+    const chargeVar = p[0].chargesDetail.gestion + p[0].chargesDetail.consommables;
+    analyseEl.innerHTML =
+      `<strong>Structure des coûts An 1 :</strong> ` +
+      `Charges fixes : <strong>${fmtMAD(chargeFixe)}</strong> (${(chargeFixe / p[0].chargesTotal * 100).toFixed(0)}%) — ` +
+      `Charges variables : <strong>${fmtMAD(chargeVar)}</strong> (${(chargeVar / p[0].chargesTotal * 100).toFixed(0)}%)<br>` +
+      `Le service de la dette représente <strong>${(p[0].debtServiceTotal / opexAn1 * 100).toFixed(0)}%</strong> des décaissements annuels. ` +
+      `Le point mort se situe à un taux d'occupation d'environ <strong>${Math.ceil((p[0].chargesTotal + p[0].debtServiceTotal) / (p[0].revTotal / SCENARIOS[S.scenario].tauxOccupation) * 100)}%</strong>.`;
   }
 }
 
