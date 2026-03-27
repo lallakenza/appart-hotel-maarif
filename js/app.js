@@ -81,6 +81,8 @@ function applyOverrides() {
 // --- View management ---
 function switchView(view) {
   currentView = view;
+  // Persist view in URL hash for reload
+  history.replaceState(null, "", "#" + view);
   // Auto-collapse control panel
   const panel = document.getElementById("control-panel");
   const ctrlBtn = document.getElementById("ctrl-toggle");
@@ -401,7 +403,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Initial render
   refresh();
-  switchView("overview");
+  // Restore view from URL hash (persist across refresh) or default to overview
+  const hashView = location.hash.replace("#", "");
+  const validViews = Array.from(document.querySelectorAll("[data-view]")).map(el => el.dataset.view);
+  switchView(hashView && validViews.includes(hashView) ? hashView : "overview");
 
   // Stagger KPI animation
   document.querySelectorAll(".kpi-card").forEach((card, i) => {
