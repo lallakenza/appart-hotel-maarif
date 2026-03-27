@@ -971,6 +971,15 @@ function chartAlternatives(S) {
 
 // --- Rendement evolution over 20 years ---
 // ======================== CAPITAL RESTANT DÛ (GRAPH SÉPARÉ) ========================
+// --- CRD Chart: two modes ---
+let _crdMode = "crd"; // "crd" or "service"
+
+function toggleCRDMode(mode) {
+  _crdMode = mode;
+  document.querySelectorAll("[data-crdmode]").forEach(b => b.classList.toggle("active", b.dataset.crdmode === mode));
+  if (_currentState) chartCRD(_currentState);
+}
+
 function chartCRD(S) {
   destroyChart("crd");
   const ctx = document.getElementById("chart-crd")?.getContext("2d");
@@ -978,31 +987,69 @@ function chartCRD(S) {
 
   const proj = S.projections;
   const montantInitial = S.financement.montantAFinancer;
+  const titleEl = document.getElementById("crd-chart-title");
 
-  // Données: année 0 = montant initial, puis projections
-  const labels = ["Début", ...proj.map(p => "An " + p.year)];
-  const crdData = [montantInitial, ...proj.map(p => p.capitalRestantDu)];
-  const serviceData = [0, ...proj.map(p => p.debtServiceTotal)];
+  if (_crdMode === "service") {
+    // === MODE SERVICE DETTE : barres empilées capital/intérêts (TK + BQ) ===
+    if (titleEl) titleEl.textContent = "Service de la Dette — Split Capital / Intérêts";
+    const labels = proj.map(p => "An " + p.year);
 
-  _charts.crd = new Chart(ctx, {
-    type: "bar",
-    data: {
-      labels,
-      datasets: [
-        {
-          label: "Service Dette (annuel)",
-          data: serviceData,
-          backgroundColor: CHART_COLORS.amber + "80",
-          borderColor: CHART_COLORS.amber,
-          borderWidth: 1,
-          borderRadius: 3,
-          yAxisID: "yService",
-          order: 1,
+    _charts.crd = new Chart(ctx, {
+      type: "bar",
+      data: {
+        labels,
+        datasets: [
+          { label: "TK — Capital", data: proj.map(p => p.capitalTK), backgroundColor: "#d4a017", stack: "debt", borderRadius: 0 },
+          { label: "TK — Intérêts", data: proj.map(p => p.interetsTK), backgroundColor: "#f5d679", stack: "debt", borderRadius: 0 },
+          { label: "BQ — Capital", data: proj.map(p => p.capitalBQ), backgroundColor: "#1e3a5f", stack: "debt", borderRadius: 0 },
+          { label: "BQ — Intérêts", data: proj.map(p => p.interetsBQ), backgroundColor: "#6b9fd4", stack: "debt", borderRadius: { topLeft: 3, topRight: 3 } },
+        ],
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        scales: {
+          x: { stacked: true },
+          y: { stacked: true, beginAtZero: true, ticks: { callback: v => fmtK(v) }, grid: { color: 'rgba(0,0,0,0.05)' } },
         },
-        {
+        plugins: {
+          legend: { labels: { boxWidth: 12, font: { size: 11 } } },
+          tooltip: {
+            enabled: false,
+            external: (ctx) => externalTooltip(ctx, (idx) => {
+              const p = proj[idx];
+              if (!p) return "";
+              const totalService = p.debtServiceTotal;
+              const totalInterets = p.interetsTK + p.interetsBQ;
+              const totalCapital = p.capitalTK + p.capitalBQ;
+              const isDiffTK = idx < TAMWILKOM.differeAns;
+              const isDiffBQ = idx < BANQUE_CLASSIQUE.differeAns;
+              return `<div class="ctt-title">An ${p.year} — Service de la dette</div>
+                <div class="ctt-row" style="color:#d4a017"><span>TK Capital</span><span class="ctt-val">${fmtMAD(p.capitalTK)}</span></div>
+                <div class="ctt-row" style="color:#f5d679"><span>TK Intérêts${isDiffTK ? ' (différé)' : ''}</span><span class="ctt-val">${fmtMAD(p.interetsTK)}</span></div>
+                <div class="ctt-row" style="color:#1e3a5f"><span>BQ Capital</span><span class="ctt-val">${fmtMAD(p.capitalBQ)}</span></div>
+                <div class="ctt-row" style="color:#6b9fd4"><span>BQ Intérêts${isDiffBQ ? ' (différé)' : ''}</span><span class="ctt-val">${fmtMAD(p.interetsBQ)}</span></div>
+                <div class="ctt-divider"></div>
+                <div class="ctt-row ctt-total"><span>Total</span><span class="ctt-val">${fmtMAD(totalService)}</span></div>
+                <div class="ctt-row ctt-sub"><span>dont capital</span><span class="ctt-val">${fmtMAD(totalCapital)}</span></div>
+                <div class="ctt-row ctt-sub"><span>dont intérêts</span><span class="ctt-val" style="color:var(--muted)">${fmtMAD(totalInterets)}</span></div>`;
+            })
+          }
+        }
+      }
+    });
+  } else {
+    // === MODE CRD : courbe du capital restant dû ===
+    if (titleEl) titleEl.textContent = "Capital Restant Dû";
+    const labels = ["Début", ...proj.map(p => "An " + p.year)];
+    const crdData = [montantInitial, ...proj.map(p => p.capitalRestantDu)];
+
+    _charts.crd = new Chart(ctx, {
+      type: "line",
+      data: {
+        labels,
+        datasets: [{
           label: "Capital Restant Dû",
           data: crdData,
-          type: "line",
           borderColor: CHART_COLORS.red,
           backgroundColor: "rgba(220,38,38,0.08)",
           fill: true,
@@ -1012,54 +1059,43 @@ function chartCRD(S) {
           pointBorderColor: "#fff",
           pointBorderWidth: 2,
           borderWidth: 3,
-          yAxisID: "y",
-          order: 0,
-        },
-      ],
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      scales: {
-        y: {
-          beginAtZero: true,
-          ticks: { callback: v => fmtK(v) },
-          grid: { color: 'rgba(0,0,0,0.05)' },
-          title: { display: true, text: "Capital restant dû", font: { size: 11 } },
-        },
-        yService: {
-          display: true,
-          position: "right",
-          beginAtZero: true,
-          ticks: { callback: v => fmtK(v), color: CHART_COLORS.amber + "99" },
-          grid: { drawOnChartArea: false },
-          title: { display: true, text: "Service dette / an", color: CHART_COLORS.amber + "99", font: { size: 11 } },
-        },
+        }],
       },
-      plugins: {
-        tooltip: {
-          enabled: false,
-          external: (ctx) => externalTooltip(ctx, (idx) => {
-            if (idx === 0) {
-              return `<div class="ctt-title">Début — Financement</div>
-                <div class="ctt-row"><span>Montant à financer</span><span class="ctt-val">${fmtMAD(montantInitial)}</span></div>
-                <div class="ctt-row ctt-sub"><span>Tamwilkom</span><span class="ctt-val">${fmtMAD(S.financement.montantTamwilkom)}</span></div>
-                <div class="ctt-row ctt-sub"><span>Banque classique</span><span class="ctt-val">${fmtMAD(S.financement.montantBanque)}</span></div>`;
-            }
-            const p = proj[idx - 1];
-            const pctRemb = 1 - p.capitalRestantDu / montantInitial;
-            return `<div class="ctt-title">An ${p.year} — Dette</div>
-              <div class="ctt-row" style="color:${CHART_COLORS.red}"><span><strong>Capital restant dû</strong></span><span class="ctt-val"><strong>${fmtMAD(p.capitalRestantDu)}</strong></span></div>
-              <div class="ctt-row ctt-sub"><span>% remboursé</span><span class="ctt-val">${fmtPct(pctRemb, 0)}</span></div>
-              <div class="ctt-divider"></div>
-              <div class="ctt-row"><span>Service dette annuel</span><span class="ctt-val">${fmtMAD(p.debtServiceTotal)}</span></div>
-              <div class="ctt-row ctt-sub"><span>dont intérêts</span><span class="ctt-val">${fmtMAD(p.interetsTK + p.interetsBQ)}</span></div>
-              <div class="ctt-row ctt-sub"><span>dont capital</span><span class="ctt-val">${fmtMAD(p.capitalTK + p.capitalBQ)}</span></div>`;
-          })
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: { callback: v => fmtK(v) },
+            grid: { color: 'rgba(0,0,0,0.05)' },
+          },
+        },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            enabled: false,
+            external: (ctx) => externalTooltip(ctx, (idx) => {
+              if (idx === 0) {
+                return `<div class="ctt-title">Début — Financement</div>
+                  <div class="ctt-row"><span>Montant à financer</span><span class="ctt-val">${fmtMAD(montantInitial)}</span></div>
+                  <div class="ctt-row ctt-sub"><span>Tamwilkom</span><span class="ctt-val">${fmtMAD(S.financement.montantTamwilkom)}</span></div>
+                  <div class="ctt-row ctt-sub"><span>Banque classique</span><span class="ctt-val">${fmtMAD(S.financement.montantBanque)}</span></div>`;
+              }
+              const p = proj[idx - 1];
+              const pctRemb = 1 - p.capitalRestantDu / montantInitial;
+              return `<div class="ctt-title">An ${p.year} — Capital Restant Dû</div>
+                <div class="ctt-row" style="color:${CHART_COLORS.red}"><span><strong>CRD</strong></span><span class="ctt-val"><strong>${fmtMAD(p.capitalRestantDu)}</strong></span></div>
+                <div class="ctt-row ctt-sub"><span>% remboursé</span><span class="ctt-val">${fmtPct(pctRemb, 0)}</span></div>
+                <div class="ctt-divider"></div>
+                <div class="ctt-row"><span>Service dette An ${p.year}</span><span class="ctt-val">${fmtMAD(p.debtServiceTotal)}</span></div>
+                <div class="ctt-row ctt-sub"><span>dont intérêts</span><span class="ctt-val">${fmtMAD(p.interetsTK + p.interetsBQ)}</span></div>
+                <div class="ctt-row ctt-sub"><span>dont capital</span><span class="ctt-val">${fmtMAD(p.capitalTK + p.capitalBQ)}</span></div>`;
+            })
+          }
         }
       }
-    }
-  });
+    });
+  }
 }
 
 function chartRendementEvolution(S) {

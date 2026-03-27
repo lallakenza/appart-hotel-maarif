@@ -1214,9 +1214,13 @@ tr:hover td{background:#f8fafc}
     <div class="chart-box"><canvas id="chart-cashflow"></canvas></div>
   </div>
 
-  <!-- Capital Restant Dû -->
+  <!-- Capital Restant Dû / Service Dette -->
   <div class="card">
-    <div class="card-title">Capital Restant Dû &amp; Service de Dette</div>
+    <div class="card-title" id="crd-chart-title">Capital Restant Dû</div>
+    <div style="display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap">
+      <button class="cf-filter-btn active" data-crdmode="crd" onclick="toggleCRDMode('crd')">Capital Restant Dû</button>
+      <button class="cf-filter-btn" data-crdmode="service" onclick="toggleCRDMode('service')">Service Dette (split)</button>
+    </div>
     <div class="chart-box"><canvas id="chart-crd"></canvas></div>
   </div>
 
@@ -1695,11 +1699,11 @@ tr:hover td{background:#f8fafc}
 </main>
 
 <!-- Scripts — strict order: data → engine → render → charts → app -->
-<script src="js/data.js?v=39"></script>
-<script src="js/engine.js?v=39"></script>
-<script src="js/render.js?v=39"></script>
-<script src="js/charts.js?v=39"></script>
-<script src="js/app.js?v=39"></script>
+<script src="js/data.js?v=40"></script>
+<script src="js/engine.js?v=40"></script>
+<script src="js/render.js?v=40"></script>
+<script src="js/charts.js?v=40"></script>
+<script src="js/app.js?v=40"></script>
 
 </body>
 </html>

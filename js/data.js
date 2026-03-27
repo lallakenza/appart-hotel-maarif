@@ -392,6 +392,9 @@ const CHARGES = {
 // Délai réponse banque : 21 jours ouvrables, versement Tamwilcom sous 5 jours
 // Projet min : 1 MDH | Versement par tranches selon avancement de l'investissement
 // ATTENTION : programme historiquement sous-performant (48 dossiers validés entre 2002-2022)
+// STRATÉGIE : MDM Invest sera utilisé comme fonds de roulement (réserve trésorerie)
+// et non comme réduction de dette. Les ~700K MAD seront le coussin de sécurité
+// pour absorber le ramp-up et la saisonnalité des premières années.
 const MDM_INVEST = {
   tauxSubvention: 0.10,
   plafond: 5_000_000,
