@@ -54,7 +54,9 @@ function compute(scenario) {
   const apportTerrain = coutTerrain; // terrain + frais = apport en nature
 
   // --- Montant à financer ---
-  const montantAFinancer = totalProjet - subventionMDM - apportTerrain;
+  // MDM Invest est remboursée à l'investisseur MRE, PAS déduite du financement bancaire
+  // La banque finance sur la base du coût brut - apport terrain
+  const montantAFinancer = totalProjet - apportTerrain;
 
   // --- Répartition 50/50 Tamwilkom + Banque classique ---
   const montantTamwilkom = Math.min(
@@ -80,10 +82,11 @@ function compute(scenario) {
   const coutTotalBQ = annuiteBQ * BANQUE_CLASSIQUE.dureeAns;
 
   // --- Montage financier (pourcentages) ---
+  // MDM n'est PAS dans le montage : elle est remboursée à l'investisseur après coup
   const pctApport = apportTerrain / totalProjet;
   const pctTamwilkom = montantTamwilkom / totalProjet;
   const pctBanque = montantBanque / totalProjet;
-  const pctSubvention = subventionMDM / totalProjet;
+  const pctMDM = subventionMDM / totalProjet; // pour info seulement
 
   // --- Nuitées ---
   const nuiteesParAn = nbUnites * 365 * occ;
@@ -528,7 +531,7 @@ function compute(scenario) {
       montantAFinancer,
       montantTamwilkom, mensualiteTK, annuiteTK, interetsDiffereTK, coutTotalTK,
       montantBanque, mensualiteBQ, annuiteBQ, coutTotalBQ,
-      pctApport, pctTamwilkom, pctBanque, pctSubvention,
+      pctApport, pctTamwilkom, pctBanque, pctMDM,
     },
     kpi: {
       rendementBrut, rendementNet, rendementNetApport, revpar, coutParNuitee,

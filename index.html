@@ -848,7 +848,9 @@ tr:hover td{background:#f8fafc}
           <td style="padding-left:12px"><span style="color:#16a34a">🌿</span> Éco-investissement (<span id="budget-eco-invest">–</span>)<br><small style="color:#16a34a">Subvention Go Siyaha 40% : <span id="budget-eco-subvention">–</span></small></td>
           <td class="num" id="budget-eco-net" style="color:#16a34a">–</td>
         </tr>
-        <tr class="total-row"><td><strong>Total Projet TTC</strong></td><td class="num" id="budget-total">–</td></tr>
+        <tr class="total-row"><td><strong>Total Projet</strong></td><td class="num" id="budget-total-brut">–</td></tr>
+        <tr style="color:#2563eb;font-style:italic"><td>↳ Remboursement MDM Invest (10%)*</td><td class="num" id="budget-mdm">–</td></tr>
+        <tr class="total-row" style="background:#eff6ff"><td><strong>Coût Net Investisseur*</strong></td><td class="num" id="budget-total">–</td></tr>
         <tr><td>Prix / m² terrain</td><td class="num" id="budget-m2">–</td></tr>
       </tbody></table>
     </div>
@@ -982,6 +984,7 @@ tr:hover td{background:#f8fafc}
   <div class="card">
     <div class="card-title">Répartition du Financement</div>
     <div class="progress-bar" id="fin-progress"></div>
+    <div id="fin-mdm-note" style="margin-top:10px"></div>
   </div>
 
   <div class="card">
@@ -1088,6 +1091,11 @@ tr:hover td{background:#f8fafc}
         <div class="toggle-group">
           <button class="toggle-btn cf-period-btn active" data-mode="annual" onclick="toggleCFPeriod(false)">Annuel</button>
           <button class="toggle-btn cf-period-btn" data-mode="monthly" onclick="toggleCFPeriod(true)">Mensuel</button>
+        </div>
+        <div class="toggle-group">
+          <button class="toggle-btn cf-horizon-btn" data-horizon="5" onclick="toggleCFHorizon(5)">5 ans</button>
+          <button class="toggle-btn cf-horizon-btn" data-horizon="10" onclick="toggleCFHorizon(10)">10 ans</button>
+          <button class="toggle-btn cf-horizon-btn active" data-horizon="20" onclick="toggleCFHorizon(20)">20 ans</button>
         </div>
         <div class="toggle-group">
           <button class="toggle-btn cf-filter-btn active" data-filter="all" onclick="toggleCFFilter('all')">Tout</button>
@@ -1573,11 +1581,11 @@ tr:hover td{background:#f8fafc}
 </main>
 
 <!-- Scripts — strict order: data → engine → render → charts → app -->
-<script src="js/data.js?v=27"></script>
-<script src="js/engine.js?v=27"></script>
-<script src="js/render.js?v=27"></script>
-<script src="js/charts.js?v=27"></script>
-<script src="js/app.js?v=27"></script>
+<script src="js/data.js?v=28"></script>
+<script src="js/engine.js?v=28"></script>
+<script src="js/render.js?v=28"></script>
+<script src="js/charts.js?v=28"></script>
+<script src="js/app.js?v=28"></script>
 
 </body>
 </html>

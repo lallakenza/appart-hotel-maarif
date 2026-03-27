@@ -130,10 +130,10 @@ function chartMontage(S) {
   _charts.montage = new Chart(ctx, {
     type: "doughnut",
     data: {
-      labels: ["Apport (Terrain)", "Tamwilkom", "Banque classique", "Subvention MDM"],
+      labels: ["Apport (Terrain)", "Tamwilkom", "Banque classique"],
       datasets: [{
-        data: [S.financement.apportTerrain, S.financement.montantTamwilkom, S.financement.montantBanque, S.financement.subventionMDM],
-        backgroundColor: [CHART_COLORS.primary, CHART_COLORS.gold, CHART_COLORS.primaryLight, CHART_COLORS.green]
+        data: [S.financement.apportTerrain, S.financement.montantTamwilkom, S.financement.montantBanque],
+        backgroundColor: [CHART_COLORS.primary, CHART_COLORS.gold, CHART_COLORS.primaryLight]
       }]
     },
     options: {
@@ -401,13 +401,20 @@ function toggleDebtPeriod(monthly) {
   if (currentState) chartDebtService(currentState);
 }
 
-// --- Cash-flow with RICH TOOLTIP, MONTHLY TOGGLE & FILTER ---
+// --- Cash-flow with RICH TOOLTIP, MONTHLY TOGGLE, FILTER & HORIZON ---
 let _cfMonthly = false;
 let _cfFilter = "all"; // "all", "revenus", "charges"
+let _cfHorizon = 20; // 5, 10, or 20 years
 
 function toggleCFPeriod(monthly) {
   _cfMonthly = monthly;
   document.querySelectorAll(".cf-period-btn").forEach(b => b.classList.toggle("active", (b.dataset.mode === "monthly") === monthly));
+  if (_currentState) chartCashFlow(_currentState);
+}
+
+function toggleCFHorizon(years) {
+  _cfHorizon = years;
+  document.querySelectorAll(".cf-horizon-btn").forEach(b => b.classList.toggle("active", parseInt(b.dataset.horizon) === years));
   if (_currentState) chartCashFlow(_currentState);
 }
 
@@ -426,12 +433,12 @@ function chartCashFlow(S) {
 
   // --- Filter mode: show only revenus or charges breakdown ---
   if (_cfFilter === "revenus") {
-    if (titleEl) titleEl.textContent = _cfMonthly ? "Détail Revenus — Mensuel (An 1)" : "Détail Revenus sur " + PROJECTION_YEARS + " ans";
+    if (titleEl) titleEl.textContent = _cfMonthly ? "Détail Revenus — Mensuel (An 1)" : "Détail Revenus sur " + _cfHorizon + " ans";
     _buildCFRevenusChart(ctx, S);
     return;
   }
   if (_cfFilter === "charges") {
-    if (titleEl) titleEl.textContent = _cfMonthly ? "Détail Charges — Mensuel (An 1)" : "Détail Charges sur " + PROJECTION_YEARS + " ans";
+    if (titleEl) titleEl.textContent = _cfMonthly ? "Détail Charges — Mensuel (An 1)" : "Détail Charges sur " + _cfHorizon + " ans";
     _buildCFChargesChart(ctx, S);
     return;
   }
@@ -441,33 +448,34 @@ function chartCashFlow(S) {
     if (titleEl) titleEl.textContent = "Cash-Flow Net — Moyenne Mensuelle par Année";
     _buildCFMonthlyChart(ctx, S);
   } else {
-    if (titleEl) titleEl.textContent = "Cash-Flow Net et Cumul sur " + PROJECTION_YEARS + " ans";
+    if (titleEl) titleEl.textContent = "Cash-Flow Net et Cumul sur " + _cfHorizon + " ans";
     _buildCFAnnualChart(ctx, S);
   }
 }
 
 function _buildCFAnnualChart(ctx, S) {
+  const proj = S.projections.slice(0, _cfHorizon);
   _charts.cashflow = new Chart(ctx, {
     type: "bar",
     data: {
-      labels: S.projections.map(p => "An " + p.year),
+      labels: proj.map(p => "An " + p.year),
       datasets: [
         {
           label: "Cash-Flow Net",
-          data: S.projections.map(p => p.cashFlowNet),
-          backgroundColor: S.projections.map(p => p.cashFlowNet >= 0 ? CHART_COLORS.green : CHART_COLORS.red),
+          data: proj.map(p => p.cashFlowNet),
+          backgroundColor: proj.map(p => p.cashFlowNet >= 0 ? CHART_COLORS.green : CHART_COLORS.red),
           borderRadius: 4,
         },
         {
           label: "Cumul",
-          data: S.projections.map(p => p.cumulCashFlow),
+          data: proj.map(p => p.cumulCashFlow),
           type: "line",
           borderColor: CHART_COLORS.primary,
           backgroundColor: "rgba(30,58,95,0.06)",
           fill: true,
           tension: 0.3,
           pointRadius: 5,
-          pointBackgroundColor: S.projections.map(p => p.cumulCashFlow >= 0 ? CHART_COLORS.green : CHART_COLORS.red),
+          pointBackgroundColor: proj.map(p => p.cumulCashFlow >= 0 ? CHART_COLORS.green : CHART_COLORS.red),
           pointBorderColor: "#fff",
           pointBorderWidth: 2,
           order: -1,
@@ -486,7 +494,7 @@ function _buildCFAnnualChart(ctx, S) {
         tooltip: {
           enabled: false,
           external: (ctx) => externalTooltip(ctx, (idx) => {
-            const p = S.projections[idx];
+            const p = proj[idx];
             const rdtApport = S.financement.apportTerrain > 0 ? p.cashFlowNet / S.financement.apportTerrain : 0;
             return `<div class="ctt-title">An ${p.year} — Cash-Flow</div>
               <div class="ctt-row"><span>Revenus nets</span><span class="ctt-val">${fmtMAD(p.revTotal)}</span></div>
@@ -508,8 +516,9 @@ function _buildCFAnnualChart(ctx, S) {
 }
 
 function _buildCFMonthlyChart(ctx, S) {
-  const labels = S.projections.map(p => "An " + p.year);
-  const monthlyAvg = S.projections.map(p => p.cashFlowNet / 12);
+  const mProj = S.projections.slice(0, _cfHorizon);
+  const labels = mProj.map(p => "An " + p.year);
+  const monthlyAvg = mProj.map(p => p.cashFlowNet / 12);
 
   _charts.cashflow = new Chart(ctx, {
     type: "bar",
@@ -524,14 +533,14 @@ function _buildCFMonthlyChart(ctx, S) {
         },
         {
           label: "CF Net Annuel",
-          data: S.projections.map(p => p.cashFlowNet),
+          data: mProj.map(p => p.cashFlowNet),
           type: "line",
           borderColor: CHART_COLORS.primary,
           backgroundColor: "rgba(30,58,95,0.06)",
           fill: true,
           tension: 0.3,
           pointRadius: 4,
-          pointBackgroundColor: S.projections.map(p => p.cashFlowNet >= 0 ? CHART_COLORS.green : CHART_COLORS.red),
+          pointBackgroundColor: mProj.map(p => p.cashFlowNet >= 0 ? CHART_COLORS.green : CHART_COLORS.red),
           pointBorderColor: "#fff",
           pointBorderWidth: 2,
           yAxisID: "y1",
@@ -560,7 +569,7 @@ function _buildCFMonthlyChart(ctx, S) {
         tooltip: {
           enabled: false,
           external: (ctx) => externalTooltip(ctx, (idx) => {
-            const p = S.projections[idx];
+            const p = mProj[idx];
             if (!p) return "";
             const mensuel = p.cashFlowNet / 12;
             const revMensuel = p.revTotal / 12;
@@ -613,21 +622,22 @@ function _buildCFRevenusChart(ctx, S) {
       })
     });
   } else {
-    // Annual revenus breakdown over 10 years
+    // Annual revenus breakdown with horizon
+    const revProj = S.projections.slice(0, _cfHorizon);
     _charts.cashflow = new Chart(ctx, {
       type: "bar",
       data: {
-        labels: S.projections.map(p => "An " + p.year),
+        labels: revProj.map(p => "An " + p.year),
         datasets: [
-          { label: "Studios", data: S.projections.map(p => p.revStudios), backgroundColor: CHART_COLORS.primary, borderRadius: 4, stack: "rev" },
-          { label: "Lofts", data: S.projections.map(p => p.revLofts), backgroundColor: CHART_COLORS.primaryLight, borderRadius: 4, stack: "rev" },
-          { label: "Loyer commercial", data: S.projections.map(p => p.revCommercial), backgroundColor: CHART_COLORS.gold, borderRadius: 4, stack: "rev" },
-          { label: "Commissions", data: S.projections.map(p => -p.commissions), backgroundColor: CHART_COLORS.red, borderRadius: 4, stack: "rev" },
-          { label: "Revenu net total", data: S.projections.map(p => p.revTotal), type: "line", borderColor: CHART_COLORS.green, tension: 0.3, pointRadius: 4, pointBackgroundColor: CHART_COLORS.green, pointBorderColor: "#fff", pointBorderWidth: 2, fill: false, order: -1 },
+          { label: "Studios", data: revProj.map(p => p.revStudios), backgroundColor: CHART_COLORS.primary, borderRadius: 4, stack: "rev" },
+          { label: "Lofts", data: revProj.map(p => p.revLofts), backgroundColor: CHART_COLORS.primaryLight, borderRadius: 4, stack: "rev" },
+          { label: "Loyer commercial", data: revProj.map(p => p.revCommercial), backgroundColor: CHART_COLORS.gold, borderRadius: 4, stack: "rev" },
+          { label: "Commissions", data: revProj.map(p => -p.commissions), backgroundColor: CHART_COLORS.red, borderRadius: 4, stack: "rev" },
+          { label: "Revenu net total", data: revProj.map(p => p.revTotal), type: "line", borderColor: CHART_COLORS.green, tension: 0.3, pointRadius: 4, pointBackgroundColor: CHART_COLORS.green, pointBorderColor: "#fff", pointBorderWidth: 2, fill: false, order: -1 },
         ]
       },
       options: _cfFilterChartOptions("Détail revenus annuels", (idx) => {
-        const p = S.projections[idx];
+        const p = revProj[idx];
         return `<div class="ctt-title">An ${p.year} — Revenus</div>
           <div class="ctt-row"><span>Studios</span><span class="ctt-val">${fmtMAD(p.revStudios)}</span></div>
           <div class="ctt-row"><span>Lofts</span><span class="ctt-val">${fmtMAD(p.revLofts)}</span></div>
@@ -672,21 +682,22 @@ function _buildCFChargesChart(ctx, S) {
       })
     });
   } else {
+    const chProj = S.projections.slice(0, _cfHorizon);
     _charts.cashflow = new Chart(ctx, {
       type: "bar",
       data: {
-        labels: S.projections.map(p => "An " + p.year),
+        labels: chProj.map(p => "An " + p.year),
         datasets: [
-          { label: "Gestion", data: S.projections.map(p => p.chargesDetail.gestion), backgroundColor: CHART_COLORS.primary, borderRadius: 4, stack: "ch" },
-          { label: "Salaires", data: S.projections.map(p => p.chargesDetail.salaires), backgroundColor: CHART_COLORS.red, borderRadius: 4, stack: "ch" },
-          { label: "Utilities", data: S.projections.map(p => p.chargesDetail.utilities), backgroundColor: CHART_COLORS.amber, borderRadius: 4, stack: "ch" },
-          { label: "Assurance", data: S.projections.map(p => p.chargesDetail.assurance), backgroundColor: CHART_COLORS.teal, borderRadius: 4, stack: "ch" },
-          { label: "Autres", data: S.projections.map(p => p.chargesDetail.entretien + p.chargesDetail.comptable + p.chargesDetail.consommables + p.chargesDetail.divers), backgroundColor: CHART_COLORS.gray, borderRadius: 4, stack: "ch" },
-          { label: "Total charges", data: S.projections.map(p => p.chargesTotal), type: "line", borderColor: CHART_COLORS.red, tension: 0.3, pointRadius: 4, pointBackgroundColor: CHART_COLORS.red, pointBorderColor: "#fff", pointBorderWidth: 2, fill: false, order: -1 },
+          { label: "Gestion", data: chProj.map(p => p.chargesDetail.gestion), backgroundColor: CHART_COLORS.primary, borderRadius: 4, stack: "ch" },
+          { label: "Salaires", data: chProj.map(p => p.chargesDetail.salaires), backgroundColor: CHART_COLORS.red, borderRadius: 4, stack: "ch" },
+          { label: "Utilities", data: chProj.map(p => p.chargesDetail.utilities), backgroundColor: CHART_COLORS.amber, borderRadius: 4, stack: "ch" },
+          { label: "Assurance", data: chProj.map(p => p.chargesDetail.assurance), backgroundColor: CHART_COLORS.teal, borderRadius: 4, stack: "ch" },
+          { label: "Autres", data: chProj.map(p => p.chargesDetail.entretien + p.chargesDetail.comptable + p.chargesDetail.consommables + p.chargesDetail.divers), backgroundColor: CHART_COLORS.gray, borderRadius: 4, stack: "ch" },
+          { label: "Total charges", data: chProj.map(p => p.chargesTotal), type: "line", borderColor: CHART_COLORS.red, tension: 0.3, pointRadius: 4, pointBackgroundColor: CHART_COLORS.red, pointBorderColor: "#fff", pointBorderWidth: 2, fill: false, order: -1 },
         ]
       },
       options: _cfFilterChartOptions("Détail charges annuelles", (idx) => {
-        const p = S.projections[idx];
+        const p = chProj[idx];
         const ch = p.chargesDetail;
         return `<div class="ctt-title">An ${p.year} — Charges</div>
           <div class="ctt-row"><span>Gestion</span><span class="ctt-val">${fmtMAD(ch.gestion)}</span></div>

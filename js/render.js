@@ -426,6 +426,8 @@ function renderBudget(S) {
   // Dynamic ameublement label
   const ameubLabel = document.getElementById("budget-ameublement-label");
   if (ameubLabel) ameubLabel.textContent = `dont ameublement (${S.units.nbUnites} × ${fmtNum(BUDGET.ameublementParUnite / 1000)}K)`;
+  setText("budget-total-brut", fmtMAD(S.budget.totalProjet));
+  setText("budget-mdm", fmtMAD(S.financement.subventionMDM));
   setText("budget-total", fmtMAD(S.budget.investissementNet) + "*");
   setText("budget-m2", fmtNum(S.terrain.coutM2Terrain) + " MAD/m²");
 
@@ -642,18 +644,23 @@ function renderFinancement(S) {
   setText("fin-bq-cout",        fmtMAD(F.coutTotalBQ));
 
   // Total
-  setText("fin-total-projet",   fmtMAD(S.budget.investissementNet) + "*");
+  setText("fin-total-projet",   fmtMAD(S.budget.totalProjet));
   setText("fin-montant-financer", fmtMAD(F.montantAFinancer));
 
-  // Progress bar
+  // Progress bar — MDM n'est PAS dans le montage bancaire (remboursée à l'investisseur)
   const bar = document.getElementById("fin-progress");
   if (bar) {
     bar.innerHTML = `
       <div class="progress-seg" style="width:${F.pctApport * 100}%;background:var(--primary)" title="Apport terrain">Terrain ${fmtPct(F.pctApport, 0)}</div>
       <div class="progress-seg" style="width:${F.pctTamwilkom * 100}%;background:var(--gold)" title="Tamwilkom">TK ${fmtPct(F.pctTamwilkom, 0)}</div>
       <div class="progress-seg" style="width:${F.pctBanque * 100}%;background:var(--primary-light)" title="Banque classique">Banque ${fmtPct(F.pctBanque, 0)}</div>
-      <div class="progress-seg" style="width:${F.pctSubvention * 100}%;background:var(--green)" title="Subvention MDM Invest">MDM ${fmtPct(F.pctSubvention, 0)}</div>
     `;
+  }
+
+  // MDM note séparée
+  const mdmNote = document.getElementById("fin-mdm-note");
+  if (mdmNote) {
+    mdmNote.innerHTML = '<span style="color:#2563eb;font-size:.82rem">ℹ️ Subvention MDM Invest : <strong>' + fmtMAD(F.subventionMDM) + '</strong> remboursée directement à l\'investisseur MRE* — réduit le coût net à <strong>' + fmtMAD(S.budget.investissementNet) + '</strong></span>';
   }
 
   // --- Feedback & Alertes MDM ---
@@ -1391,12 +1398,11 @@ function renderCapexOpex(S) {
   const ecoNet = S.budget.ecoEnabled ? S.budget.coutNetEco : 0;
   const constructionPure = construction - ecoNet;
 
-  // ── CAPEX KPIs (net après MDM) ──
-  const netInvest = S.budget.investissementNet;
-  setText("capex-total", fmtMAD(netInvest) + "*");
-  setText("capex-par-unite", fmtMAD(Math.round(netInvest / S.units.nbUnites)));
-  setText("capex-par-m2", fmtNum(Math.round(netInvest / S.units.surfaceUtile)) + " MAD/m²");
-  setText("capex-m2-sub", fmtM2(S.units.surfaceUtile) + " utile — après MDM*");
+  // ── CAPEX KPIs (brut — investissement total) ──
+  setText("capex-total", fmtMAD(total));
+  setText("capex-par-unite", fmtMAD(Math.round(total / S.units.nbUnites)));
+  setText("capex-par-m2", fmtNum(Math.round(total / S.units.surfaceUtile)) + " MAD/m²");
+  setText("capex-m2-sub", fmtM2(S.units.surfaceUtile) + " utile");
 
   // ── CAPEX table ──
   const capexRows = [
@@ -1413,15 +1419,16 @@ function renderCapexOpex(S) {
     { poste: "TOTAL CAPEX BRUT", montant: total, detail: "", total: true, grand: true }
   );
 
-  // Financement : subvention MDM + apport terrain
+  // Financement : apport terrain puis dette bancaire
   const subMDM = S.financement.subventionMDM;
   const apportTerrain = S.financement.apportTerrain;
   const aFinancer = S.financement.montantAFinancer;
   capexRows.push(
     { poste: "", montant: null, detail: "", separator: true },
-    { poste: "Subvention MDM Invest (10%)", montant: -subMDM, detail: "Prime non remboursable — versée au MRE", green: true },
     { poste: "Apport en nature (terrain)", montant: -apportTerrain, detail: "Terrain + frais comme apport", green: true },
-    { poste: "RESTE À FINANCER", montant: aFinancer, detail: "Tamwilkom + Banque classique", total: true, grand: true }
+    { poste: "RESTE À FINANCER", montant: aFinancer, detail: "Tamwilkom + Banque classique", total: true, grand: true },
+    { poste: "", montant: null, detail: "", separator: true },
+    { poste: "Remboursement MDM Invest (10%)*", montant: subMDM, detail: "Versée à l'investisseur MRE — réduit le coût net", blue: true }
   );
 
   const capexTbody = document.getElementById("capex-tbody");
@@ -1438,6 +1445,7 @@ function renderCapexOpex(S) {
       if (r.grand) tr.style.cssText = "background:#fef3c7;font-weight:700";
       else if (r.total) tr.style.fontWeight = "600";
       if (r.green) tr.style.color = "var(--green)";
+      if (r.blue) tr.style.cssText = "color:#2563eb;background:#eff6ff;font-style:italic";
       const montantStr = r.montant < 0
         ? "(" + fmtMAD(Math.abs(r.montant)) + ")"
         : fmtMAD(r.montant);
