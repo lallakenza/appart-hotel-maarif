@@ -348,7 +348,7 @@ function chartDebtService(S) {
   } else {
     datasets = [
       { label: "Tamwilkom (2,5%)", data: dp.map(p => p.debtTK / div), backgroundColor: CHART_COLORS.gold, stack: "debt" },
-      { label: "Banque (~5,25%)",   data: dp.map(p => p.debtBQ / div), backgroundColor: CHART_COLORS.primaryLight, stack: "debt" },
+      { label: "Banque (" + (BANQUE_CLASSIQUE.tauxAnnuel * 100).toFixed(2) + "%)", data: dp.map(p => p.debtBQ / div), backgroundColor: CHART_COLORS.primaryLight, stack: "debt" },
       { label: "EBITDA", data: dp.map(p => p.ebitda / div), type: "line", borderColor: CHART_COLORS.green, backgroundColor: "transparent", tension: 0.3, pointRadius: 3, borderDash: [5, 3], order: -1 },
     ];
   }

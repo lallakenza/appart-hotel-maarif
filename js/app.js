@@ -38,6 +38,7 @@ const ADV_FIELDS = [
   { id: "croissance",   target: "REVENUE_ASSUMPTIONS",  key: "croissanceTarifs",         div: 100 },
   // Financement
   { id: "dureeBQ",      target: "BANQUE_CLASSIQUE",     key: "dureeAns",                 div: 1 },
+  { id: "differeBQ",   target: "BANQUE_CLASSIQUE",     key: "differeAns",               div: 1 },
   { id: "tauxTK",       target: "TAMWILKOM",            key: "tauxAnnuel",               div: 100 },
   { id: "dureeTK",      target: "TAMWILKOM",            key: "dureeAns",                 div: 1 },
   { id: "differeTK",    target: "TAMWILKOM",            key: "differeAns",               div: 1 },
