@@ -47,6 +47,7 @@ function compute(scenario) {
 
   // --- MDM Invest ---
   const subventionMDM = Math.min(totalProjet * MDM_INVEST.tauxSubvention, MDM_INVEST.plafond);
+  const investissementNet = totalProjet - subventionMDM; // coût net investisseur après MDM
   const apportDevisesMin = totalProjet * MDM_INVEST.apportDevisesMin;
 
   // --- Apport = terrain (en nature) ---
@@ -272,10 +273,10 @@ function compute(scenario) {
     });
   }
 
-  // --- Métriques clés ---
+  // --- Métriques clés (basées sur investissement NET = après MDM) ---
   const y1 = projections[0];
-  const rendementBrut = (y1.revBrutHotel + y1.revCommercial) / totalProjet;
-  const rendementNet = y1.cashFlowNet / totalProjet;
+  const rendementBrut = (y1.revBrutHotel + y1.revCommercial) / investissementNet;
+  const rendementNet = y1.cashFlowNet / investissementNet;
   const rendementNetApport = y1.cashFlowNet / apportTerrain;
   const revpar = y1.revBrutHotel / (nbUnites * 365);
   const coutParNuitee = y1.chargesTotal / nuiteesParAn;
@@ -521,7 +522,7 @@ function compute(scenario) {
     terrain: { coutTerrain, fraisTerrain, budgetConstruction, coutM2Terrain, constructionHTForAmort },
     amortissement: { annuel: amortissementAnnuel, duree: FISCALITE.amortissementAns, total: constructionHTForAmort },
     units: { nbStudios, nbLofts, nbUnites, surfaceLocative, surfaceCommerciale, surfaceTerrasseTotale, surfaceInterieureTotale, surfaceUtile },
-    budget: { ameublement, totalProjet, investissementEco, subventionEco, coutNetEco, ecoEnabled },
+    budget: { ameublement, totalProjet, investissementNet, investissementEco, subventionEco, coutNetEco, ecoEnabled },
     financement: {
       subventionMDM, apportDevisesMin, apportTerrain,
       montantAFinancer,

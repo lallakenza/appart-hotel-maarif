@@ -62,7 +62,7 @@ function render(state) {
 
 // --- Header badge (dynamic total projet) ---
 function renderHeader(S) {
-  setText("header-badge", fmtMAD(S.budget.totalProjet));
+  setText("header-badge", fmtMAD(S.budget.investissementNet) + "*");
 }
 
 // --- Executive Summary Mini-Scorecard ---
@@ -90,7 +90,7 @@ function renderExecutiveSummary(S) {
   }
 
   // Investissement
-  setExecKPI("exec-invest", fmtK(S.budget.totalProjet), "exec-invest-dot", true);
+  setExecKPI("exec-invest", fmtK(S.budget.investissementNet) + "*", "exec-invest-dot", true);
 
   // CF An1
   const cfGood = y1.cashFlowNet > 0;
@@ -231,7 +231,7 @@ function renderKPIs(S) {
   const breakEven = S.kpi.breakEvenOcc;
   const currentOcc = SCENARIOS[S.scenario].tauxOccupation;
 
-  setKPI("kpi-invest",     fmtMAD(S.budget.totalProjet));
+  setKPI("kpi-invest",     fmtMAD(S.budget.investissementNet) + "*");
   setKPI("kpi-rdt-brut",   fmtPct(S.kpi.rendementBrut),   S.kpi.rendementBrut > 0.10 ? "kpi-green" : S.kpi.rendementBrut > 0.06 ? "kpi-amber" : "kpi-red");
   setKPI("kpi-cf-net",     fmtMAD(y1.cashFlowNet),         y1.cashFlowNet > 0 ? "kpi-green" : "kpi-red");
   setKPI("kpi-rdt-apport", fmtPct(S.kpi.rendementNetApport), S.kpi.rendementNetApport > 0.05 ? "kpi-green" : S.kpi.rendementNetApport > 0.02 ? "kpi-amber" : "kpi-red");
@@ -426,7 +426,7 @@ function renderBudget(S) {
   // Dynamic ameublement label
   const ameubLabel = document.getElementById("budget-ameublement-label");
   if (ameubLabel) ameubLabel.textContent = `dont ameublement (${S.units.nbUnites} × ${fmtNum(BUDGET.ameublementParUnite / 1000)}K)`;
-  setText("budget-total", fmtMAD(S.budget.totalProjet));
+  setText("budget-total", fmtMAD(S.budget.investissementNet) + "*");
   setText("budget-m2", fmtNum(S.terrain.coutM2Terrain) + " MAD/m²");
 
   // Go Siyaha Éco row
@@ -483,15 +483,16 @@ function renderProgramme(S) {
 // --- Surface Utile & Coût/m² ---
 function renderSurfaceUtile(S) {
   const u = S.units;
-  const total = S.budget.totalProjet;
+  const totalNet = S.budget.investissementNet; // après MDM
   const ameublement = S.budget.ameublement;
-  const prixNu = total - ameublement; // terrain + construction (sans ameublement)
+  const subMDM = S.financement.subventionMDM;
+  const prixNu = totalNet - ameublement; // terrain + construction - MDM (sans ameublement)
 
-  // Coûts par m²
+  // Coûts par m² (basés sur investissement net après MDM)
   const nuInt = u.surfaceInterieureTotale > 0 ? prixNu / u.surfaceInterieureTotale : 0;
   const nuUtile = u.surfaceUtile > 0 ? prixNu / u.surfaceUtile : 0;
-  const meubleInt = u.surfaceInterieureTotale > 0 ? total / u.surfaceInterieureTotale : 0;
-  const meubleUtile = u.surfaceUtile > 0 ? total / u.surfaceUtile : 0;
+  const meubleInt = u.surfaceInterieureTotale > 0 ? totalNet / u.surfaceInterieureTotale : 0;
+  const meubleUtile = u.surfaceUtile > 0 ? totalNet / u.surfaceUtile : 0;
 
   // Surfaces
   setText("su-interieure", fmtM2(u.surfaceInterieureTotale));
@@ -499,12 +500,12 @@ function renderSurfaceUtile(S) {
   setText("su-terrasse-detail", fmtM2(u.surfaceTerrasseTotale) + " brut × 50%");
   setText("su-totale", fmtM2(u.surfaceUtile));
 
-  // Prix nu (terrain + construction)
+  // Prix nu (terrain + construction - MDM)
   setText("su-prix-nu", fmtNum(Math.round(nuUtile)) + " MAD/m²");
-  setText("su-prix-nu-sub", fmtNum(Math.round(prixNu)) + " MAD — terrain + construction");
-  // Prix meublé (tout compris)
+  setText("su-prix-nu-sub", fmtNum(Math.round(prixNu)) + " MAD — après MDM*");
+  // Prix meublé (tout compris - MDM)
   setText("su-prix-meuble", fmtNum(Math.round(meubleUtile)) + " MAD/m²");
-  setText("su-prix-meuble-sub", fmtNum(Math.round(total)) + " MAD — tout compris");
+  setText("su-prix-meuble-sub", fmtNum(Math.round(totalNet)) + " MAD — après MDM*");
   // Par m² intérieur (sans terrasses)
   setText("su-cout-int", fmtNum(Math.round(nuInt)) + " MAD/m²");
   setText("su-cout-meuble-int", fmtNum(Math.round(meubleInt)) + " MAD/m²");
@@ -641,7 +642,7 @@ function renderFinancement(S) {
   setText("fin-bq-cout",        fmtMAD(F.coutTotalBQ));
 
   // Total
-  setText("fin-total-projet",   fmtMAD(S.budget.totalProjet));
+  setText("fin-total-projet",   fmtMAD(S.budget.investissementNet) + "*");
   setText("fin-montant-financer", fmtMAD(F.montantAFinancer));
 
   // Progress bar
@@ -1390,11 +1391,12 @@ function renderCapexOpex(S) {
   const ecoNet = S.budget.ecoEnabled ? S.budget.coutNetEco : 0;
   const constructionPure = construction - ecoNet;
 
-  // ── CAPEX KPIs ──
-  setText("capex-total", fmtMAD(total));
-  setText("capex-par-unite", fmtMAD(Math.round(total / S.units.nbUnites)));
-  setText("capex-par-m2", fmtNum(Math.round(total / S.units.surfaceUtile)) + " MAD/m²");
-  setText("capex-m2-sub", fmtM2(S.units.surfaceUtile) + " utile");
+  // ── CAPEX KPIs (net après MDM) ──
+  const netInvest = S.budget.investissementNet;
+  setText("capex-total", fmtMAD(netInvest) + "*");
+  setText("capex-par-unite", fmtMAD(Math.round(netInvest / S.units.nbUnites)));
+  setText("capex-par-m2", fmtNum(Math.round(netInvest / S.units.surfaceUtile)) + " MAD/m²");
+  setText("capex-m2-sub", fmtM2(S.units.surfaceUtile) + " utile — après MDM*");
 
   // ── CAPEX table ──
   const capexRows = [
@@ -1408,20 +1410,42 @@ function renderCapexOpex(S) {
   }
   capexRows.push(
     { poste: "Ameublement hôtelier", montant: ameub, detail: S.units.nbUnites + " unités × " + fmtNum(Math.round(ameub / S.units.nbUnites)) + " MAD" },
-    { poste: "TOTAL CAPEX", montant: total, detail: "", total: true, grand: true }
+    { poste: "TOTAL CAPEX BRUT", montant: total, detail: "", total: true, grand: true }
+  );
+
+  // Financement : subvention MDM + apport terrain
+  const subMDM = S.financement.subventionMDM;
+  const apportTerrain = S.financement.apportTerrain;
+  const aFinancer = S.financement.montantAFinancer;
+  capexRows.push(
+    { poste: "", montant: null, detail: "", separator: true },
+    { poste: "Subvention MDM Invest (10%)", montant: -subMDM, detail: "Prime non remboursable — versée au MRE", green: true },
+    { poste: "Apport en nature (terrain)", montant: -apportTerrain, detail: "Terrain + frais comme apport", green: true },
+    { poste: "RESTE À FINANCER", montant: aFinancer, detail: "Tamwilkom + Banque classique", total: true, grand: true }
   );
 
   const capexTbody = document.getElementById("capex-tbody");
   if (capexTbody) {
     capexTbody.innerHTML = "";
     capexRows.forEach(r => {
+      if (r.separator) {
+        const tr = document.createElement("tr");
+        tr.innerHTML = '<td colspan="4" style="padding:4px;border:none"></td>';
+        capexTbody.appendChild(tr);
+        return;
+      }
       const tr = document.createElement("tr");
       if (r.grand) tr.style.cssText = "background:#fef3c7;font-weight:700";
       else if (r.total) tr.style.fontWeight = "600";
+      if (r.green) tr.style.color = "var(--green)";
+      const montantStr = r.montant < 0
+        ? "(" + fmtMAD(Math.abs(r.montant)) + ")"
+        : fmtMAD(r.montant);
+      const pctStr = r.grand ? "" : r.montant < 0 ? "" : (r.montant / total * 100).toFixed(1) + "%";
       tr.innerHTML = `
         <td>${r.poste}</td>
-        <td class="num">${fmtMAD(r.montant)}</td>
-        <td class="num">${r.grand ? "100%" : (r.montant / total * 100).toFixed(1) + "%"}</td>
+        <td class="num">${montantStr}</td>
+        <td class="num">${pctStr}</td>
         <td style="font-size:.82rem;color:var(--text-sec)">${r.detail}</td>
       `;
       capexTbody.appendChild(tr);
