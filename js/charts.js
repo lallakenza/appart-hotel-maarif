@@ -405,7 +405,8 @@ function toggleDebtPeriod(monthly) {
 let _cfMonthly = false;
 let _cfFilter = "all"; // "all", "revenus", "charges"
 let _cfHorizon = 20; // 5, 10, or 20 years
-let _cfShowCumul = true; // show/hide cumul line
+let _cfShowCumul = false; // show/hide cumul line (off by default)
+let _cfShowDebt = true;  // show/hide capital restant dû
 
 function toggleCFPeriod(monthly) {
   _cfMonthly = monthly;
@@ -422,6 +423,12 @@ function toggleCFHorizon(years) {
 function toggleCFCumul() {
   _cfShowCumul = !_cfShowCumul;
   document.querySelectorAll(".cf-cumul-btn").forEach(b => b.classList.toggle("active", _cfShowCumul));
+  if (_currentState) chartCashFlow(_currentState);
+}
+
+function toggleCFDebt() {
+  _cfShowDebt = !_cfShowDebt;
+  document.querySelectorAll(".cf-debt-btn").forEach(b => b.classList.toggle("active", _cfShowDebt));
   if (_currentState) chartCashFlow(_currentState);
 }
 
@@ -451,13 +458,12 @@ function chartCashFlow(S) {
   }
 
   // --- Default "all" mode ---
-  // Cumul toggle: only relevant in annual view
-  const cumulBtn = document.querySelector(".cf-cumul-btn");
-  if (cumulBtn) {
-    cumulBtn.disabled = _cfMonthly;
-    cumulBtn.style.opacity = _cfMonthly ? "0.4" : "1";
-    cumulBtn.style.pointerEvents = _cfMonthly ? "none" : "";
-  }
+  // Cumul & Debt toggles: only relevant in annual view
+  document.querySelectorAll(".cf-cumul-btn, .cf-debt-btn").forEach(btn => {
+    btn.disabled = _cfMonthly;
+    btn.style.opacity = _cfMonthly ? "0.4" : "1";
+    btn.style.pointerEvents = _cfMonthly ? "none" : "";
+  });
 
   if (_cfMonthly) {
     if (titleEl) titleEl.textContent = "Cash-Flow Net — Moyenne Mensuelle par Année";
@@ -494,6 +500,25 @@ function _buildCFAnnualChart(ctx, S) {
       order: -1,
     });
   }
+  if (_cfShowDebt) {
+    datasets.push({
+      label: "Capital Restant Dû",
+      data: proj.map(p => p.capitalRestantDu),
+      type: "line",
+      borderColor: CHART_COLORS.red,
+      borderDash: [6, 3],
+      backgroundColor: "transparent",
+      fill: false,
+      tension: 0.3,
+      pointRadius: 4,
+      pointBackgroundColor: CHART_COLORS.red,
+      pointBorderColor: "#fff",
+      pointBorderWidth: 2,
+      borderWidth: 2.5,
+      yAxisID: "yDebt",
+      order: -2,
+    });
+  }
   _charts.cashflow = new Chart(ctx, {
     type: "bar",
     data: {
@@ -506,6 +531,13 @@ function _buildCFAnnualChart(ctx, S) {
         y: {
           ticks: { callback: v => fmtK(v) },
           grid: { color: (ctx) => ctx.tick.value === 0 ? 'rgba(220,38,38,0.4)' : 'rgba(0,0,0,0.05)', lineWidth: (ctx) => ctx.tick.value === 0 ? 2 : 1 }
+        },
+        yDebt: {
+          display: _cfShowDebt,
+          position: "right",
+          ticks: { callback: v => fmtK(v), color: CHART_COLORS.red + "99" },
+          grid: { drawOnChartArea: false },
+          title: { display: true, text: "Capital restant dû", color: CHART_COLORS.red + "99", font: { size: 11 } },
         }
       },
       plugins: {
@@ -525,6 +557,7 @@ function _buildCFAnnualChart(ctx, S) {
               <div class="ctt-row ctt-sub"><span>Mensuel</span><span class="ctt-val">${fmtMAD(p.cashFlowNet / 12)}/mois</span></div>
               <div class="ctt-divider"></div>
               <div class="ctt-row"><span>Cumul</span><span class="ctt-val" style="color:${p.cumulCashFlow >= 0 ? '#16a34a' : '#dc2626'}">${fmtMAD(p.cumulCashFlow)}</span></div>
+              <div class="ctt-row" style="color:${CHART_COLORS.red}"><span>Capital restant dû</span><span class="ctt-val">${fmtMAD(p.capitalRestantDu)}</span></div>
               <div class="ctt-row ctt-sub"><span>Rendement / apport</span><span class="ctt-val">${fmtPct(rdtApport)}</span></div>`;
           })
         }

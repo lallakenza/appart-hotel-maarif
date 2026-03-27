@@ -245,6 +245,25 @@ function compute(scenario) {
 
     const debtServiceTotal = debtTK + debtBQ;
 
+    // Capital restant dû (solde après remboursement de l'année y)
+    let soldeTK = 0;
+    if (y < TAMWILKOM.dureeAns) {
+      soldeTK = montantTamwilkom;
+      const rembMonths = Math.min(y + 1, TAMWILKOM.dureeAns) <= TAMWILKOM.differeAns ? 0
+        : (Math.min(y + 1, TAMWILKOM.dureeAns) - TAMWILKOM.differeAns) * 12;
+      for (let m = 0; m < rembMonths; m++) { const im = soldeTK * rTK; soldeTK -= (mensualiteTK - im); }
+      soldeTK = Math.max(0, soldeTK);
+    }
+    let soldeBQ = 0;
+    if (y < BANQUE_CLASSIQUE.dureeAns) {
+      soldeBQ = montantBanque;
+      const rembMonths = Math.min(y + 1, BANQUE_CLASSIQUE.dureeAns) <= BANQUE_CLASSIQUE.differeAns ? 0
+        : (Math.min(y + 1, BANQUE_CLASSIQUE.dureeAns) - BANQUE_CLASSIQUE.differeAns) * 12;
+      for (let m = 0; m < rembMonths; m++) { const im = soldeBQ * rBQ; soldeBQ -= (mensualiteBQ - im); }
+      soldeBQ = Math.max(0, soldeBQ);
+    }
+    const capitalRestantDu = soldeTK + soldeBQ;
+
     // IS — L'amortissement est une charge non-cash qui réduit le bénéfice imposable
     // Amortissement sur 20 ans (seulement pendant la durée de vie fiscale)
     const dotationAmort = y < FISCALITE.amortissementAns ? amortissementAnnuel : 0;
@@ -270,7 +289,7 @@ function compute(scenario) {
       revInformel, revDeclareHotel, partOTA, partInformel,
       chargesTotal, chargesDetail,
       ebitda, margeExploitation,
-      debtTK, debtBQ, debtServiceTotal,
+      debtTK, debtBQ, debtServiceTotal, capitalRestantDu,
       interetsTK, capitalTK, interetsBQ, capitalBQ,
       dotationAmort, resultatFiscal, beneficeImposable,
       cashFlowAvantIS, is, economieIS, cashFlowNet,
