@@ -132,7 +132,14 @@ function switchView(view) {
     item.classList.toggle("active", item.dataset.nav === view);
   });
 
-  if (currentState) rebuildCharts(currentState);
+  if (currentState) {
+    rebuildCharts(currentState);
+    // Chart.js peut mal dimensionner les charts recréés dans des containers
+    // qui viennent de passer de hidden → visible. Force un resize après le layout.
+    requestAnimationFrame(() => {
+      Object.values(_charts).forEach(c => { if (c && c.resize) c.resize(); });
+    });
+  }
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
