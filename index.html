@@ -541,6 +541,10 @@ tr:hover td{background:#f8fafc}
         <div class="nav-dropdown-item" data-nav="fiscalite">Fiscalité & TVA</div>
       </div>
     </div>
+    <div class="nav-item" data-nav="analyse">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+      <span class="nav-label">Analyse</span>
+    </div>
   </div>
 </nav>
 
@@ -1691,6 +1695,223 @@ tr:hover td{background:#f8fafc}
   </div>
 </div>
 
+<!-- ==================== ANALYSE CABINET IMMOBILIER ==================== -->
+<div data-view="analyse" class="hidden">
+  <h2 class="section-title">Analyse Cabinet Immobilier</h2>
+  <p class="section-sub" style="margin-bottom:16px">Analyse qualitative critique indépendante — Mars 2026 (mise à jour 28/03/2026)</p>
+
+  <!-- Mise à jour banner -->
+  <div class="card" style="border-left:4px solid var(--gold);background:#fffbeb">
+    <div class="card-title" style="color:var(--gold)">Mise à jour 28/03/2026</div>
+    <p style="font-size:.85rem;margin:0">Crédit banque ajusté à 4,35%/20 ans avec 1 an de différé (au lieu de 5,25%/15 ans). Saisonnalité mensuelle intégrée (12 coefficients). Ramp-up An 1 (65% occ, 85% ADR). Coûts additionnels : syndic, taxe habitation, provision mobilier, marketing, frais SARL. Correction : la loi 80-14 n'impose PAS de plafond de 120 jours (confusion avec la loi ELAN française). MDM Invest sera utilisé comme fonds de roulement.</p>
+  </div>
+
+  <!-- 1. Audit des hypothèses -->
+  <div class="card">
+    <div class="card-title">1. Audit des hypothèses du modèle</div>
+
+    <h4 style="margin:12px 0 8px;color:var(--primary)">Prix/nuit par scénario</h4>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Scénario</th><th>Studio (modèle)</th><th>Marché réel (pro)</th><th>Verdict</th></tr></thead>
+      <tbody>
+        <tr><td>Pessimiste</td><td>500 MAD</td><td>Min pro : 600 MAD</td><td style="color:var(--green)">🟢 Conservateur</td></tr>
+        <tr><td>Prudent</td><td>580 MAD</td><td>Médiane particulier : 570</td><td style="color:var(--gold)">🟡 Réaliste</td></tr>
+        <tr><td>Réaliste</td><td>650 MAD</td><td>Médiane pro : 700</td><td style="color:var(--green)">🟢 Conservateur</td></tr>
+        <tr><td>Favorable</td><td>720 MAD</td><td>Fourchette haute pro : 780</td><td style="color:var(--gold)">🟡 Réaliste</td></tr>
+        <tr><td>Optimiste</td><td>780 MAD</td><td>Max top operators : 770</td><td style="color:var(--red)">🔴 Optimiste</td></tr>
+      </tbody>
+    </table></div>
+    <p style="font-size:.82rem;color:var(--text-sec)">Le scénario "prudent" à 580 MAD est le plus réaliste pour les 2 premières années (nouvel entrant sans avis, discount 10-15%). Sources : Airbtics, AirROI, SandsOfWealth, ListingOK.</p>
+
+    <h4 style="margin:16px 0 8px;color:var(--primary)">Taux d'occupation par scénario</h4>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Scénario</th><th>Taux (modèle)</th><th>Marché réel</th><th>Verdict</th></tr></thead>
+      <tbody>
+        <tr><td>Pessimiste</td><td>35%</td><td>Médiane AirROI : 35,8%</td><td style="color:var(--gold)">🟡 = Médiane !</td></tr>
+        <tr><td>Prudent</td><td>42%</td><td>Entre médiane et moyenne</td><td style="color:var(--gold)">🟡 Réaliste</td></tr>
+        <tr><td>Réaliste</td><td>48%</td><td>Airbtics médiane : 49%</td><td style="color:var(--gold)">🟡 Réaliste</td></tr>
+        <tr><td>Favorable</td><td>54%</td><td>Top 25% : 58%</td><td style="color:var(--gold)">🟡 Réaliste</td></tr>
+        <tr><td>Optimiste</td><td>60%</td><td>Top 25% seulement</td><td style="color:var(--red)">🔴 Optimiste</td></tr>
+      </tbody>
+    </table></div>
+    <p style="font-size:.82rem;color:var(--text-sec)">Le "pessimiste" à 35% correspond à la MÉDIANE du marché. Un vrai scénario pessimiste serait à 25-30%.</p>
+
+    <h4 style="margin:16px 0 8px;color:var(--primary)">Répartition canaux (corrigée avec évolution)</h4>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Canal</th><th>Modèle initial</th><th>Réalité Y1</th><th>Modèle corrigé Y1</th></tr></thead>
+      <tbody>
+        <tr><td>OTA (Booking/Airbnb)</td><td>55%</td><td>70-80%</td><td>~72% (×1.30)</td></tr>
+        <tr><td>Direct (WhatsApp, tél.)</td><td>25%</td><td>5-10%</td><td>~13%</td></tr>
+        <tr><td>Informel (cash)</td><td>20%</td><td>10-15%</td><td>20% (inchangé)</td></tr>
+      </tbody>
+    </table></div>
+    <p style="font-size:.82rem;color:var(--text-sec)">Un nouvel entrant dépend à 70-80% des OTA les 2-3 premières années. La part directe de 25% est un objectif Y3-5. L'évolution des canaux est intégrée au modèle (multiplier OTA décroissant sur 5 ans).</p>
+
+    <h4 style="margin:16px 0 8px;color:var(--primary)">Croissance tarifs & appréciation</h4>
+    <p style="font-size:.85rem">🔴 <strong>Croissance tarifs 3%/an</strong> : possible si inflation maintenue, mais pression concurrentielle (+50% listings/an) peut annuler le pricing power. 1,5-2% serait plus prudent.</p>
+    <p style="font-size:.85rem">✅ <strong>Appréciation bien corrigée à 2%/an</strong> (au lieu de 3%). Historique Casablanca 1-1,5%/an. Avec effet Mondial 2030, 2% est raisonnable.</p>
+  </div>
+
+  <!-- 2. Saisonnalité -->
+  <div class="card">
+    <div class="card-title">2. Saisonnalité (intégrée au modèle)</div>
+    <p style="font-size:.85rem;margin-bottom:12px">L'occupation varie de 26% en janvier à 51% en août. Cela signifie des mois de cash-flow très négatif en hiver. Le modèle intègre désormais 12 coefficients mensuels.</p>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Mois</th><th>Coeff.</th><th>Mois</th><th>Coeff.</th><th>Mois</th><th>Coeff.</th></tr></thead>
+      <tbody>
+        <tr><td>Janvier</td><td><strong>0.55</strong></td><td>Mai</td><td>1.02</td><td>Septembre</td><td>1.08</td></tr>
+        <tr><td>Février</td><td>0.62</td><td>Juin</td><td>1.10</td><td>Octobre</td><td>0.98</td></tr>
+        <tr><td>Mars</td><td>0.82</td><td>Juillet</td><td>1.18</td><td>Novembre</td><td>0.80</td></tr>
+        <tr><td>Avril</td><td>0.92</td><td>Août</td><td><strong>1.22</strong></td><td>Décembre</td><td>0.71</td></tr>
+      </tbody>
+    </table></div>
+    <p style="font-size:.82rem;color:var(--text-sec)">Moyenne pondérée = 1.0 sur 12 mois. Sources : ListingOK Casablanca 2025, Airbtics, AirROI monthly.</p>
+  </div>
+
+  <!-- 3. Coûts manquants -->
+  <div class="card">
+    <div class="card-title">3. Coûts initialement manquants (ajoutés)</div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Poste</th><th>Montant</th><th>Fréquence</th><th>Impact 20 ans</th></tr></thead>
+      <tbody>
+        <tr><td>Renouvellement mobilier</td><td>40 000 MAD/unité</td><td>Cycle 7 ans</td><td>~1 260 000 MAD</td></tr>
+        <tr><td>Taxe d'habitation</td><td>12 000 MAD/an</td><td>À partir An 6</td><td>~180 000 MAD</td></tr>
+        <tr><td>Syndic / copropriété</td><td>18 000 MAD/an</td><td>Annuel</td><td>360 000 MAD</td></tr>
+        <tr><td>Marketing lancement</td><td>80 000 MAD</td><td>An 1 (one-shot)</td><td>80 000 MAD</td></tr>
+        <tr><td>Frais création SARL</td><td>20 000 MAD</td><td>An 1 (one-shot)</td><td>20 000 MAD</td></tr>
+        <tr class="total-row"><td><strong>TOTAL supplémentaire</strong></td><td></td><td></td><td><strong>~1 900 000 MAD</strong></td></tr>
+      </tbody>
+    </table></div>
+  </div>
+
+  <!-- 4. Financement optimisé -->
+  <div class="card">
+    <div class="card-title">4. Financement optimisé</div>
+    <h4 style="margin:12px 0 8px;color:var(--primary)">Crédit banque : 4,35% / 20 ans / 1 an différé</h4>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Paramètre</th><th>Ancien</th><th>Nouveau</th><th>Impact</th></tr></thead>
+      <tbody>
+        <tr><td>Taux annuel</td><td style="color:var(--red)">5,25%</td><td style="color:var(--green)">4,35%</td><td>Coût intérêts réduit</td></tr>
+        <tr><td>Durée</td><td style="color:var(--red)">15 ans</td><td style="color:var(--green)">20 ans</td><td>Mensualités -25%</td></tr>
+        <tr><td>Différé capital</td><td style="color:var(--red)">0 an</td><td style="color:var(--green)">1 an</td><td>Trésorerie An 1 préservée</td></tr>
+      </tbody>
+    </table></div>
+    <p style="font-size:.85rem;margin-top:8px">Source : Médias24, taux crédit immobilier sept 2025. La durée allongée réduit les mensualités et améliore la survie opérationnelle des premières années critiques.</p>
+
+    <h4 style="margin:16px 0 8px;color:var(--primary)">Go Siyaha : bonus, pas financement central</h4>
+    <p style="font-size:.85rem">Taux de conversion demandes→financement : ~4,5% (24 projets financés sur 531 approuvés, fév 2025). <strong>Recommandation : traiter comme un bonus</strong>, ne pas intégrer dans le plan de base.</p>
+
+    <h4 style="margin:16px 0 8px;color:var(--primary)">MDM Invest : fonds de roulement</h4>
+    <p style="font-size:.85rem">Les ~700K MAD de MDM Invest seront utilisés comme réserve de trésorerie (fonds de roulement) pour absorber le ramp-up et la saisonnalité des premières années, et non comme réduction de dette.</p>
+  </div>
+
+  <!-- 5. Réglementation -->
+  <div class="card">
+    <div class="card-title">5. Réglementation STR au Maroc</div>
+    <h4 style="margin:12px 0 8px;color:var(--primary)">Loi 80-14 + Décret 2.23.441</h4>
+    <p style="font-size:.85rem">• Autorisation obligatoire auprès de la commune (durée 5 ans)</p>
+    <p style="font-size:.85rem">• <strong>Aucun plafond de jours/an</strong> dans la loi marocaine (la limite de 120 jours est la loi ELAN française)</p>
+    <p style="font-size:.85rem">• Déclaration mensuelle des nuitées (avant le 10 du mois suivant)</p>
+    <p style="font-size:.85rem">• Amendes : 20 000 à 100 000 MAD sans autorisation + fermeture + interdiction 3 ans</p>
+    <div style="margin-top:12px;padding:10px 14px;background:#fef2f2;border-left:4px solid var(--red);border-radius:4px">
+      <p style="font-size:.82rem;margin:0;color:var(--red)"><strong>⚠ CORRECTION</strong> : La limite de 120 jours/an n'existe PAS dans la loi marocaine. C'est une confusion fréquente avec la loi ELAN française. La loi 80-14 ne fixe aucun plafond de nuitées.</p>
+    </div>
+  </div>
+
+  <!-- 6. Marché & Positionnement -->
+  <div class="card">
+    <div class="card-title">6. Marché & Positionnement</div>
+    <h4 style="margin:12px 0 8px;color:var(--green)">Opportunité</h4>
+    <p style="font-size:.85rem">Maarif est central, bien desservi, avec une clientèle business stable (80% des visiteurs Casa). Un R+5 neuf avec finitions premium se différencie de la majorité des listings vieillissants.</p>
+    <h4 style="margin:12px 0 8px;color:var(--red)">Risque</h4>
+    <p style="font-size:.85rem">Maarif est l'un des quartiers les plus saturés. Le segment 1BR/studio (66,7% du marché) est le plus compétitif. Les top operators (StayHere 1 927 avis, AS Premium 8.8★) ont des années d'avance.</p>
+    <h4 style="margin:12px 0 8px;color:var(--primary)">Profil clientèle réaliste</h4>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Segment</th><th>Part</th><th>Caractéristiques</th></tr></thead>
+      <tbody>
+        <tr><td>Business travelers</td><td>40-50%</td><td>Stable semaine, sensibles au prix, OTA/corporate</td></tr>
+        <tr><td>Diaspora MRE</td><td>20-25%</td><td>Séjours moyens, qualité, potentiel direct élevé</td></tr>
+        <tr><td>Touristes loisirs</td><td>10-15%</td><td>Casa pas destination loisirs primaire (= Marrakech)</td></tr>
+        <tr><td>Digital nomads</td><td>5-10%</td><td>Croissance mais petit volume, séjours longs, prix bas</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+
+  <!-- 7. Risques manquants -->
+  <div class="card">
+    <div class="card-title">7. Risques critiques supplémentaires identifiés</div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>#</th><th>Risque</th><th>Prob. × Impact</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td>Risque de change MAD/AED (investisseur UAE)</td><td>40% × 30%</td></tr>
+        <tr><td>2</td><td>Risque de liquidité (vente 12-24 mois, décote 10-20%)</td><td>30% × 50%</td></tr>
+        <tr><td>3</td><td>Vacance prolongée au lancement (15-25% occ. Y1)</td><td>70% × 40%</td></tr>
+        <tr><td>4</td><td>Ramp-up OTA (algos favorisent listings avec historique)</td><td>80% × 30%</td></tr>
+        <tr><td>5</td><td>Qualité construction / malfaçons R+5</td><td>40% × 40%</td></tr>
+        <tr><td>6</td><td>Régulation STR renforcée (nouvelles contraintes futures)</td><td>30% × 50%</td></tr>
+        <tr><td>7</td><td>Risque fiscal (part informelle 20% → redressement DGI)</td><td>30% × 60%</td></tr>
+        <tr><td>8</td><td>Turnover personnel (perte qualité service)</td><td>50% × 30%</td></tr>
+        <tr><td>9</td><td>Sur-offre post-Mondial 2030 (150+ hôtels en construction)</td><td>50% × 40%</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+
+  <!-- 8. Verdict -->
+  <div class="card" style="border-left:4px solid var(--gold)">
+    <div class="card-title" style="font-size:1.1rem">8. Verdict : GO CONDITIONNEL</div>
+    <p style="font-size:.85rem;margin-bottom:12px">Le projet est viable mais les projections initiales étaient trop optimistes. Les corrections apportées donnent une image plus fidèle.</p>
+
+    <h4 style="margin:12px 0 8px;color:var(--primary)">Conditions non négociables</h4>
+    <p style="font-size:.85rem">1. Sécuriser le statut juridique de résidence de tourisme AVANT construction</p>
+    <p style="font-size:.85rem">2. Constituer une réserve de trésorerie de 600-800K MAD (MDM Invest = fond de roulement)</p>
+    <p style="font-size:.85rem">3. Identifier et contractualiser un gestionnaire local AVANT le lancement</p>
+    <p style="font-size:.85rem">4. Réduire la part informelle à 5% maximum</p>
+    <p style="font-size:.85rem">5. Commander une étude de marché terrain (séjours test chez la concurrence)</p>
+
+    <h4 style="margin:16px 0 8px;color:var(--primary)">Scénario le plus probable</h4>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Paramètre</th><th>Année 1-2</th><th>Année 3-5</th><th>Année 6+</th></tr></thead>
+      <tbody>
+        <tr><td>Occupation</td><td>35-38%</td><td>42-48%</td><td>48-52%</td></tr>
+        <tr><td>ADR Studio</td><td>550-580 MAD</td><td>600-650 MAD</td><td>650-700 MAD</td></tr>
+        <tr><td>Part OTA</td><td>75%</td><td>60%</td><td>50%</td></tr>
+        <tr><td>Cash-flow</td><td style="color:var(--red)">Négatif (-50-80K/an)</td><td>Breakeven</td><td style="color:var(--green)">Positif croissant</td></tr>
+      </tbody>
+    </table></div>
+
+    <h4 style="margin:16px 0 8px;color:var(--primary)">Projections ajustées</h4>
+    <p style="font-size:.85rem">• TRI ajusté : ~10-13% (avec valeur résiduelle à 2%/an)</p>
+    <p style="font-size:.85rem">• Wealth creation : ~12-16M MAD sur 20 ans (vs ~22M initialement)</p>
+    <p style="font-size:.85rem">• Breakeven opérationnel : An 4-5</p>
+    <p style="font-size:.85rem">• Cash-flow confortable : à partir An 8-10 (dette TK remboursée)</p>
+  </div>
+
+  <!-- 9. Recommandations -->
+  <div class="card">
+    <div class="card-title">9. Ce que je ferais différemment</div>
+    <p style="font-size:.85rem">1. <strong>Différer le lancement de 12-18 mois</strong> — être plus proche du Mondial 2030 (construction 2027 → lancement 2028-2029 → Mondial 2030)</p>
+    <p style="font-size:.85rem">2. <strong>Budgéter l'informel à 0%</strong> — l'avantage fiscal marginal ne vaut pas le risque de redressement DGI</p>
+    <p style="font-size:.85rem">3. <strong>Budget marketing de lancement 80K MAD</strong> — photos pro, vidéo drone, promotions Booking Genius, tarifs de lancement -20%</p>
+    <p style="font-size:.85rem">4. <strong>Plan B si occupation &lt; 30% après 18 mois</strong> — conversion partielle en location longue durée meublée (2-3 unités en bail annuel)</p>
+    <p style="font-size:.85rem">5. <strong>Partenariat opérateur établi</strong> — StayHere ou similaire pour les premières années (25-30% commission mais réseau + avis + savoir-faire)</p>
+    <p style="font-size:.85rem">6. <strong>Ne pas compter sur la valeur résiduelle</strong> — un bon projet doit être rentable sur les cash-flows seuls</p>
+  </div>
+
+  <!-- Sources -->
+  <div class="card">
+    <div class="card-title">Sources de la recherche indépendante</div>
+    <div style="columns:2;column-gap:24px;font-size:.78rem;color:var(--text-sec)">
+      <p style="margin:4px 0"><strong>Marché STR :</strong> Airbtics Casa, AirROI Casa, SandsOfWealth, ListingOK</p>
+      <p style="margin:4px 0"><strong>Tourisme :</strong> H24info, Telquel, Challenge.ma, PremiumTravelNews</p>
+      <p style="margin:4px 0"><strong>Immobilier :</strong> Yakeey Maarif, Agenz Casa, Infomédiaire 2026</p>
+      <p style="margin:4px 0"><strong>Programmes :</strong> Tamwilcom, MarocPME, Médias24, Le360</p>
+      <p style="margin:4px 0"><strong>Réglementation :</strong> Majordome Al Andalous (loi 80-14), Lodgify, MyPrivateVilla</p>
+      <p style="margin:4px 0"><strong>Mondial 2030 :</strong> Bird & Bird, Challenge.ma, Médias24</p>
+    </div>
+    <p style="font-size:.75rem;color:var(--text-sec);margin-top:8px;font-style:italic">Analyse réalisée les 27-28 mars 2026. Ne constitue pas un conseil en investissement.</p>
+  </div>
+</div>
+
 <div style="margin-top:24px;padding:12px 16px;font-size:.76rem;color:var(--text-sec);border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
   <span>* Montants nets après déduction de la subvention MDM Invest (10%, plafond 5M MAD). Sous condition d'acceptation du dossier MDM Invest par Tamwilcom.</span>
   <a href="architecture.html" style="color:var(--accent);text-decoration:none;font-weight:500;white-space:nowrap">Architecture technique &rarr;</a>
@@ -1699,11 +1920,11 @@ tr:hover td{background:#f8fafc}
 </main>
 
 <!-- Scripts — strict order: data → engine → render → charts → app -->
-<script src="js/data.js?v=40"></script>
-<script src="js/engine.js?v=40"></script>
-<script src="js/render.js?v=40"></script>
-<script src="js/charts.js?v=40"></script>
-<script src="js/app.js?v=40"></script>
+<script src="js/data.js?v=41"></script>
+<script src="js/engine.js?v=41"></script>
+<script src="js/render.js?v=41"></script>
+<script src="js/charts.js?v=41"></script>
+<script src="js/app.js?v=41"></script>
 
 </body>
 </html>
