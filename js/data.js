@@ -125,24 +125,25 @@ const REVENUE_ASSUMPTIONS = {
 
   // --- Saisonnalité mensuelle ---
   // Coefficients multiplicateurs sur le taux d'occupation annuel moyen
-  // Source : ListingOK Casablanca 2025, Airbtics saisonnalité, AirROI monthly
-  // Calibré : moyenne pondérée des coefficients = 1.0 sur 12 mois
-  // Jan 26.2% → coeff 0.55 | Fév 29.4% → 0.62 | … | Août 51.5% → 1.07
+  // Source : ListingOK Casablanca 2025 (taux mensuels réels)
+  // Formule : coeff_mois = occ_réelle_mois / occ_moyenne_annuelle
+  // Occ moyenne annuelle réelle ListingOK Casa : 42.8%
+  // IMPORTANT : la moyenne des 12 coefficients DOIT faire 1.0 (neutre sur l'année)
   saisonnalite: [
-    0.55,  // Janvier  — creux absolu
-    0.62,  // Février
-    0.82,  // Mars     — reprise progressive
-    0.92,  // Avril    — printemps
-    1.02,  // Mai      — pré-saison
-    1.10,  // Juin     — début haute saison
-    1.18,  // Juillet  — pic diaspora
-    1.22,  // Août     — pic absolu
-    1.08,  // Septembre — rentrée, business stable
-    0.98,  // Octobre
-    0.80,  // Novembre — ralentissement
-    0.71,  // Décembre — hiver (sauf fêtes)
+    0.61,  // Janvier  — 26.2% réel → 26.2/42.8 = 0.61 — creux absolu
+    0.69,  // Février  — 29.4% réel
+    0.91,  // Mars     — 38.8% réel — reprise progressive
+    1.02,  // Avril    — 43.5% réel — printemps
+    1.13,  // Mai      — 48.2% réel — pré-saison
+    1.21,  // Juin     — 52.0% réel — haute saison
+    1.30,  // Juillet  — 55.8% réel — pic absolu (diaspora)
+    1.20,  // Août     — 51.5% réel — haute saison
+    1.19,  // Septembre — 50.8% réel — rentrée, business stable
+    1.08,  // Octobre  — 46.2% réel
+    0.88,  // Novembre — 37.8% réel — ralentissement
+    0.78,  // Décembre — 33.5% réel — hiver (sauf fêtes)
   ],
-  // Vérification : sum(coeffs)/12 = (0.55+0.62+0.82+0.92+1.02+1.10+1.18+1.22+1.08+0.98+0.80+0.71)/12 = 1.0
+  // Vérification : (0.61+0.69+0.91+1.02+1.13+1.21+1.30+1.20+1.19+1.08+0.88+0.78)/12 = 1.000
 
   // --- Période de ramp-up (montée en puissance) ---
   // Un nouvel entrant sans avis met 12-18 mois à atteindre son potentiel
