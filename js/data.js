@@ -11,7 +11,7 @@
 //   - REVENUE_ASSUMPTIONS.saisonnalite : 12 coeff. mensuels (source ListingOK/Airbtics Casa)
 //   - REVENUE_ASSUMPTIONS.rampUp : An 1 à 65% occ, 85% ADR (nouvel entrant sans avis)
 //   - REVENUE_ASSUMPTIONS.canauxEvolution : OTA multiplier décroissant Y1→Y5
-//   - CHARGES ajoutés : syndic 18K, taxeHabitation 12K (exo 5 ans), marketing lancement 80K,
+//   - CHARGES ajoutés : taxeHabitation 12K (exo 5 ans), marketing lancement 80K,
 //     frais création SARL 20K, renouvellement mobilier cycle 7 ans × 40K/unité
 //   - GO_SIYAHA_PROGRAMME.recommandation : traiter comme bonus (taux conversion ~4,5%)
 //   - Correction : loi 80-14 n'a PAS de plafond 120 jours (c'est la loi ELAN française)
@@ -376,9 +376,9 @@ const CHARGES = {
   // Frais création SARL + autorisations touristiques (An 1, one-shot)
   fraisCreation: 20_000,             // MAD one-shot An 1
 
-  // Syndic / charges copropriété (même si propriétaire unique → entretien parties communes, ascenseur)
-  // Source : benchmark R+5 Casablanca, fourchette 12-24K/an
-  syndic: 18_000,                    // MAD / an
+  // Syndic : NON APPLICABLE — immeuble indivisible, monopropriété intégrale
+  // Pas de copropriété, donc pas de charges de syndic
+  syndic: 0,                         // MAD / an — N/A monopropriété
 };
 
 // ======= FINANCEMENT =======

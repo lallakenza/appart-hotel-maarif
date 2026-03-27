@@ -56,7 +56,7 @@ const ADV_FIELDS = [
   { id: "marketing",    target: "CHARGES",              key: "budgetMarketingLancement",  div: 1 },
   { id: "renouv",       target: "CHARGES",              key: "renouvellementMobilierCycle", div: 1 },
   { id: "taxeHab",      target: "CHARGES",              key: "taxeHabitation",           div: 1 },
-  { id: "syndic",       target: "CHARGES",              key: "syndic",                   div: 1 },
+  // syndic retiré — immeuble indivisible, monopropriété
 ];
 
 // Store originals for advanced fields

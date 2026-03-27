@@ -617,7 +617,7 @@ function renderCharges(S) {
     { name: "Assurance",                             val: ch.assurance },
     { name: "Entretien & maintenance",               val: ch.entretien },
     { name: "Taxes professionnelles" + (ch.taxesPro === 0 ? " (exonéré 5 ans)" : ""), val: ch.taxesPro },
-    { name: "Syndic / copropriété",                   val: ch.syndic },
+    // Syndic : N/A — immeuble indivisible, monopropriété (pas de copropriété)
     { name: "Taxe d'habitation" + (ch.taxeHabitation === 0 ? " (exonéré 5 ans)" : ""), val: ch.taxeHabitation },
     { name: "Provision renouvellement mobilier",      val: ch.provisionRenouv },
     { name: "Divers & imprévus",                     val: ch.divers },

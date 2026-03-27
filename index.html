@@ -820,13 +820,7 @@ tr:hover td{background:#f8fafc}
           <div class="ctrl-input-wrap"><input type="number" class="ctrl-input" id="ctrl-taxeHab-val" min="0" max="30000" step="2000" value="12000"><span class="ctrl-unit">MAD</span></div>
         </div>
       </div>
-      <div class="ctrl-group">
-        <label class="ctrl-label">Syndic / copropriété / an</label>
-        <div class="ctrl-row">
-          <input type="range" class="ctrl-range" id="ctrl-syndic" min="0" max="36000" step="3000" value="18000">
-          <div class="ctrl-input-wrap"><input type="number" class="ctrl-input" id="ctrl-syndic-val" min="0" max="36000" step="3000" value="18000"><span class="ctrl-unit">MAD</span></div>
-        </div>
-      </div>
+      <!-- Syndic : supprimé — immeuble indivisible, monopropriété intégrale, pas de copropriété -->
     </div>
 
     <!-- Go Siyaha Bonus Écologique -->
@@ -1703,7 +1697,7 @@ tr:hover td{background:#f8fafc}
   <!-- Mise à jour banner -->
   <div class="card" style="border-left:4px solid var(--gold);background:#fffbeb">
     <div class="card-title" style="color:var(--gold)">Mise à jour 28/03/2026</div>
-    <p style="font-size:.85rem;margin:0">Crédit banque ajusté à 4,35%/20 ans avec 1 an de différé (au lieu de 5,25%/15 ans). Saisonnalité mensuelle intégrée (12 coefficients). Ramp-up An 1 (65% occ, 85% ADR). Coûts additionnels : syndic, taxe habitation, provision mobilier, marketing, frais SARL. Correction : la loi 80-14 n'impose PAS de plafond de 120 jours (confusion avec la loi ELAN française). MDM Invest sera utilisé comme fonds de roulement.</p>
+    <p style="font-size:.85rem;margin:0">Crédit banque ajusté à 4,35%/20 ans avec 1 an de différé (au lieu de 5,25%/15 ans). Saisonnalité mensuelle intégrée (12 coefficients). Ramp-up An 1 (65% occ, 85% ADR). Coûts additionnels : taxe habitation, provision mobilier, marketing, frais SARL. Syndic retiré (immeuble indivisible, monopropriété). Correction : la loi 80-14 n'impose PAS de plafond de 120 jours (confusion avec la loi ELAN française). MDM Invest sera utilisé comme fonds de roulement.</p>
   </div>
 
   <!-- 1. Audit des hypothèses -->
@@ -1776,7 +1770,7 @@ tr:hover td{background:#f8fafc}
       <tbody>
         <tr><td>Renouvellement mobilier</td><td>40 000 MAD/unité</td><td>Cycle 7 ans</td><td>~1 260 000 MAD</td></tr>
         <tr><td>Taxe d'habitation</td><td>12 000 MAD/an</td><td>À partir An 6</td><td>~180 000 MAD</td></tr>
-        <tr><td>Syndic / copropriété</td><td>18 000 MAD/an</td><td>Annuel</td><td>360 000 MAD</td></tr>
+        <tr><td><s>Syndic / copropriété</s></td><td colspan="3" style="color:var(--success)">N/A — immeuble indivisible, monopropriété intégrale</td></tr>
         <tr><td>Marketing lancement</td><td>80 000 MAD</td><td>An 1 (one-shot)</td><td>80 000 MAD</td></tr>
         <tr><td>Frais création SARL</td><td>20 000 MAD</td><td>An 1 (one-shot)</td><td>20 000 MAD</td></tr>
         <tr class="total-row"><td><strong>TOTAL supplémentaire</strong></td><td></td><td></td><td><strong>~1 900 000 MAD</strong></td></tr>
@@ -1920,11 +1914,11 @@ tr:hover td{background:#f8fafc}
 </main>
 
 <!-- Scripts — strict order: data → engine → render → charts → app -->
-<script src="js/data.js?v=42"></script>
-<script src="js/engine.js?v=42"></script>
-<script src="js/render.js?v=42"></script>
-<script src="js/charts.js?v=42"></script>
-<script src="js/app.js?v=42"></script>
+<script src="js/data.js?v=43"></script>
+<script src="js/engine.js?v=43"></script>
+<script src="js/render.js?v=43"></script>
+<script src="js/charts.js?v=43"></script>
+<script src="js/app.js?v=43"></script>
 
 </body>
 </html>
