@@ -311,14 +311,24 @@ function compute(scenario) {
     }
     return rate;
   }
-  const irrFlows = [-apportNet, ...projections.map(p => p.cashFlowNet)];
+  // Valeur résiduelle pour TRI/VAN — le bien est "revendu" fictivement à l'an 20
+  const tauxAppreciation = REVENUE_ASSUMPTIONS.croissanceTarifs; // 3%/an
+  const valeurResiduelle = totalProjet * Math.pow(1 + tauxAppreciation, PROJECTION_YEARS);
+
+  // TRI inclut la valeur résiduelle dans le dernier flux (convention immobilière)
+  const irrFlows = [-apportNet, ...projections.map((p, i) =>
+    i === projections.length - 1 ? p.cashFlowNet + valeurResiduelle : p.cashFlowNet
+  )];
   const tri = computeIRR(irrFlows, 0.10);
 
-  // VAN (NPV) — Valeur Actuelle Nette au taux d'actualisation 8%
+  // VAN (NPV) — Valeur Actuelle Nette au taux d'actualisation 8%, avec valeur résiduelle
   const tauxActualisation = 0.08;
   let van = -apportNet;
   for (let t = 0; t < projections.length; t++) {
-    van += projections[t].cashFlowNet / Math.pow(1 + tauxActualisation, t + 1);
+    const flux = t === projections.length - 1
+      ? projections[t].cashFlowNet + valeurResiduelle
+      : projections[t].cashFlowNet;
+    van += flux / Math.pow(1 + tauxActualisation, t + 1);
   }
 
   // Cash-on-Cash Return An 1 (CF net / apport net = terrain - MDM)
@@ -330,10 +340,22 @@ function compute(scenario) {
   // Marge Cash-Flow (CF net / Revenu total)
   const margeCF = y1.revTotal > 0 ? y1.cashFlowNet / y1.revTotal : 0;
 
-  // Wealth creation — total CF cumulé sur 20 ans
+  // Wealth creation — CF cumulé + valeur résiduelle du bien
+  // valeurResiduelle et tauxAppreciation déjà calculés plus haut (pour TRI/VAN)
   const y20 = projections[projections.length - 1];
-  const wealthTotal = y20.cumulCashFlow;
+  const cumulCF20 = y20.cumulCashFlow;
+
+  const wealthTotal = cumulCF20 + valeurResiduelle - apportNet;
   const multipleApport = wealthTotal / apportNet;
+
+  // Breakdown wealth pour affichage
+  const wealthBreakdown = {
+    cumulCF: cumulCF20,
+    valeurResiduelle,
+    apportNet,
+    tauxAppreciation,
+    total: wealthTotal,
+  };
 
   // Debt Freedom Year — année où toute la dette est remboursée
   const debtFreedomIdx = projections.findIndex(p => p.debtServiceTotal === 0);
@@ -540,7 +562,7 @@ function compute(scenario) {
       paybackYear, nuiteesParAn, dscr, breakEvenOcc,
       // Advanced CF KPIs
       tri, van, tauxActualisation, cashOnCash, cfMensuelAn1, margeCF,
-      wealthTotal, multipleApport, debtFreedomYear, cfPostDebtAvg,
+      wealthTotal, wealthBreakdown, multipleApport, debtFreedomYear, cfPostDebtAvg,
       isCumule, ratioIS, rendementStabilise, cfGrowthY10, cfGrowthY20,
     },
     tva: { constructionHT, tvaConstruction, tvaCollecteeAn1, tvaDeductibleAn1, creditTVA, dureeRecupCredit, tvaProjections },

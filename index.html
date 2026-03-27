@@ -1070,7 +1070,18 @@ tr:hover td{background:#f8fafc}
   <div class="card">
     <div class="card-title">Trajectoire Long-Terme</div>
     <div class="kpi-grid" style="margin-bottom:0">
-      <div class="kpi-card"><div class="kpi-label">Wealth Creation (20 ans)</div><div class="kpi-value kpi-green" id="cf-wealth">–</div><div class="kpi-sub" id="cf-multiple">–</div></div>
+      <div class="kpi-card" style="grid-column:span 2">
+        <div class="kpi-label">Création de Richesse (20 ans)</div>
+        <div class="kpi-value kpi-green" id="cf-wealth">–</div>
+        <div class="kpi-sub" id="cf-multiple">–</div>
+        <div id="wealth-breakdown" style="margin-top:10px;font-size:0.82rem;line-height:1.7;border-top:1px solid #e5e7eb;padding-top:8px;text-align:left">
+          <div style="display:flex;justify-content:space-between"><span>Cumul Cash-Flow Net (20 ans)</span><span id="wb-cf" style="font-weight:600">–</span></div>
+          <div style="display:flex;justify-content:space-between"><span>+ Valeur résiduelle du bien*</span><span id="wb-resid" style="font-weight:600;color:#2563eb">–</span></div>
+          <div style="display:flex;justify-content:space-between"><span>− Apport net (terrain − MDM)</span><span id="wb-apport" style="font-weight:600;color:#ef4444">–</span></div>
+          <div style="display:flex;justify-content:space-between;border-top:1px solid #e5e7eb;padding-top:4px;margin-top:4px;font-weight:700"><span>= Création de Richesse Nette</span><span id="wb-total" style="color:#059669">–</span></div>
+          <div style="font-size:0.72rem;color:#9ca3af;margin-top:6px">*Appréciation <span id="wb-taux">3%</span>/an — bien entretenu, Maarif Casablanca</div>
+        </div>
+      </div>
       <div class="kpi-card"><div class="kpi-label">Libération Dette</div><div class="kpi-value" id="cf-debt-free">–</div><div class="kpi-sub">Année fin remboursement</div></div>
       <div class="kpi-card"><div class="kpi-label">CF Moyen Post-Dette</div><div class="kpi-value kpi-green" id="cf-post-debt">–</div><div class="kpi-sub" id="cf-post-debt-mensuel">–</div></div>
       <div class="kpi-card"><div class="kpi-label">Rendement Stabilisé</div><div class="kpi-value kpi-green" id="cf-rdt-stab">–</div><div class="kpi-sub">Moyenne Y15-Y20 / apport</div></div>
@@ -1577,18 +1588,19 @@ tr:hover td{background:#f8fafc}
   </div>
 </div>
 
-<div style="margin-top:24px;padding:12px 16px;font-size:.76rem;color:var(--text-sec);border-top:1px solid var(--border)">
-  * Montants nets après déduction de la subvention MDM Invest (10%, plafond 5M MAD). Sous condition d'acceptation du dossier MDM Invest par Tamwilcom.
+<div style="margin-top:24px;padding:12px 16px;font-size:.76rem;color:var(--text-sec);border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+  <span>* Montants nets après déduction de la subvention MDM Invest (10%, plafond 5M MAD). Sous condition d'acceptation du dossier MDM Invest par Tamwilcom.</span>
+  <a href="architecture.html" style="color:var(--accent);text-decoration:none;font-weight:500;white-space:nowrap">Architecture technique &rarr;</a>
 </div>
 
 </main>
 
 <!-- Scripts — strict order: data → engine → render → charts → app -->
-<script src="js/data.js?v=32"></script>
-<script src="js/engine.js?v=32"></script>
-<script src="js/render.js?v=32"></script>
-<script src="js/charts.js?v=32"></script>
-<script src="js/app.js?v=32"></script>
+<script src="js/data.js?v=33"></script>
+<script src="js/engine.js?v=33"></script>
+<script src="js/render.js?v=33"></script>
+<script src="js/charts.js?v=33"></script>
+<script src="js/app.js?v=33"></script>
 
 </body>
 </html>

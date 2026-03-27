@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Architecture — Appart'Hôtel Maarif</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --primary:#1e3a5f; --accent:#3b7dd8; --green:#16a34a; --amber:#d97706;
+  --bg:#fafaf9; --card:#fff; --text:#1a1a2e; --text-sec:#64748b; --border:#e7e5e4;
+  --code-bg:#f8fafc; --code-border:#e2e8f0;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:'DM Sans',sans-serif; background:var(--bg); color:var(--text); line-height:1.7; }
+.container { max-width:900px; margin:0 auto; padding:24px 16px; }
+
+/* Header */
+.hero { background:linear-gradient(135deg,#1e3a5f,#2d5a8e); color:#fff; padding:48px 24px; border-radius:16px; margin-bottom:32px; }
+.hero h1 { font-size:1.8rem; font-weight:700; margin-bottom:8px; }
+.hero p { opacity:0.85; font-size:0.95rem; }
+.hero .back-link { color:#93c5fd; text-decoration:none; font-size:0.85rem; display:inline-block; margin-bottom:16px; }
+.hero .back-link:hover { text-decoration:underline; }
+
+/* Cards */
+.card { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:24px; margin-bottom:20px; }
+.card h2 { font-size:1.25rem; font-weight:700; color:var(--primary); margin-bottom:16px; border-bottom:2px solid var(--accent); padding-bottom:8px; }
+.card h3 { font-size:1.05rem; font-weight:600; color:var(--primary); margin:20px 0 10px; }
+
+/* Flow diagram */
+.flow { display:flex; align-items:center; justify-content:center; gap:8px; flex-wrap:wrap; margin:20px 0; }
+.flow-box { background:var(--accent); color:#fff; padding:10px 18px; border-radius:8px; font-weight:600; font-size:0.85rem; text-align:center; min-width:100px; }
+.flow-box.data { background:#7c3aed; }
+.flow-box.engine { background:#059669; }
+.flow-box.render { background:#d97706; }
+.flow-box.charts { background:#dc2626; }
+.flow-box.app { background:#1e3a5f; }
+.flow-arrow { font-size:1.2rem; color:var(--text-sec); }
+
+/* Code blocks */
+code { font-family:'JetBrains Mono',monospace; font-size:0.82rem; background:var(--code-bg); padding:2px 6px; border-radius:4px; border:1px solid var(--code-border); }
+pre { background:var(--code-bg); border:1px solid var(--code-border); border-radius:8px; padding:16px; overflow-x:auto; margin:12px 0; font-family:'JetBrains Mono',monospace; font-size:0.8rem; line-height:1.6; }
+
+/* Tables */
+table { width:100%; border-collapse:collapse; margin:12px 0; font-size:0.85rem; }
+th { background:#f1f5f9; text-align:left; padding:10px 12px; font-weight:600; border-bottom:2px solid var(--border); }
+td { padding:8px 12px; border-bottom:1px solid var(--border); vertical-align:top; }
+tr:hover { background:#f8fafc; }
+
+/* Formula boxes */
+.formula { background:#eff6ff; border:1px solid #bfdbfe; border-radius:8px; padding:14px 18px; margin:12px 0; font-family:'JetBrains Mono',monospace; font-size:0.82rem; line-height:1.8; }
+.formula .label { font-family:'DM Sans',sans-serif; font-weight:600; color:var(--accent); font-size:0.78rem; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px; }
+
+/* Tag badges */
+.tag { display:inline-block; padding:2px 8px; border-radius:12px; font-size:0.72rem; font-weight:600; margin-right:4px; }
+.tag-data { background:#ede9fe; color:#7c3aed; }
+.tag-engine { background:#d1fae5; color:#059669; }
+.tag-render { background:#fef3c7; color:#d97706; }
+.tag-charts { background:#fee2e2; color:#dc2626; }
+.tag-app { background:#e0e7ff; color:#1e3a5f; }
+
+/* Section list */
+.section-list { list-style:none; padding:0; }
+.section-list li { padding:6px 0; border-bottom:1px solid #f1f5f9; }
+.section-list li:last-child { border-bottom:none; }
+
+/* Responsive */
+@media(max-width:600px) {
+  .hero h1 { font-size:1.4rem; }
+  .flow { gap:4px; }
+  .flow-box { padding:8px 12px; font-size:0.75rem; min-width:70px; }
+  pre { font-size:0.72rem; padding:10px; }
+}
+</style>
+</head>
+<body>
+<div class="container">
+
+<!-- Hero -->
+<div class="hero">
+  <a href="index.html" class="back-link">&larr; Retour au dashboard</a>
+  <h1>Architecture Technique</h1>
+  <p>Appart'Hôtel Maarif &mdash; Simulateur Financier v33</p>
+  <p style="font-size:0.82rem;opacity:0.7;margin-top:8px">Vanilla JS &bull; Chart.js 4.4.1 &bull; GitHub Pages &bull; Zero dependencies</p>
+</div>
+
+<!-- 1. Vue d'ensemble -->
+<div class="card">
+  <h2>1. Pipeline de Données</h2>
+  <p>L'application suit un flux unidirectionnel strict en 5 couches. Aucun framework, aucun bundler &mdash; du JavaScript pur optimis&eacute; pour la lisibilit&eacute; et la maintenabilit&eacute;.</p>
+
+  <div class="flow">
+    <div class="flow-box data">data.js</div>
+    <div class="flow-arrow">&rarr;</div>
+    <div class="flow-box engine">engine.js</div>
+    <div class="flow-arrow">&rarr;</div>
+    <div class="flow-box render">render.js</div>
+    <div class="flow-arrow">&rarr;</div>
+    <div class="flow-box charts">charts.js</div>
+    <div class="flow-arrow">&larr;</div>
+    <div class="flow-box app">app.js</div>
+  </div>
+
+  <table>
+    <tr><th>Couche</th><th>Fichier</th><th>R&ocirc;le</th><th>~Lignes</th></tr>
+    <tr><td><span class="tag tag-data">DATA</span></td><td><code>data.js</code></td><td>Donn&eacute;es brutes du projet &mdash; z&eacute;ro calcul. Terrain, budget, unit&eacute;s, sc&eacute;narios, charges, MDM, Tamwilkom, banque, fiscalit&eacute;, Go Siyaha.</td><td>~1 300</td></tr>
+    <tr><td><span class="tag tag-engine">ENGINE</span></td><td><code>engine.js</code></td><td>Moteur de calcul pur (fonctions pures). Projections 20 ans, financement, KPIs, TVA, sensibilit&eacute;.</td><td>~580</td></tr>
+    <tr><td><span class="tag tag-render">RENDER</span></td><td><code>render.js</code></td><td>Rendu DOM &mdash; peuple toutes les sections HTML avec les r&eacute;sultats du moteur.</td><td>~1 500</td></tr>
+    <tr><td><span class="tag tag-charts">CHARTS</span></td><td><code>charts.js</code></td><td>Visualisations Chart.js &mdash; 8 graphiques avec tooltips HTML custom.</td><td>~700</td></tr>
+    <tr><td><span class="tag tag-app">APP</span></td><td><code>app.js</code></td><td>Orchestrateur &mdash; state, event binding, sc&eacute;narios, panneau de contr&ocirc;le, navigation.</td><td>~530</td></tr>
+  </table>
+</div>
+
+<!-- 2. Data Layer -->
+<div class="card">
+  <h2>2. Data Layer <span class="tag tag-data">data.js</span></h2>
+  <p>Toutes les hypoth&egrave;ses du projet, document&eacute;es avec leurs sources. Aucun calcul &mdash; uniquement des constantes.</p>
+
+  <h3>Objets principaux</h3>
+  <table>
+    <tr><th>Objet</th><th>Contenu</th></tr>
+    <tr><td><code>PROJECT</code></td><td>M&eacute;tadonn&eacute;es (nom, adresse, titre foncier, coordonn&eacute;es GPS)</td></tr>
+    <tr><td><code>TERRAIN</code></td><td>Surface 174 m&sup2;, prix 2.3M MAD, frais acquisition 6.5%</td></tr>
+    <tr><td><code>BUDGET</code></td><td>Total TTC 7M MAD + ameublement 40K/unit&eacute;</td></tr>
+    <tr><td><code>UNITS[]</code></td><td>11 unit&eacute;s (7 studios T2 + 4 lofts) &mdash; surfaces, &eacute;tages, exposition</td></tr>
+    <tr><td><code>REVENUE_ASSUMPTIONS</code></td><td>Canaux (55% OTA, 25% direct, 20% informel), commissions 15%, croissance 3%/an</td></tr>
+    <tr><td><code>SCENARIOS{}</code></td><td>5 sc&eacute;narios : prudent &rarr; prudent_moyen &rarr; moyen &rarr; moyen_optimiste &rarr; optimiste</td></tr>
+    <tr><td><code>CHARGES</code></td><td>Gestion 12%, salaires, utilities, entretien, comptable, divers</td></tr>
+    <tr><td><code>MDM_INVEST</code></td><td>Subvention MRE : 10% du projet, plafonn&eacute; 5M MAD</td></tr>
+    <tr><td><code>TAMWILKOM</code></td><td>Pr&ecirc;t islamique : taux 2%, dur&eacute;e 10 ans, diff&eacute;r&eacute; 2 ans</td></tr>
+    <tr><td><code>BANQUE_CLASSIQUE</code></td><td>Cr&eacute;dit classique : taux 4.75%, dur&eacute;e 15 ans</td></tr>
+    <tr><td><code>FISCALITE</code></td><td>IS 20%, amortissement 25 ans, exon&eacute;ration 5 ans Go Siyaha</td></tr>
+    <tr><td><code>GO_SIYAHA_ECO</code></td><td>Bonus &eacute;cologique : 40% sur investissement vert (panneaux solaires, etc.)</td></tr>
+  </table>
+
+  <h3>Convention Surface Utile (Maroc)</h3>
+  <div class="formula">
+    <div class="label">Surface Utile</div>
+    surface_utile = surface_int&eacute;rieure + 50% &times; surface_terrasse
+  </div>
+</div>
+
+<!-- 3. Engine -->
+<div class="card">
+  <h2>3. Moteur de Calcul <span class="tag tag-engine">engine.js</span></h2>
+  <p>Fonction pure <code>computeAll(scenario)</code> qui retourne l'&eacute;tat complet du mod&egrave;le financier.</p>
+
+  <h3>Structure du Financement</h3>
+  <div class="formula">
+    <div class="label">Co&ucirc;t Total</div>
+    totalProjet = budget_TTC + ameublement (11 &times; 40K) + co&ucirc;t_net_&eacute;co
+  </div>
+  <div class="formula">
+    <div class="label">MDM Invest (remboursement MRE)</div>
+    subventionMDM = min(totalProjet &times; 10%, 5 000 000)<br>
+    <em style="font-size:0.75rem;color:#64748b">Rembours&eacute;e &agrave; l'investisseur &mdash; ne r&eacute;duit PAS le financement bancaire</em>
+  </div>
+  <div class="formula">
+    <div class="label">Investissement Net</div>
+    investissementNet = totalProjet &minus; subventionMDM<br>
+    apportTerrain = co&ucirc;t_terrain + frais (2 449 500 MAD)<br>
+    <strong>apportNet = apportTerrain &minus; subventionMDM</strong> &larr; capital r&eacute;ellement immobilis&eacute;
+  </div>
+  <div class="formula">
+    <div class="label">Montant &agrave; Financer</div>
+    montantAFinancer = totalProjet &minus; apportTerrain<br>
+    <em style="font-size:0.75rem;color:#64748b">R&eacute;partition 50/50 : Tamwilkom + Banque classique</em>
+  </div>
+
+  <h3>Projections sur 20 ans</h3>
+  <p>Pour chaque ann&eacute;e <code>y</code> (1 &rarr; 20) :</p>
+  <pre>
+revBrut    = (studios &times; prixStudio + lofts &times; prixLoft) &times; 365 &times; occ &times; (1.03)^y
+revDeclare = revBrut &times; (1 &minus; partInformel)
+revTotal   = revDeclare + loyerCommercial &times; 12
+
+charges    = gestion + salaires + utilities + entretien + ...
+              (index&eacute;es 3%/an)
+
+cashFlowNet = revTotal &minus; charges &minus; debtService &minus; IS
+cumulCF     += cashFlowNet</pre>
+
+  <h3>KPIs Financiers</h3>
+  <table>
+    <tr><th>KPI</th><th>Formule</th></tr>
+    <tr><td>Rendement Brut</td><td><code>revBrut_an1 / totalProjet</code></td></tr>
+    <tr><td>Rendement Net / Projet</td><td><code>CF_net_an1 / totalProjet</code></td></tr>
+    <tr><td>Rendement Net / Apport</td><td><code>CF_net_an1 / apportNet</code></td></tr>
+    <tr><td>DSCR</td><td><code>(CF_avant_dette) / (service_dette_an1)</code></td></tr>
+    <tr><td>Payback</td><td><code>ann&eacute;e o&ugrave; cumulCF &ge; apportNet</code></td></tr>
+    <tr><td>Cash-on-Cash</td><td><code>CF_net_an1 / apportNet</code></td></tr>
+    <tr><td>Break-Even Occ.</td><td><code>charges_fixes / (revBrut / occ)</code></td></tr>
+  </table>
+
+  <h3>TRI et VAN (avec valeur r&eacute;siduelle)</h3>
+  <div class="formula">
+    <div class="label">Valeur R&eacute;siduelle (sortie fictive &agrave; l'an 20)</div>
+    valeurResiduelle = totalProjet &times; (1 + 3%)^20<br>
+    <em style="font-size:0.75rem;color:#64748b">Appr&eacute;ciation du bien entretenu &mdash; m&ecirc;me taux que la croissance des tarifs</em>
+  </div>
+  <div class="formula">
+    <div class="label">TRI (IRR)</div>
+    flux = [&minus;apportNet, CF1, CF2, ..., CF19, CF20 + valeurResiduelle]<br>
+    Newton-Raphson (100 it&eacute;rations, tol = 10&minus;7)
+  </div>
+  <div class="formula">
+    <div class="label">VAN (NPV) &mdash; taux 8%</div>
+    VAN = &minus;apportNet + &Sigma; (CF_t + [valeurResiduelle si t=20]) / (1.08)^t
+  </div>
+
+  <h3>Cr&eacute;ation de Richesse</h3>
+  <div class="formula">
+    <div class="label">Wealth Creation (20 ans)</div>
+    wealth = cumulCashFlow_20ans + valeurResiduelle &minus; apportNet
+  </div>
+
+  <h3>Analyse de Sensibilit&eacute;</h3>
+  <p>6 variables test&eacute;es &agrave; &plusmn;10% et &plusmn;20% : occupation, prix studio, prix loft, charges, taux banque, loyer commercial. Impact mesur&eacute; sur le cash-flow net ann&eacute;e 1.</p>
+</div>
+
+<!-- 4. Render Layer -->
+<div class="card">
+  <h2>4. Rendu DOM <span class="tag tag-render">render.js</span></h2>
+  <p>14 fonctions de rendu, chacune responsable d'une section du dashboard :</p>
+
+  <table>
+    <tr><th>Fonction</th><th>Section</th></tr>
+    <tr><td><code>renderOverview()</code></td><td>Vue d'ensemble &mdash; KPIs principaux, verdict, score</td></tr>
+    <tr><td><code>renderBudget()</code></td><td>Budget &mdash; total brut, MDM, co&ucirc;t net investisseur</td></tr>
+    <tr><td><code>renderCapexOpex()</code></td><td>CAPEX/OPEX &mdash; tableau d&eacute;taill&eacute;, MDM en ligne bleue s&eacute;par&eacute;e</td></tr>
+    <tr><td><code>renderFinancement()</code></td><td>Montage &mdash; barre 3 segments (terrain/TK/banque), note MDM</td></tr>
+    <tr><td><code>renderCashflow()</code></td><td>Cash-flow &mdash; KPIs, trajectoire, breakdown wealth, tableau 20 ans</td></tr>
+    <tr><td><code>renderRevenu()</code></td><td>Revenus &mdash; d&eacute;composition par canal et type d'unit&eacute;</td></tr>
+    <tr><td><code>renderCharges()</code></td><td>Charges &mdash; d&eacute;tail annuel, poids relatif</td></tr>
+    <tr><td><code>renderDette()</code></td><td>Dette &mdash; &eacute;ch&eacute;ancier Tamwilkom + Banque, total int&eacute;r&ecirc;ts</td></tr>
+    <tr><td><code>renderSensitivity()</code></td><td>Sensibilit&eacute; &mdash; tornado chart interactif</td></tr>
+    <tr><td><code>renderTVA()</code></td><td>TVA &mdash; cr&eacute;dit initial, r&eacute;cup&eacute;ration progressive</td></tr>
+    <tr><td><code>renderRisques()</code></td><td>Matrice de risques &mdash; probabilit&eacute;/impact</td></tr>
+    <tr><td><code>renderScenarioComparison()</code></td><td>Comparaison 5 sc&eacute;narios &mdash; occ, prix/nuit, TRI, VAN, DSCR</td></tr>
+    <tr><td><code>renderGestion()</code></td><td>Gestion propre vs soci&eacute;t&eacute; de gestion</td></tr>
+    <tr><td><code>renderGoSiyaha()</code></td><td>Go Siyaha Eco &mdash; bonus &eacute;cologique</td></tr>
+  </table>
+
+  <h3>Helpers</h3>
+  <p><code>setText(id, val)</code> &mdash; mise &agrave; jour DOM s&ucirc;re. <code>fmtMAD()</code>, <code>fmtPct()</code>, <code>fmtNum()</code> &mdash; formatage monnaie/pourcentage/nombre.</p>
+</div>
+
+<!-- 5. Charts -->
+<div class="card">
+  <h2>5. Visualisations <span class="tag tag-charts">charts.js</span></h2>
+  <p>8 graphiques Chart.js 4.4.1 avec tooltips HTML custom et couleurs dynamiques.</p>
+
+  <table>
+    <tr><th>Chart</th><th>Type</th><th>Donn&eacute;es</th></tr>
+    <tr><td>Cash-Flow Net</td><td>Bar + Line (cumul)</td><td>20 ans, horizon switchable (5/10/20), cumul toggleable, vue mensuelle</td></tr>
+    <tr><td>Montage Financier</td><td>Doughnut</td><td>3 segments : Terrain, Tamwilkom, Banque</td></tr>
+    <tr><td>R&eacute;partition Revenus</td><td>Doughnut</td><td>Studios, Lofts, Commercial, par canal</td></tr>
+    <tr><td>R&eacute;partition Charges</td><td>Doughnut</td><td>D&eacute;tail par poste de charges</td></tr>
+    <tr><td>&Eacute;volution Rendement</td><td>Line</td><td>Rendement net / apportNet sur 20 ans</td></tr>
+    <tr><td>Sensibilit&eacute;</td><td>Horizontal Bar</td><td>Tornado &plusmn;20% sur 6 variables</td></tr>
+    <tr><td>Service de Dette</td><td>Stacked Bar</td><td>TK + Banque, capital vs int&eacute;r&ecirc;ts</td></tr>
+    <tr><td>TVA Cumul</td><td>Line</td><td>Cr&eacute;dit TVA r&eacute;siduel sur 20 ans</td></tr>
+  </table>
+
+  <h3>Contr&ocirc;les Cash-Flow</h3>
+  <p>Le graphique principal offre 4 groupes de contr&ocirc;les :</p>
+  <table>
+    <tr><th>Contr&ocirc;le</th><th>Options</th><th>Comportement</th></tr>
+    <tr><td>Horizon</td><td>5 / 10 / 20 ans</td><td>Filtre les projections affich&eacute;es</td></tr>
+    <tr><td>P&eacute;riode</td><td>Annuel / Mensuel</td><td>Vue mensuelle = ann&eacute;e 1 sur 12 mois</td></tr>
+    <tr><td>Cumul</td><td>Toggle on/off</td><td>Courbe cumul sur axe Y droit &mdash; <strong>d&eacute;sactiv&eacute; en vue mensuelle</strong></td></tr>
+    <tr><td>Filtre</td><td>Tout / Revenus / Charges</td><td>Datasets s&eacute;lectifs</td></tr>
+  </table>
+</div>
+
+<!-- 6. App Layer -->
+<div class="card">
+  <h2>6. Orchestrateur <span class="tag tag-app">app.js</span></h2>
+
+  <h3>Pipeline de rendu</h3>
+  <pre>
+recalc(scenario)
+  &rarr; computeAll(scenario)    // engine.js
+  &rarr; renderAll(state)        // render.js (14 sections)
+  &rarr; updateAllCharts(state)  // charts.js (8 graphiques)
+  &rarr; updateControlPanel()    // sync sliders/inputs</pre>
+
+  <h3>Gestion d'&eacute;tat</h3>
+  <table>
+    <tr><th>Variable</th><th>R&ocirc;le</th></tr>
+    <tr><td><code>currentScenario</code></td><td>Sc&eacute;nario actif (prudent &rarr; optimiste)</td></tr>
+    <tr><td><code>currentView</code></td><td>Vue active (overview, budget, cashflow, ...)</td></tr>
+    <tr><td><code>currentState</code></td><td>Dernier r&eacute;sultat de <code>computeAll()</code></td></tr>
+    <tr><td><code>customOverrides</code></td><td>null = pr&eacute;set | objet = param&egrave;tres custom</td></tr>
+  </table>
+
+  <h3>Panneau de Contr&ocirc;le</h3>
+  <p>Deux niveaux de param&egrave;tres modifiables en temps r&eacute;el :</p>
+  <table>
+    <tr><th>Niveau</th><th>Param&egrave;tres</th></tr>
+    <tr><td>Basic (li&eacute;s au sc&eacute;nario)</td><td>Occupation, prix studio/loft, loyer commercial, taux banque</td></tr>
+    <tr><td>Avanc&eacute; (globaux)</td><td>18 param&egrave;tres : charges, canaux, dur&eacute;es pr&ecirc;ts, taux TK, diff&eacute;r&eacute;, etc.</td></tr>
+  </table>
+</div>
+
+<!-- 7. Déploiement -->
+<div class="card">
+  <h2>7. D&eacute;ploiement</h2>
+  <table>
+    <tr><th>Aspect</th><th>D&eacute;tail</th></tr>
+    <tr><td>H&eacute;bergement</td><td>GitHub Pages &mdash; branche <code>gh-pages</code></td></tr>
+    <tr><td>Repo</td><td><code>lallakenza/appart-hotel-maarif</code></td></tr>
+    <tr><td>Cache-busting</td><td>Param&egrave;tre <code>?v=N</code> incr&eacute;ment&eacute; &agrave; chaque d&eacute;ploiement</td></tr>
+    <tr><td>CDN</td><td>Chart.js 4.4.1 via jsDelivr, DM Sans + JetBrains Mono via Google Fonts</td></tr>
+    <tr><td>Build</td><td>Aucun &mdash; fichiers servis directement (pas de bundler)</td></tr>
+  </table>
+</div>
+
+<!-- 8. Glossaire -->
+<div class="card">
+  <h2>8. Glossaire Financier</h2>
+  <table>
+    <tr><th>Terme</th><th>D&eacute;finition</th></tr>
+    <tr><td><strong>apportNet</strong></td><td>Capital r&eacute;ellement immobilis&eacute; par l'investisseur = terrain &minus; MDM cashback</td></tr>
+    <tr><td><strong>MDM Invest</strong></td><td>Subvention marocaine pour MRE : 10% du projet, rembours&eacute;e &agrave; l'investisseur (pas &agrave; la banque)</td></tr>
+    <tr><td><strong>DSCR</strong></td><td>Debt Service Coverage Ratio &mdash; capacit&eacute; &agrave; servir la dette (&ge;1.5x = confortable)</td></tr>
+    <tr><td><strong>TRI</strong></td><td>Taux de Rendement Interne &mdash; rendement annualis&eacute; incluant valeur r&eacute;siduelle</td></tr>
+    <tr><td><strong>VAN</strong></td><td>Valeur Actuelle Nette &mdash; cr&eacute;ation de valeur actualis&eacute;e &agrave; 8%</td></tr>
+    <tr><td><strong>Tamwilkom</strong></td><td>Produit de financement participatif (mourabaha) de la CDG</td></tr>
+    <tr><td><strong>Go Siyaha</strong></td><td>Programme Maroc PME pour le tourisme &mdash; volet croissance verte</td></tr>
+    <tr><td><strong>Surface utile</strong></td><td>Int&eacute;rieur + 50% terrasse (convention marocaine)</td></tr>
+    <tr><td><strong>Wealth Creation</strong></td><td>Cumul CF 20 ans + valeur r&eacute;siduelle &minus; apport net</td></tr>
+  </table>
+</div>
+
+<div style="text-align:center;padding:24px;color:var(--text-sec);font-size:0.8rem">
+  &copy; 2026 &mdash; Appart'H&ocirc;tel Maarif &bull; Architecture v1.0
+</div>
+
+</div>
+</body>
+</html>

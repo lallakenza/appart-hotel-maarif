@@ -723,6 +723,16 @@ function renderCashFlow(S) {
   // Trajectoire long-terme
   setText("cf-wealth",        fmtMAD(K.wealthTotal));
   setText("cf-multiple",      "×" + K.multipleApport.toFixed(1) + " l'apport récupéré");
+
+  // Wealth breakdown
+  if (K.wealthBreakdown) {
+    const wb = K.wealthBreakdown;
+    setText("wb-cf",     fmtMAD(wb.cumulCF));
+    setText("wb-resid",  "+" + fmtMAD(wb.valeurResiduelle));
+    setText("wb-apport", "−" + fmtMAD(wb.apportNet));
+    setText("wb-total",  fmtMAD(wb.total));
+    setText("wb-taux",   fmtPct(wb.tauxAppreciation, 0));
+  }
   setText("cf-debt-free",     K.debtFreedomYear ? "An " + K.debtFreedomYear : "> " + PROJECTION_YEARS + " ans");
   setText("cf-post-debt",     K.cfPostDebtAvg ? fmtMAD(K.cfPostDebtAvg) + " / an" : "–");
   setText("cf-post-debt-mensuel", K.cfPostDebtAvg ? fmtMAD(K.cfPostDebtAvg / 12) + " / mois" : "");
