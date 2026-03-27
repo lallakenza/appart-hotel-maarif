@@ -128,10 +128,16 @@ function renderScenarioComparison(S) {
     const y1 = scState.projections[0];
     const K = scState.kpi;
 
+    // Moyenne pondérée prix/nuit (studios + lofts)
+    const nbS = scState.units.nbStudios;
+    const nbL = scState.units.nbLofts;
+    const prixMoyenNuit = (nbS * sc.prixNuitStudio + nbL * sc.prixNuitLoft) / (nbS + nbL);
+
     const tr = document.createElement("tr");
     tr.innerHTML = `
       <td><strong>${sc.label}</strong></td>
       <td class="num">${fmtPct(sc.tauxOccupation, 0)}</td>
+      <td class="num">${fmtNum(Math.round(prixMoyenNuit))} MAD</td>
       <td class="num">${fmtPct(K.rendementBrut)}</td>
       <td class="num" style="color:${y1.cashFlowNet >= 0 ? 'var(--green)' : 'var(--red)'}">${fmtK(y1.cashFlowNet)}</td>
       <td class="num" style="color:${K.tri >= 0.10 ? 'var(--green)' : K.tri >= 0.07 ? 'var(--amber)' : 'var(--red)'}">${isFinite(K.tri) ? fmtPct(K.tri, 0) : 'N/A'}</td>
