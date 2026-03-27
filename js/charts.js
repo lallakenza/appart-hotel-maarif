@@ -451,6 +451,14 @@ function chartCashFlow(S) {
   }
 
   // --- Default "all" mode ---
+  // Cumul toggle: only relevant in annual view
+  const cumulBtn = document.querySelector(".cf-cumul-btn");
+  if (cumulBtn) {
+    cumulBtn.disabled = _cfMonthly;
+    cumulBtn.style.opacity = _cfMonthly ? "0.4" : "1";
+    cumulBtn.style.pointerEvents = _cfMonthly ? "none" : "";
+  }
+
   if (_cfMonthly) {
     if (titleEl) titleEl.textContent = "Cash-Flow Net — Moyenne Mensuelle par Année";
     _buildCFMonthlyChart(ctx, S);
