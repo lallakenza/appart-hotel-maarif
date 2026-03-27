@@ -566,15 +566,22 @@ function renderRevenus(S) {
   setText("rev-commercial",  fmtMAD(y1.revCommercial));
   setText("rev-total",       fmtMAD(y1.revTotal));
   setText("rev-nuitees",     fmtNum(S.kpi.nuiteesParAn));
-  setText("rev-scenario",    sc.label + " — " + fmtPct(sc.tauxOccupation, 0) + " · Studios " + sc.prixNuitStudio + " MAD · Lofts " + sc.prixNuitLoft + " MAD");
+  const occLabel = y1.occMoyEffective != null
+    ? fmtPct(y1.occMoyEffective, 1) + " eff."
+    : fmtPct(sc.tauxOccupation, 0);
+  const rampLabel = y1.isRampUp ? " 🚀 Ramp-up" : "";
+  setText("rev-scenario",    sc.label + " — Occ. " + occLabel + rampLabel + " · Studios " + sc.prixNuitStudio + " MAD · Lofts " + sc.prixNuitLoft + " MAD");
 
   const tbody = document.getElementById("rev-table-tbody");
   if (!tbody) return;
   tbody.innerHTML = "";
   S.projections.forEach(p => {
     const tr = document.createElement("tr");
+    const occEff = p.occMoyEffective != null ? fmtPct(p.occMoyEffective, 1) : "–";
+    const ramp = p.isRampUp ? ' <span class="badge badge-amber" style="font-size:0.65rem">ramp-up</span>' : "";
     tr.innerHTML = `
-      <td>An ${p.year}</td>
+      <td>An ${p.year}${ramp}</td>
+      <td class="num">${occEff}</td>
       <td class="num">${fmtMAD(p.revBrutHotel)}</td>
       <td class="num neg">(${fmtMAD(p.commissions)})</td>
       <td class="num">${fmtMAD(p.revNetHotel)}</td>
@@ -603,8 +610,14 @@ function renderCharges(S) {
     { name: "Assurance",                             val: ch.assurance },
     { name: "Entretien & maintenance",               val: ch.entretien },
     { name: "Taxes professionnelles" + (ch.taxesPro === 0 ? " (exonéré 5 ans)" : ""), val: ch.taxesPro },
+    { name: "Syndic / copropriété",                   val: ch.syndic },
+    { name: "Taxe d'habitation" + (ch.taxeHabitation === 0 ? " (exonéré 5 ans)" : ""), val: ch.taxeHabitation },
+    { name: "Provision renouvellement mobilier",      val: ch.provisionRenouv },
     { name: "Divers & imprévus",                     val: ch.divers },
   ];
+  // Coûts ponctuels An 1
+  if (ch.marketingLancement > 0) items.push({ name: "Marketing de lancement (An 1)", val: ch.marketingLancement });
+  if (ch.fraisCreation > 0) items.push({ name: "Frais création SARL (An 1)", val: ch.fraisCreation });
   const tbody = document.getElementById("charges-tbody");
   if (!tbody) return;
   tbody.innerHTML = "";

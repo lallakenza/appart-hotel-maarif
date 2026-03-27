@@ -101,7 +101,60 @@ const REVENUE_ASSUMPTIONS = {
   partDirect: 0.25,           // % direct déclaré (site, WhatsApp, téléphone, repeat guests)
   partInformel: 0.20,         // % cash / non-déclaré — réalité marché marocain (estimation conservatrice)
   commissionOTA: 0.15,        // Booking 15-18%, Airbnb 15.5%, moyenne pondérée ~15%
-  croissanceTarifs: 0.03,     // annuelle
+  croissanceTarifs: 0.03,     // annuelle — croissance prix/nuit (≈ inflation)
+
+  // --- Appréciation du bien immobilier ---
+  // DISTINCT de la croissance tarifs : historique Casablanca 1-1,5%/an (BKAM 2015-2025)
+  // Avec effet Mondial 2030, hypothèse ajustée à 2%/an
+  // Source : BKAM/ANCFCC indice prix actifs immobiliers, Yakeey, Agenz
+  tauxAppreciation: 0.02,     // 2%/an (vs 3% ancien = croissanceTarifs, trop optimiste)
+
+  // --- Saisonnalité mensuelle ---
+  // Coefficients multiplicateurs sur le taux d'occupation annuel moyen
+  // Source : ListingOK Casablanca 2025, Airbtics saisonnalité, AirROI monthly
+  // Calibré : moyenne pondérée des coefficients = 1.0 sur 12 mois
+  // Jan 26.2% → coeff 0.55 | Fév 29.4% → 0.62 | … | Août 51.5% → 1.07
+  saisonnalite: [
+    0.55,  // Janvier  — creux absolu
+    0.62,  // Février
+    0.82,  // Mars     — reprise progressive
+    0.92,  // Avril    — printemps
+    1.02,  // Mai      — pré-saison
+    1.10,  // Juin     — début haute saison
+    1.18,  // Juillet  — pic diaspora
+    1.22,  // Août     — pic absolu
+    1.08,  // Septembre — rentrée, business stable
+    0.98,  // Octobre
+    0.80,  // Novembre — ralentissement
+    0.71,  // Décembre — hiver (sauf fêtes)
+  ],
+  // Vérification : sum(coeffs)/12 = (0.55+0.62+0.82+0.92+1.02+1.10+1.18+1.22+1.08+0.98+0.80+0.71)/12 = 1.0
+
+  // --- Période de ramp-up (montée en puissance) ---
+  // Un nouvel entrant sans avis met 12-18 mois à atteindre son potentiel
+  // Source : analyse qualitative mars 2026, retour opérateurs Maarif
+  rampUp: {
+    dureeAns: 1,              // 1ère année = ramp-up
+    coefOccupation: 0.65,     // Occupation = 65% du taux cible (ex: 48% → 31%)
+    coefADR: 0.85,            // ADR = 85% du tarif cible (discount lancement)
+  },
+
+  // --- Évolution des canaux par année ---
+  // Année 1 : forte dépendance OTA (nouvel entrant, 0 avis)
+  // Progression vers plus de direct à mesure que la réputation se construit
+  // Source : retours opérateurs, benchmark StayHere/AS Premium
+  canauxEvolution: {
+    enabled: true,             // true = canaux évoluent par année | false = fixes (ancien comportement)
+    // Coefficient annuel : multiplie la partOTA du scénario, le reste se redistribue
+    // Y1 : OTA majoré, Y5+ : converge vers la valeur scénario
+    otaMultiplier: [
+      1.30,  // An 1  — 30% de plus d'OTA que le scénario cible
+      1.20,  // An 2
+      1.10,  // An 3
+      1.05,  // An 4
+      1.00,  // An 5+ — valeur du scénario atteinte
+    ],
+  },
 };
 
 // ======= SCÉNARIOS =======
@@ -288,6 +341,29 @@ const CHARGES = {
   // Ici c'est uniquement les fournitures consommables
 
   menageLinge: 0,             // Internalisé via employé dédié (salaireMenage)
+
+  // --- COÛTS AJOUTÉS (rapport qualitative mars 2026) ---
+
+  // Renouvellement mobilier : cycle de 7 ans, 40K MAD/unité
+  // Source : benchmark hôtelier, durée de vie mobilier STR 5-7 ans
+  renouvellementMobilierCycle: 7,    // années entre deux renouvellements
+  renouvellementMobilierParUnite: 40_000, // MAD/unité (identique à l'ameublement initial)
+
+  // Taxe d'habitation + taxe services communaux
+  // Source : upsilon-consulting.com, fourchette 10-15K pour petit R+5
+  taxeHabitation: 12_000,            // MAD / an (à partir An 6, exo nouvelle construction 5 ans)
+
+  // Budget marketing de lancement (An 1 uniquement)
+  // Photos pro, config listings, promotions Booking Genius, Google Ads
+  // Source : analyse qualitative mars 2026
+  budgetMarketingLancement: 80_000,  // MAD one-shot An 1
+
+  // Frais création SARL + autorisations touristiques (An 1, one-shot)
+  fraisCreation: 20_000,             // MAD one-shot An 1
+
+  // Syndic / charges copropriété (même si propriétaire unique → entretien parties communes, ascenseur)
+  // Source : benchmark R+5 Casablanca, fourchette 12-24K/an
+  syndic: 18_000,                    // MAD / an
 };
 
 // ======= FINANCEMENT =======
@@ -339,9 +415,11 @@ const TAMWILKOM = {
 // NB : ce projet (7M MAD) relève de la catégorie TPME
 // Durée : 7-20 ans pour investissement
 const BANQUE_CLASSIQUE = {
-  tauxAnnuel: 0.0525,        // estimation médiane TPME investissement (BAM T4-2025)
-  dureeAns: 15,
-  differeAns: 0,
+  tauxAnnuel: 0.0435,        // taux crédit immobilier sept 2025 (Medias24 : 4,35% sur 25 ans)
+  dureeAns: 20,              // allongé à 20 ans (recommandation analyse qualitative)
+  differeAns: 1,             // 1 an de différé capital
+  // Ancien : 5,25% sur 15 ans — trop cher, mensualités élevées, CF négatif Y1-7
+  // Nouveau : 4,35% sur 20 ans — réduit mensualités ~25%, améliore survie opérationnelle
 };
 
 // ======= SOURCES & FEEDBACK FINANCEMENT MDM =======
@@ -978,6 +1056,9 @@ const GO_SIYAHA_PROGRAMME = {
     + "pas uniquement les subventions directes. Seuls 24 projets avaient reçu "
     + "des fonds à fév. 2025. L'écart entre 'approuvé' et 'financé' est important."
     + " Aucun bilan 2026 publié à ce jour.",
+  recommandation: "Traiter Go Siyaha comme un bonus, pas comme un financement central. "
+    + "Le taux de conversion demandes→financement est historiquement très bas (~4.5% à fév 2025). "
+    + "Ne pas intégrer la subvention dans le plan de base ; si obtenue, elle améliore le rendement.",
 
   // --- Taux de subvention par type ---
   subventions: [

@@ -41,6 +41,12 @@ const ADV_FIELDS = [
   { id: "tauxTK",       target: "TAMWILKOM",            key: "tauxAnnuel",               div: 100 },
   { id: "dureeTK",      target: "TAMWILKOM",            key: "dureeAns",                 div: 1 },
   { id: "differeTK",    target: "TAMWILKOM",            key: "differeAns",               div: 1 },
+  // Hypothèses marché (analyse qualitative)
+  { id: "appreciation", target: "REVENUE_ASSUMPTIONS",  key: "tauxAppreciation",         div: 100 },
+  { id: "marketing",    target: "CHARGES",              key: "budgetMarketingLancement",  div: 1 },
+  { id: "renouv",       target: "CHARGES",              key: "renouvellementMobilierCycle", div: 1 },
+  { id: "taxeHab",      target: "CHARGES",              key: "taxeHabitation",           div: 1 },
+  { id: "syndic",       target: "CHARGES",              key: "syndic",                   div: 1 },
 ];
 
 // Store originals for advanced fields
@@ -395,6 +401,47 @@ document.addEventListener("DOMContentLoaded", () => {
   if (ecoInput) {
     ecoInput.addEventListener("input", () => onEcoInvestChange(false));
     ecoInput.addEventListener("change", () => onEcoInvestChange(false));
+  }
+
+  // --- Bind ramp-up sliders (special — target REVENUE_ASSUMPTIONS.rampUp) ---
+  function bindRampUpSlider(id, key, div) {
+    const range = document.getElementById("ctrl-" + id);
+    const input = document.getElementById("ctrl-" + id + "-val");
+    function onChange(fromRange) {
+      if (fromRange) input.value = range.value;
+      else range.value = input.value;
+      REVENUE_ASSUMPTIONS.rampUp[key] = parseFloat(input.value) / div;
+      refresh();
+    }
+    if (range) range.addEventListener("input", () => onChange(true));
+    if (input) {
+      input.addEventListener("input", () => onChange(false));
+      input.addEventListener("change", () => onChange(false));
+    }
+  }
+  bindRampUpSlider("rampOcc", "coefOccupation", 100);
+  bindRampUpSlider("rampADR", "coefADR", 100);
+  bindRampUpSlider("rampDuree", "dureeAns", 1);
+
+  // --- Bind saisonnalité toggle ---
+  const saisonToggle = document.getElementById("ctrl-saison-toggle");
+  if (saisonToggle) {
+    // Store original coefficients
+    const origSaison = [...REVENUE_ASSUMPTIONS.saisonnalite];
+    const flatSaison = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1];
+    saisonToggle.addEventListener("change", () => {
+      REVENUE_ASSUMPTIONS.saisonnalite = saisonToggle.checked ? [...origSaison] : [...flatSaison];
+      refresh();
+    });
+  }
+
+  // --- Bind canaux evolution toggle ---
+  const canauxToggle = document.getElementById("ctrl-canaux-toggle");
+  if (canauxToggle) {
+    canauxToggle.addEventListener("change", () => {
+      REVENUE_ASSUMPTIONS.canauxEvolution.enabled = canauxToggle.checked;
+      refresh();
+    });
   }
 
   // Initial sync

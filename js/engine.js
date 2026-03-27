@@ -103,25 +103,60 @@ function compute(scenario) {
   let cumulCF = 0; // pas d'apport cash, apport = terrain
 
   // --- Paramètres de répartition canaux (par scénario ou défaut) ---
-  const partOTA = sc.partOTA ?? REVENUE_ASSUMPTIONS.partOTA;
-  const partInformel = sc.partInformel ?? REVENUE_ASSUMPTIONS.partInformel;
+  const basePartOTA = sc.partOTA ?? REVENUE_ASSUMPTIONS.partOTA;
+  const basePartInformel = sc.partInformel ?? REVENUE_ASSUMPTIONS.partInformel;
+  const basePartDirect = sc.partDirect ?? REVENUE_ASSUMPTIONS.partDirect;
   const commissionOTA = REVENUE_ASSUMPTIONS.commissionOTA;
   const nbEmployesSc = sc.nbEmployes ?? CHARGES.nbEmployes;
   const consommablesPN = sc.consommablesParNuitee ?? CHARGES.consommablesParNuitee;
 
+  // --- Saisonnalité & ramp-up ---
+  const saisonCoeffs = REVENUE_ASSUMPTIONS.saisonnalite;
+  const rampUp = REVENUE_ASSUMPTIONS.rampUp;
+  const canauxEvo = REVENUE_ASSUMPTIONS.canauxEvolution;
+
   for (let y = 0; y < PROJECTION_YEARS; y++) {
     const growth = Math.pow(1 + REVENUE_ASSUMPTIONS.croissanceTarifs, y);
-    const prixStudio = sc.prixNuitStudio * growth;
-    const prixLoft = sc.prixNuitLoft * growth;
+
+    // ═══ RAMP-UP : An 1 pénalité sur ADR ═══
+    const isRampUp = y < rampUp.dureeAns;
+    const rampADR = isRampUp ? rampUp.coefADR : 1.0;
+    const prixStudio = sc.prixNuitStudio * growth * rampADR;
+    const prixLoft = sc.prixNuitLoft * growth * rampADR;
+
+    // ═══ SAISONNALITÉ : calcul mensuel de l'occupation effective ═══
+    // Au lieu de occ × 365, on calcule mois par mois avec coefficients saisonniers
+    const rampOcc = isRampUp ? rampUp.coefOccupation : 1.0;
+    const occEffective = occ * rampOcc; // occupation cible ajustée ramp-up
+    let nuiteesStudios = 0, nuiteesLofts = 0;
+    const joursParMois = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+    const occupationMensuelle = []; // pour affichage futur
+    for (let m = 0; m < 12; m++) {
+      const occMois = Math.min(occEffective * saisonCoeffs[m], 1.0); // cap à 100%
+      occupationMensuelle.push(occMois);
+      nuiteesStudios += nbStudios * joursParMois[m] * occMois;
+      nuiteesLofts += nbLofts * joursParMois[m] * occMois;
+    }
+    const occMoyEffective = occupationMensuelle.reduce((a, b) => a + b, 0) / 12;
+
+    // ═══ ÉVOLUTION DES CANAUX PAR ANNÉE ═══
+    let partOTA = basePartOTA;
+    let partInformel = basePartInformel;
+    if (canauxEvo.enabled) {
+      const multIdx = Math.min(y, canauxEvo.otaMultiplier.length - 1);
+      const otaMult = canauxEvo.otaMultiplier[multIdx];
+      partOTA = Math.min(basePartOTA * otaMult, 0.90); // cap 90%
+      // L'excédent OTA est pris sur la part directe (pas sur informel)
+      // partDirect diminue, partInformel reste stable
+    }
 
     // ═══ REVENUS ═══
-    // Revenu brut hébergement (100% des nuitées)
-    const revStudios = nbStudios * prixStudio * 365 * occ;
-    const revLofts = nbLofts * prixLoft * 365 * occ;
+    // Revenu brut hébergement — avec saisonnalité et ramp-up intégrés
+    const revStudios = nuiteesStudios * prixStudio;
+    const revLofts = nuiteesLofts * prixLoft;
     const revBrutHotel = revStudios + revLofts;
 
     // Commission OTA : ne s'applique que sur la part OTA du CA (pas 100%)
-    // Réalité : 55-70% passe par Booking/Airbnb, le reste est direct ou informel
     const commissions = revBrutHotel * partOTA * commissionOTA;
     const revNetHotel = revBrutHotel - commissions;
 
@@ -138,7 +173,7 @@ function compute(scenario) {
     const gestion = revBrutHotel * CHARGES.tauxGestion;
 
     // Consommables : variable selon nuitées réelles (linge, amenities, produits ménage)
-    const nuiteesAn = nbUnites * 365 * occ;
+    const nuiteesAn = nuiteesStudios + nuiteesLofts; // saisonnalité + ramp-up intégrés
     let consommables = nuiteesAn * consommablesPN;
     const economieConsommablesEco = ecoEnabled ? consommables * GO_SIYAHA_ECO.reductionConsommables : 0;
     consommables -= economieConsommablesEco;
@@ -146,8 +181,8 @@ function compute(scenario) {
     // Comptable : forfait ANNUEL (corrigé de mensuel → annuel)
     const comptable = CHARGES.comptableAnnuel;
 
-    // Utilities : partie fixe + partie variable (proportionnelle à l'occupation)
-    const nbUnitesOccupees = nbUnites * occ; // unités occupées en moyenne
+    // Utilities : partie fixe + partie variable (proportionnelle à l'occupation effective)
+    const nbUnitesOccupees = nbUnites * occMoyEffective; // avec saisonnalité + ramp-up
     const utilitiesMensuel = CHARGES.utilitiesFixe + (nbUnitesOccupees * CHARGES.utilitiesVarParUnite);
     let utilities = (utilitiesMensuel + CHARGES.internetTv) * 12;
     // Go Siyaha Éco : réduction des utilities si équipements installés
@@ -171,8 +206,30 @@ function compute(scenario) {
     // Taxe pro : exonérée les 5 premières années (nouvelle construction)
     const taxesPro = y < FISCALITE.exoTaxeProAns ? 0 : CHARGES.taxesPro;
 
+    // --- Coûts additionnels identifiés (rapport qualitative mars 2026) ---
+    // Renouvellement mobilier : cycle 7 ans, 40K/unité
+    const cycleRenouv = CHARGES.renouvellementMobilierCycle || 7;
+    const renouvMobilier = (y > 0 && (y + 1) % cycleRenouv === 0)
+      ? CHARGES.renouvellementMobilierParUnite * nbUnites
+      : 0;
+    // Provisionné annuellement pour lisser l'impact dans les KPIs
+    const provisionRenouv = (CHARGES.renouvellementMobilierParUnite * nbUnites) / cycleRenouv;
+
+    // Taxe d'habitation + services communaux (exo 5 ans nouvelle construction)
+    const taxeHabitation = y < 5 ? 0 : (CHARGES.taxeHabitation || 0);
+
+    // Budget marketing de lancement (An 1 uniquement)
+    const marketingLancement = y === 0 ? (CHARGES.budgetMarketingLancement || 0) : 0;
+
+    // Frais création SARL + autorisations (An 1 uniquement)
+    const fraisCreation = y === 0 ? (CHARGES.fraisCreation || 0) : 0;
+
+    // Syndic / charges copropriété (annuel)
+    const syndic = CHARGES.syndic || 0;
+
     const chargesTotal = gestion + consommables + comptable + utilities +
-      CHARGES.assurance + entretien + salaires + taxesPro + CHARGES.divers;
+      CHARGES.assurance + entretien + salaires + taxesPro + CHARGES.divers +
+      provisionRenouv + taxeHabitation + marketingLancement + fraisCreation + syndic;
 
     const chargesDetail = {
       gestion, consommables, comptable, utilities, salaires,
@@ -181,6 +238,12 @@ function compute(scenario) {
       taxesPro: taxesPro,
       divers: CHARGES.divers,
       economieEco: economieUtilitiesEco + economieConsommablesEco,
+      provisionRenouv,
+      taxeHabitation,
+      marketingLancement,
+      fraisCreation,
+      syndic,
+      renouvMobilier,  // dépense réelle (0 sauf année de remplacement)
     };
 
     // EBITDA
@@ -294,6 +357,11 @@ function compute(scenario) {
       dotationAmort, resultatFiscal, beneficeImposable,
       cashFlowAvantIS, is, economieIS, cashFlowNet,
       cumulCashFlow: cumulCF,
+      // --- Nouveaux champs (analyse qualitative) ---
+      occMoyEffective,         // occupation effective avec saisonnalité + ramp-up
+      occupationMensuelle,     // détail mensuel [12 valeurs]
+      isRampUp,                // true si année de ramp-up
+      nuiteesAn,               // nuitées réelles (saisonnalité appliquée)
     });
   }
 
@@ -303,7 +371,7 @@ function compute(scenario) {
   const rendementNet = y1.cashFlowNet / investissementNet;
   const rendementNetApport = y1.cashFlowNet / apportNet; // apport net = terrain - MDM cashback
   const revpar = y1.revBrutHotel / (nbUnites * 365);
-  const coutParNuitee = y1.chargesTotal / nuiteesParAn;
+  const coutParNuitee = y1.chargesTotal / (y1.nuiteesAn || nuiteesParAn);
 
   // Payback (cumul CF vs apport net après MDM cashback)
   const paybackIdx = projections.findIndex(p => p.cumulCashFlow >= apportNet);
@@ -331,7 +399,9 @@ function compute(scenario) {
     return rate;
   }
   // Valeur résiduelle pour TRI/VAN — le bien est "revendu" fictivement à l'an 20
-  const tauxAppreciation = REVENUE_ASSUMPTIONS.croissanceTarifs; // 3%/an
+  // Taux distinct de la croissance tarifs : basé sur l'historique immobilier Casablanca
+  // BKAM 2015-2025 : 1-1,5%/an | Avec Mondial 2030 : 2%/an (REVENUE_ASSUMPTIONS.tauxAppreciation)
+  const tauxAppreciation = REVENUE_ASSUMPTIONS.tauxAppreciation ?? REVENUE_ASSUMPTIONS.croissanceTarifs;
   const valeurResiduelle = totalProjet * Math.pow(1 + tauxAppreciation, PROJECTION_YEARS);
 
   // TRI inclut la valeur résiduelle dans le dernier flux (convention immobilière)
@@ -473,6 +543,9 @@ function compute(scenario) {
     return testRevH * CHARGES.tauxGestion + testConsommables + CHARGES.comptableAnnuel +
            testUtilities + testSalaires + CHARGES.assurance + CHARGES.entretienBase + CHARGES.divers;
   }
+
+  // Répartition canaux hors boucle (pour break-even, sensibilité, debt projections)
+  const partOTA = basePartOTA;
 
   // Break-even occupancy (taux d'occupation minimal pour CF net > 0)
   let breakEvenOcc = null;

@@ -593,8 +593,8 @@ tr:hover td{background:#f8fafc}
     <div class="ctrl-group">
       <label class="ctrl-label">Taux crédit banque</label>
       <div class="ctrl-row">
-        <input type="range" class="ctrl-range" id="ctrl-taux" min="3.0" max="8.0" step="0.1" value="5.25">
-        <div class="ctrl-input-wrap"><input type="number" class="ctrl-input" id="ctrl-taux-val" min="3.0" max="8.0" step="0.1" value="5.25"><span class="ctrl-unit">%</span></div>
+        <input type="range" class="ctrl-range" id="ctrl-taux" min="3.0" max="8.0" step="0.05" value="4.35">
+        <div class="ctrl-input-wrap"><input type="number" class="ctrl-input" id="ctrl-taux-val" min="3.0" max="8.0" step="0.05" value="4.35"><span class="ctrl-unit">%</span></div>
       </div>
     </div>
   </div>
@@ -738,6 +738,93 @@ tr:hover td{background:#f8fafc}
       </div>
     </div>
 
+    <!-- Hypothèses Analyse Qualitative -->
+    <div class="ctrl-section-title">Hypothèses marché (analyse qualitative)</div>
+    <div class="ctrl-grid">
+      <div class="ctrl-group">
+        <label class="ctrl-label">Appréciation bien / an</label>
+        <div class="ctrl-row">
+          <input type="range" class="ctrl-range" id="ctrl-appreciation" min="0" max="5" step="0.5" value="2">
+          <div class="ctrl-input-wrap"><input type="number" class="ctrl-input" id="ctrl-appreciation-val" min="0" max="5" step="0.5" value="2"><span class="ctrl-unit">%</span></div>
+        </div>
+      </div>
+      <div class="ctrl-group">
+        <label class="ctrl-label">Ramp-up occupation An 1</label>
+        <div class="ctrl-row">
+          <input type="range" class="ctrl-range" id="ctrl-rampOcc" min="40" max="100" step="5" value="65">
+          <div class="ctrl-input-wrap"><input type="number" class="ctrl-input" id="ctrl-rampOcc-val" min="40" max="100" step="5" value="65"><span class="ctrl-unit">%</span></div>
+        </div>
+      </div>
+      <div class="ctrl-group">
+        <label class="ctrl-label">Ramp-up ADR An 1</label>
+        <div class="ctrl-row">
+          <input type="range" class="ctrl-range" id="ctrl-rampADR" min="60" max="100" step="5" value="85">
+          <div class="ctrl-input-wrap"><input type="number" class="ctrl-input" id="ctrl-rampADR-val" min="60" max="100" step="5" value="85"><span class="ctrl-unit">%</span></div>
+        </div>
+      </div>
+      <div class="ctrl-group">
+        <label class="ctrl-label">Durée ramp-up</label>
+        <div class="ctrl-row">
+          <input type="range" class="ctrl-range" id="ctrl-rampDuree" min="0" max="3" step="1" value="1">
+          <div class="ctrl-input-wrap"><input type="number" class="ctrl-input" id="ctrl-rampDuree-val" min="0" max="3" step="1" value="1"><span class="ctrl-unit">an(s)</span></div>
+        </div>
+      </div>
+      <div class="ctrl-group" style="grid-column:1/-1">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+          <label class="eco-toggle-wrap">
+            <input type="checkbox" id="ctrl-saison-toggle" checked>
+            <span class="eco-toggle-slider"></span>
+          </label>
+          <label class="ctrl-label" for="ctrl-saison-toggle" style="margin:0;cursor:pointer">Saisonnalité mensuelle</label>
+        </div>
+        <div id="saison-info" style="font-size:.78rem;color:var(--text-sec);line-height:1.5;padding:8px 12px;background:var(--bg);border-radius:8px;border-left:3px solid var(--primary)">
+          Coefficients mensuels sur l'occupation : Jan 0,55 → Août 1,22.<br>
+          Désactiver = occupation constante toute l'année (ancien modèle).
+        </div>
+      </div>
+      <div class="ctrl-group" style="grid-column:1/-1">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+          <label class="eco-toggle-wrap">
+            <input type="checkbox" id="ctrl-canaux-toggle" checked>
+            <span class="eco-toggle-slider"></span>
+          </label>
+          <label class="ctrl-label" for="ctrl-canaux-toggle" style="margin:0;cursor:pointer">Évolution canaux par année</label>
+        </div>
+        <div id="canaux-info" style="font-size:.78rem;color:var(--text-sec);line-height:1.5;padding:8px 12px;background:var(--bg);border-radius:8px;border-left:3px solid var(--primary)">
+          An 1 : +30% OTA vs scénario → converge vers valeur cible en An 5.<br>
+          Désactiver = part OTA fixe chaque année (ancien modèle).
+        </div>
+      </div>
+      <div class="ctrl-group">
+        <label class="ctrl-label">Marketing lancement (An 1)</label>
+        <div class="ctrl-row">
+          <input type="range" class="ctrl-range" id="ctrl-marketing" min="0" max="200000" step="10000" value="80000">
+          <div class="ctrl-input-wrap"><input type="number" class="ctrl-input" id="ctrl-marketing-val" min="0" max="200000" step="10000" value="80000"><span class="ctrl-unit">MAD</span></div>
+        </div>
+      </div>
+      <div class="ctrl-group">
+        <label class="ctrl-label">Renouvellement mobilier (cycle)</label>
+        <div class="ctrl-row">
+          <input type="range" class="ctrl-range" id="ctrl-renouv" min="5" max="15" step="1" value="7">
+          <div class="ctrl-input-wrap"><input type="number" class="ctrl-input" id="ctrl-renouv-val" min="5" max="15" step="1" value="7"><span class="ctrl-unit">ans</span></div>
+        </div>
+      </div>
+      <div class="ctrl-group">
+        <label class="ctrl-label">Taxe habitation / an (An 6+)</label>
+        <div class="ctrl-row">
+          <input type="range" class="ctrl-range" id="ctrl-taxeHab" min="0" max="30000" step="2000" value="12000">
+          <div class="ctrl-input-wrap"><input type="number" class="ctrl-input" id="ctrl-taxeHab-val" min="0" max="30000" step="2000" value="12000"><span class="ctrl-unit">MAD</span></div>
+        </div>
+      </div>
+      <div class="ctrl-group">
+        <label class="ctrl-label">Syndic / copropriété / an</label>
+        <div class="ctrl-row">
+          <input type="range" class="ctrl-range" id="ctrl-syndic" min="0" max="36000" step="3000" value="18000">
+          <div class="ctrl-input-wrap"><input type="number" class="ctrl-input" id="ctrl-syndic-val" min="0" max="36000" step="3000" value="18000"><span class="ctrl-unit">MAD</span></div>
+        </div>
+      </div>
+    </div>
+
     <!-- Go Siyaha Bonus Écologique -->
     <div class="ctrl-section-title">Go Siyaha — Bonus Écologique</div>
     <div class="ctrl-grid">
@@ -770,8 +857,8 @@ tr:hover td{background:#f8fafc}
       <div class="ctrl-group">
         <label class="ctrl-label">Durée crédit banque</label>
         <div class="ctrl-row">
-          <input type="range" class="ctrl-range" id="ctrl-dureeBQ" min="7" max="20" step="1" value="15">
-          <div class="ctrl-input-wrap"><input type="number" class="ctrl-input" id="ctrl-dureeBQ-val" min="7" max="20" step="1" value="15"><span class="ctrl-unit">ans</span></div>
+          <input type="range" class="ctrl-range" id="ctrl-dureeBQ" min="7" max="25" step="1" value="20">
+          <div class="ctrl-input-wrap"><input type="number" class="ctrl-input" id="ctrl-dureeBQ-val" min="7" max="25" step="1" value="20"><span class="ctrl-unit">ans</span></div>
         </div>
       </div>
       <div class="ctrl-group">
@@ -902,7 +989,7 @@ tr:hover td{background:#f8fafc}
     <div class="card"><div class="card-title">Projection Revenus</div><div class="chart-box"><canvas id="chart-rev-evolution"></canvas></div></div>
   </div>
   <div class="card"><div class="card-title">Détail par Année</div>
-    <div class="table-wrap"><table><thead><tr><th>Année</th><th>Rev. Brut Hôtel</th><th>Commissions</th><th>Rev. Net Hôtel</th><th>Local Commercial</th><th>Total</th></tr></thead><tbody id="rev-table-tbody"></tbody></table></div>
+    <div class="table-wrap"><table><thead><tr><th>Année</th><th>Occ. eff.</th><th>Rev. Brut Hôtel</th><th>Commissions</th><th>Rev. Net Hôtel</th><th>Local Commercial</th><th>Total</th></tr></thead><tbody id="rev-table-tbody"></tbody></table></div>
   </div>
 </div>
 
