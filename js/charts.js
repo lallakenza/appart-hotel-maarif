@@ -401,10 +401,11 @@ function toggleDebtPeriod(monthly) {
   if (currentState) chartDebtService(currentState);
 }
 
-// --- Cash-flow with RICH TOOLTIP, MONTHLY TOGGLE, FILTER & HORIZON ---
+// --- Cash-flow with RICH TOOLTIP, MONTHLY TOGGLE, FILTER, HORIZON & CUMUL ---
 let _cfMonthly = false;
 let _cfFilter = "all"; // "all", "revenus", "charges"
 let _cfHorizon = 20; // 5, 10, or 20 years
+let _cfShowCumul = true; // show/hide cumul line
 
 function toggleCFPeriod(monthly) {
   _cfMonthly = monthly;
@@ -415,6 +416,12 @@ function toggleCFPeriod(monthly) {
 function toggleCFHorizon(years) {
   _cfHorizon = years;
   document.querySelectorAll(".cf-horizon-btn").forEach(b => b.classList.toggle("active", parseInt(b.dataset.horizon) === years));
+  if (_currentState) chartCashFlow(_currentState);
+}
+
+function toggleCFCumul() {
+  _cfShowCumul = !_cfShowCumul;
+  document.querySelectorAll(".cf-cumul-btn").forEach(b => b.classList.toggle("active", _cfShowCumul));
   if (_currentState) chartCashFlow(_currentState);
 }
 
@@ -448,39 +455,42 @@ function chartCashFlow(S) {
     if (titleEl) titleEl.textContent = "Cash-Flow Net — Moyenne Mensuelle par Année";
     _buildCFMonthlyChart(ctx, S);
   } else {
-    if (titleEl) titleEl.textContent = "Cash-Flow Net et Cumul sur " + _cfHorizon + " ans";
+    if (titleEl) titleEl.textContent = "Cash-Flow Net" + (_cfShowCumul ? " et Cumul" : "") + " sur " + _cfHorizon + " ans";
     _buildCFAnnualChart(ctx, S);
   }
 }
 
 function _buildCFAnnualChart(ctx, S) {
   const proj = S.projections.slice(0, _cfHorizon);
+  const datasets = [
+    {
+      label: "Cash-Flow Net",
+      data: proj.map(p => p.cashFlowNet),
+      backgroundColor: proj.map(p => p.cashFlowNet >= 0 ? CHART_COLORS.green : CHART_COLORS.red),
+      borderRadius: 4,
+    },
+  ];
+  if (_cfShowCumul) {
+    datasets.push({
+      label: "Cumul",
+      data: proj.map(p => p.cumulCashFlow),
+      type: "line",
+      borderColor: CHART_COLORS.primary,
+      backgroundColor: "rgba(30,58,95,0.06)",
+      fill: true,
+      tension: 0.3,
+      pointRadius: 5,
+      pointBackgroundColor: proj.map(p => p.cumulCashFlow >= 0 ? CHART_COLORS.green : CHART_COLORS.red),
+      pointBorderColor: "#fff",
+      pointBorderWidth: 2,
+      order: -1,
+    });
+  }
   _charts.cashflow = new Chart(ctx, {
     type: "bar",
     data: {
       labels: proj.map(p => "An " + p.year),
-      datasets: [
-        {
-          label: "Cash-Flow Net",
-          data: proj.map(p => p.cashFlowNet),
-          backgroundColor: proj.map(p => p.cashFlowNet >= 0 ? CHART_COLORS.green : CHART_COLORS.red),
-          borderRadius: 4,
-        },
-        {
-          label: "Cumul",
-          data: proj.map(p => p.cumulCashFlow),
-          type: "line",
-          borderColor: CHART_COLORS.primary,
-          backgroundColor: "rgba(30,58,95,0.06)",
-          fill: true,
-          tension: 0.3,
-          pointRadius: 5,
-          pointBackgroundColor: proj.map(p => p.cumulCashFlow >= 0 ? CHART_COLORS.green : CHART_COLORS.red),
-          pointBorderColor: "#fff",
-          pointBorderWidth: 2,
-          order: -1,
-        },
-      ]
+      datasets: datasets,
     },
     options: {
       responsive: true, maintainAspectRatio: false,

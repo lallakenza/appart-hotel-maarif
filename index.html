@@ -1085,23 +1085,26 @@ tr:hover td{background:#f8fafc}
 
   <!-- Chart principal -->
   <div class="card">
-    <div class="card-title" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
-      <span id="cf-chart-title">Cash-Flow Net et Cumul sur 10 ans</span>
-      <div style="display:flex;gap:8px;flex-wrap:wrap">
-        <div class="toggle-group">
-          <button class="toggle-btn cf-period-btn active" data-mode="annual" onclick="toggleCFPeriod(false)">Annuel</button>
-          <button class="toggle-btn cf-period-btn" data-mode="monthly" onclick="toggleCFPeriod(true)">Mensuel</button>
-        </div>
-        <div class="toggle-group">
-          <button class="toggle-btn cf-horizon-btn" data-horizon="5" onclick="toggleCFHorizon(5)">5 ans</button>
-          <button class="toggle-btn cf-horizon-btn" data-horizon="10" onclick="toggleCFHorizon(10)">10 ans</button>
-          <button class="toggle-btn cf-horizon-btn active" data-horizon="20" onclick="toggleCFHorizon(20)">20 ans</button>
-        </div>
-        <div class="toggle-group">
-          <button class="toggle-btn cf-filter-btn active" data-filter="all" onclick="toggleCFFilter('all')">Tout</button>
-          <button class="toggle-btn cf-filter-btn" data-filter="revenus" onclick="toggleCFFilter('revenus')">Revenus</button>
-          <button class="toggle-btn cf-filter-btn" data-filter="charges" onclick="toggleCFFilter('charges')">Charges</button>
-        </div>
+    <div class="card-title" style="margin-bottom:0">
+      <span id="cf-chart-title">Cash-Flow Net et Cumul sur 20 ans</span>
+    </div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin:8px 0 12px;padding:0 4px">
+      <div class="toggle-group">
+        <button class="toggle-btn cf-horizon-btn" data-horizon="5" onclick="toggleCFHorizon(5)">5 ans</button>
+        <button class="toggle-btn cf-horizon-btn" data-horizon="10" onclick="toggleCFHorizon(10)">10 ans</button>
+        <button class="toggle-btn cf-horizon-btn active" data-horizon="20" onclick="toggleCFHorizon(20)">20 ans</button>
+      </div>
+      <div class="toggle-group">
+        <button class="toggle-btn cf-period-btn active" data-mode="annual" onclick="toggleCFPeriod(false)">Annuel</button>
+        <button class="toggle-btn cf-period-btn" data-mode="monthly" onclick="toggleCFPeriod(true)">Mensuel</button>
+      </div>
+      <div class="toggle-group">
+        <button class="toggle-btn cf-cumul-btn active" onclick="toggleCFCumul()">Cumul</button>
+      </div>
+      <div class="toggle-group">
+        <button class="toggle-btn cf-filter-btn active" data-filter="all" onclick="toggleCFFilter('all')">Tout</button>
+        <button class="toggle-btn cf-filter-btn" data-filter="revenus" onclick="toggleCFFilter('revenus')">Revenus</button>
+        <button class="toggle-btn cf-filter-btn" data-filter="charges" onclick="toggleCFFilter('charges')">Charges</button>
       </div>
     </div>
     <div class="chart-box"><canvas id="chart-cashflow"></canvas></div>
@@ -1581,11 +1584,11 @@ tr:hover td{background:#f8fafc}
 </main>
 
 <!-- Scripts — strict order: data → engine → render → charts → app -->
-<script src="js/data.js?v=30"></script>
-<script src="js/engine.js?v=30"></script>
-<script src="js/render.js?v=30"></script>
-<script src="js/charts.js?v=30"></script>
-<script src="js/app.js?v=30"></script>
+<script src="js/data.js?v=31"></script>
+<script src="js/engine.js?v=31"></script>
+<script src="js/render.js?v=31"></script>
+<script src="js/charts.js?v=31"></script>
+<script src="js/app.js?v=31"></script>
 
 </body>
 </html>
