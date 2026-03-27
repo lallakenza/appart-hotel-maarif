@@ -2,6 +2,13 @@
 // RENDER LAYER — DOM updates only, reads computed STATE
 // Zero computation here, only formatting + DOM manipulation
 // ============================================================
+//
+// CHANGELOG:
+// 28/03/2026 — Affichage des nouvelles données :
+//   - renderRevenus : colonne "Occ. eff." + badge ramp-up par année
+//   - renderCharges : lignes syndic, taxeHabitation, provisionRenouv, marketing, fraisCréation
+// 27/03/2026 — Création initiale
+// ============================================================
 
 // --- Formatters ---
 function fmtMAD(n) {

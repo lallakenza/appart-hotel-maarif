@@ -3,6 +3,20 @@
 // All amounts in MAD, all rates as decimals
 // Sources citées pour chaque hypothèse
 // ============================================================
+//
+// CHANGELOG:
+// 28/03/2026 — Intégration recommandations analyse qualitative :
+//   - BANQUE_CLASSIQUE : 5,25%/15ans → 4,35%/20ans + 1an différé (source Médias24 sept 2025)
+//   - REVENUE_ASSUMPTIONS.tauxAppreciation : nouveau champ 2%/an (séparé de croissanceTarifs 3%)
+//   - REVENUE_ASSUMPTIONS.saisonnalite : 12 coeff. mensuels (source ListingOK/Airbtics Casa)
+//   - REVENUE_ASSUMPTIONS.rampUp : An 1 à 65% occ, 85% ADR (nouvel entrant sans avis)
+//   - REVENUE_ASSUMPTIONS.canauxEvolution : OTA multiplier décroissant Y1→Y5
+//   - CHARGES ajoutés : syndic 18K, taxeHabitation 12K (exo 5 ans), marketing lancement 80K,
+//     frais création SARL 20K, renouvellement mobilier cycle 7 ans × 40K/unité
+//   - GO_SIYAHA_PROGRAMME.recommandation : traiter comme bonus (taux conversion ~4,5%)
+//   - Correction : loi 80-14 n'a PAS de plafond 120 jours (c'est la loi ELAN française)
+// 27/03/2026 — Création initiale avec analyse qualitative 4 phases
+// ============================================================
 
 const PROJECT = {
   name: "Résidence de Tourisme Maarif",

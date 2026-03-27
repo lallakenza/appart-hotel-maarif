@@ -2,6 +2,19 @@
 // ENGINE LAYER — Pure computation, zero DOM, zero side effects
 // Takes raw data → returns computed STATE
 // ============================================================
+//
+// CHANGELOG:
+// 28/03/2026 — Intégration modèle réaliste :
+//   - Saisonnalité mensuelle : boucle 12 mois × coefficients (remplace occ × 365 flat)
+//   - Ramp-up An 1 : pénalise occupation (×0.65) et ADR (×0.85)
+//   - Évolution canaux : OTA multiplier décroissant Y1→Y5 (canauxEvolution)
+//   - Charges additionnelles : provisionRenouv, taxeHabitation, syndic, marketing, fraisCreation
+//   - Valeur résiduelle : utilise tauxAppreciation (2%) au lieu de croissanceTarifs (3%)
+//   - Différé banque classique : 1 an intérêts seulement (interetsDiffereBQ)
+//   - Fix : partOTA scope — remonté en const après boucle projections
+//   - Nouveaux champs projections : occMoyEffective, occupationMensuelle, isRampUp, nuiteesAn
+// 27/03/2026 — Création initiale
+// ============================================================
 
 function pmt(rate, nper, pv) {
   if (rate === 0) return pv / nper;

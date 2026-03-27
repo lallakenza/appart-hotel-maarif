@@ -1,6 +1,11 @@
 // ============================================================
 // CHARTS LAYER — Chart.js visualizations with rich tooltips
 // ============================================================
+//
+// CHANGELOG:
+// 28/03/2026 — Label chart dette dynamique (taux banque réel au lieu de "~5,25%" en dur)
+// 27/03/2026 — Création initiale
+// ============================================================
 
 const CHART_COLORS = {
   primary:      "#1e3a5f",

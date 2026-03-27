@@ -1,6 +1,15 @@
 // ============================================================
 // APP LAYER — Orchestration, state management, event binding
 // ============================================================
+//
+// CHANGELOG:
+// 28/03/2026 — Nouveaux contrôles avancés :
+//   - ADV_FIELDS : appreciation, marketing, renouv, taxeHab, syndic, differeBQ
+//   - Toggles : saisonnalité (swap coefficients ↔ flat), canaux évolution (enabled/disabled)
+//   - Sliders ramp-up : dureeAns, coefOccupation, coefADR
+//   - Slider différé banque classique (0-3 ans)
+// 27/03/2026 — Création initiale
+// ============================================================
 
 let currentScenario = "moyen";
 let currentView = "overview";
