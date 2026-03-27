@@ -1111,7 +1111,6 @@ tr:hover td{background:#f8fafc}
       </div>
       <div class="toggle-group">
         <button class="toggle-btn cf-cumul-btn" onclick="toggleCFCumul()">Cumul</button>
-        <button class="toggle-btn cf-debt-btn active" onclick="toggleCFDebt()">Dette</button>
       </div>
       <div class="toggle-group">
         <button class="toggle-btn cf-filter-btn active" data-filter="all" onclick="toggleCFFilter('all')">Tout</button>
@@ -1120,6 +1119,12 @@ tr:hover td{background:#f8fafc}
       </div>
     </div>
     <div class="chart-box"><canvas id="chart-cashflow"></canvas></div>
+  </div>
+
+  <!-- Capital Restant Dû -->
+  <div class="card">
+    <div class="card-title">Capital Restant Dû &amp; Service de Dette</div>
+    <div class="chart-box"><canvas id="chart-crd"></canvas></div>
   </div>
 
   <!-- Waterfall CF -->
@@ -1597,11 +1602,11 @@ tr:hover td{background:#f8fafc}
 </main>
 
 <!-- Scripts — strict order: data → engine → render → charts → app -->
-<script src="js/data.js?v=34"></script>
-<script src="js/engine.js?v=34"></script>
-<script src="js/render.js?v=34"></script>
-<script src="js/charts.js?v=34"></script>
-<script src="js/app.js?v=34"></script>
+<script src="js/data.js?v=35"></script>
+<script src="js/engine.js?v=35"></script>
+<script src="js/render.js?v=35"></script>
+<script src="js/charts.js?v=35"></script>
+<script src="js/app.js?v=35"></script>
 
 </body>
 </html>
