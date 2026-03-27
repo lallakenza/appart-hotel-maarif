@@ -495,7 +495,7 @@ function _buildCFAnnualChart(ctx, S) {
           enabled: false,
           external: (ctx) => externalTooltip(ctx, (idx) => {
             const p = proj[idx];
-            const rdtApport = S.financement.apportTerrain > 0 ? p.cashFlowNet / S.financement.apportTerrain : 0;
+            const rdtApport = S.financement.apportNet > 0 ? p.cashFlowNet / S.financement.apportNet : 0;
             return `<div class="ctt-title">An ${p.year} — Cash-Flow</div>
               <div class="ctt-row"><span>Revenus nets</span><span class="ctt-val">${fmtMAD(p.revTotal)}</span></div>
               <div class="ctt-row ctt-neg-row"><span>Charges exploitation</span><span class="ctt-val ctt-neg">-${fmtMAD(p.chargesTotal)}</span></div>
@@ -950,7 +950,7 @@ function chartRendementEvolution(S) {
   const ctx = document.getElementById("chart-rendement-evolution")?.getContext("2d");
   if (!ctx) return;
 
-  const apport = S.financement.apportTerrain;
+  const apport = S.financement.apportNet;
   const data = S.projections.map(p => apport > 0 ? (p.cashFlowNet / apport) * 100 : 0);
 
   _charts.rendementEvolution = new Chart(ctx, {
@@ -958,7 +958,7 @@ function chartRendementEvolution(S) {
     data: {
       labels: S.projections.map(p => "An " + p.year),
       datasets: [{
-        label: "Rendement net % (CF/apport terrain)",
+        label: "Rendement net % (CF/apport net)",
         data: data,
         borderColor: CHART_COLORS.primaryLight,
         backgroundColor: CHART_COLORS.primaryLight + '15',

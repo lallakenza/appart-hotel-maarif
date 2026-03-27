@@ -372,14 +372,14 @@ function renderKPIInsights(S) {
     setInsight("kpi-breakeven-insight", `<span class="insight-bad">Break-even non atteint dans la plage testée (10-100%)</span>`);
   }
 
-  // 7. Payback — cumulative CF progress
+  // 7. Payback — cumulative CF progress vs apport net
   const payback = S.kpi.paybackYear;
-  const apport = S.financement.apportTerrain;
+  const apport = S.financement.apportNet;
   const cumulY5 = S.projections[4] ? S.projections[4].cumulCashFlow : 0;
   const cumulY10 = S.projections[9] ? S.projections[9].cumulCashFlow : 0;
   const pctRecupY5 = apport > 0 ? Math.min(1, cumulY5 / apport) : 0;
   setInsight("kpi-payback-insight", `
-    <div class="insight-row"><span class="insight-label">Apport (terrain)</span><span class="insight-val">${fmtK(apport)}</span></div>
+    <div class="insight-row"><span class="insight-label">Apport net (terrain − MDM)</span><span class="insight-val">${fmtK(apport)}</span></div>
     <div class="insight-row"><span class="insight-label">Cumul CF An 5</span><span class="insight-val" style="color:${cumulY5 >= 0 ? 'var(--green)' : 'var(--red)'}">${fmtK(cumulY5)}</span></div>
     <div class="insight-row"><span class="insight-label">Cumul CF An 10</span><span class="insight-val" style="color:${cumulY10 >= 0 ? 'var(--green)' : 'var(--red)'}">${fmtK(cumulY10)}</span></div>
     <div class="insight-bar" style="margin-top:4px">
@@ -660,7 +660,7 @@ function renderFinancement(S) {
   // MDM note séparée
   const mdmNote = document.getElementById("fin-mdm-note");
   if (mdmNote) {
-    mdmNote.innerHTML = '<span style="color:#2563eb;font-size:.82rem">ℹ️ Subvention MDM Invest : <strong>' + fmtMAD(F.subventionMDM) + '</strong> remboursée directement à l\'investisseur MRE* — réduit le coût net à <strong>' + fmtMAD(S.budget.investissementNet) + '</strong></span>';
+    mdmNote.innerHTML = '<span style="color:#2563eb;font-size:.82rem">ℹ️ MDM Invest : <strong>' + fmtMAD(F.subventionMDM) + '</strong> remboursée à l\'investisseur MRE* → Apport net réel : <strong>' + fmtMAD(F.apportNet) + '</strong> (terrain ' + fmtMAD(F.apportTerrain) + ' − MDM)</span>';
   }
 
   // --- Feedback & Alertes MDM ---

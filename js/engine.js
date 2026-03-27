@@ -52,6 +52,8 @@ function compute(scenario) {
 
   // --- Apport = terrain (en nature) ---
   const apportTerrain = coutTerrain; // terrain + frais = apport en nature
+  // Apport net = terrain - MDM cashback (ce que l'investisseur a réellement immobilisé)
+  const apportNet = apportTerrain - subventionMDM;
 
   // --- Montant à financer ---
   // MDM Invest est remboursée à l'investisseur MRE, PAS déduite du financement bancaire
@@ -280,18 +282,18 @@ function compute(scenario) {
   const y1 = projections[0];
   const rendementBrut = (y1.revBrutHotel + y1.revCommercial) / investissementNet;
   const rendementNet = y1.cashFlowNet / investissementNet;
-  const rendementNetApport = y1.cashFlowNet / apportTerrain;
+  const rendementNetApport = y1.cashFlowNet / apportNet; // apport net = terrain - MDM cashback
   const revpar = y1.revBrutHotel / (nbUnites * 365);
   const coutParNuitee = y1.chargesTotal / nuiteesParAn;
 
-  // Payback (cumul CF vs apport terrain)
-  const paybackIdx = projections.findIndex(p => p.cumulCashFlow >= apportTerrain);
+  // Payback (cumul CF vs apport net après MDM cashback)
+  const paybackIdx = projections.findIndex(p => p.cumulCashFlow >= apportNet);
   const paybackYear = paybackIdx >= 0 ? paybackIdx + 1 : null;
 
   // ═══ ADVANCED CASH-FLOW KPIs ═══
 
   // TRI (IRR) — Taux de Rendement Interne sur 20 ans
-  // Initial investment = -apportTerrain (seul cash sorti), puis CF nets annuels
+  // Initial investment = -apportNet (terrain - MDM cashback), puis CF nets annuels
   function computeIRR(cashFlows, guess) {
     const maxIter = 100; const tol = 1e-7;
     let rate = guess || 0.10;
@@ -309,18 +311,18 @@ function compute(scenario) {
     }
     return rate;
   }
-  const irrFlows = [-apportTerrain, ...projections.map(p => p.cashFlowNet)];
+  const irrFlows = [-apportNet, ...projections.map(p => p.cashFlowNet)];
   const tri = computeIRR(irrFlows, 0.10);
 
   // VAN (NPV) — Valeur Actuelle Nette au taux d'actualisation 8%
   const tauxActualisation = 0.08;
-  let van = -apportTerrain;
+  let van = -apportNet;
   for (let t = 0; t < projections.length; t++) {
     van += projections[t].cashFlowNet / Math.pow(1 + tauxActualisation, t + 1);
   }
 
-  // Cash-on-Cash Return An 1 (CF net / apport réel en cash = terrain)
-  const cashOnCash = y1.cashFlowNet / apportTerrain;
+  // Cash-on-Cash Return An 1 (CF net / apport net = terrain - MDM)
+  const cashOnCash = y1.cashFlowNet / apportNet;
 
   // CF mensuel moyen An 1
   const cfMensuelAn1 = y1.cashFlowNet / 12;
@@ -331,7 +333,7 @@ function compute(scenario) {
   // Wealth creation — total CF cumulé sur 20 ans
   const y20 = projections[projections.length - 1];
   const wealthTotal = y20.cumulCashFlow;
-  const multipleApport = wealthTotal / apportTerrain;
+  const multipleApport = wealthTotal / apportNet;
 
   // Debt Freedom Year — année où toute la dette est remboursée
   const debtFreedomIdx = projections.findIndex(p => p.debtServiceTotal === 0);
@@ -352,7 +354,7 @@ function compute(scenario) {
   // Rendement stabilisé (moyenne Y15-Y20 = projet mature, sans dette)
   const matureYears = projections.slice(14); // Y15-Y20
   const rendementStabilise = matureYears.length > 0
-    ? matureYears.reduce((s, p) => s + p.cashFlowNet, 0) / matureYears.length / apportTerrain
+    ? matureYears.reduce((s, p) => s + p.cashFlowNet, 0) / matureYears.length / apportNet
     : null;
 
   // Croissance CF Y1→Y10 et Y1→Y20
@@ -457,7 +459,7 @@ function compute(scenario) {
     const resFiscal = cfAvIS - amortissementAnnuel;
     const impot = Math.max(0, resFiscal) * (1 - FISCALITE.caDevisesPct) * FISCALITE.isTaux;
     const cf = cfAvIS - impot;
-    return { occ: occRate, revenu: revN, ebitda: ebit, cashFlow: cf, rendement: cf / apportTerrain };
+    return { occ: occRate, revenu: revN, ebitda: ebit, cashFlow: cf, rendement: cf / apportNet };
   });
 
   // --- Debt projections for full loan duration (max of TK and BQ) ---
@@ -527,7 +529,7 @@ function compute(scenario) {
     units: { nbStudios, nbLofts, nbUnites, surfaceLocative, surfaceCommerciale, surfaceTerrasseTotale, surfaceInterieureTotale, surfaceUtile },
     budget: { ameublement, totalProjet, investissementNet, investissementEco, subventionEco, coutNetEco, ecoEnabled },
     financement: {
-      subventionMDM, apportDevisesMin, apportTerrain,
+      subventionMDM, apportDevisesMin, apportTerrain, apportNet,
       montantAFinancer,
       montantTamwilkom, mensualiteTK, annuiteTK, interetsDiffereTK, coutTotalTK,
       montantBanque, mensualiteBQ, annuiteBQ, coutTotalBQ,
