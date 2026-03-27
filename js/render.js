@@ -508,35 +508,40 @@ function renderSurfaceUtile(S) {
   setText("su-cout-int", fmtNum(Math.round(nuInt)) + " MAD/m²");
   setText("su-cout-meuble-int", fmtNum(Math.round(meubleInt)) + " MAD/m²");
 
-  // Analyse contextuelle — benchmarks réels mars 2026
-  // Sources : Agenz.ma (15 969 MAD/m² moy. Maarif), Yakeey (13 951 MAD/m²),
-  //           Nuroa.ma annonces studios neufs Maarif (21 000-23 000 MAD/m²)
-  const benchmarks = {
-    ancienMoy: 14000,    // Yakeey + Agenz moyenne tout confondu
-    neufStandard: 17000, // Nuroa moyenne toutes surfaces neuves
-    studioNeuf: 21000,   // Nuroa studios neufs standing (44-59 m²)
-  };
-  const diffNu = ((nuUtile / benchmarks.studioNeuf) - 1) * 100;
-  const diffMeuble = ((meubleUtile / benchmarks.studioNeuf) - 1) * 100;
+  // ── Benchmarks réels mars 2026 ──
+  // Apparts neufs : Agenz (15 969), Yakeey (13 951), Nuroa studios neufs (21 000-23 000)
+  // Terrains R+5 Maarif : Marocgest 174m² (20 115), 460m² (21 739), Nuroa 220m² (22 727),
+  //   395m² (18 000), Abdelmoumen 447m² (16 900) → moyenne ~19 900 MAD/m²
+  const benchAppart = { ancienMoy: 14000, neufStandard: 17000, studioNeuf: 21000 };
+  const benchTerrain = 19900; // moyenne terrains R+5 Maarif (5 annonces actives)
+  const terrainM2 = TERRAIN.prix / TERRAIN.surface; // prix terrain du projet / m² terrain
+
+  // Comparaison nu à nu : prix nu projet vs prix vente neuf nu (hors ameublement)
+  const diffNu = ((nuUtile / benchAppart.studioNeuf) - 1) * 100;
+  // Comparaison terrain
+  const diffTerrain = ((terrainM2 / benchTerrain) - 1) * 100;
+
   const el = document.getElementById("su-analyse");
   if (el) {
-    const fmtDiff = (d, label) => d < 0
+    const fmtDiff = (d) => d < 0
       ? `<strong style="color:var(--green)">${Math.abs(d).toFixed(0)}% en dessous</strong>`
       : `<strong style="color:var(--red)">${d.toFixed(0)}% au-dessus</strong>`;
-    el.innerHTML = `<strong>Comparaison marché Maarif (mars 2026) :</strong><br>` +
-      `<span style="display:inline-flex;gap:6px;align-items:center;margin:4px 0;flex-wrap:wrap">` +
-      `<span style="color:var(--text-sec)">Ancien moyen :</span> <strong>${fmtNum(benchmarks.ancienMoy)} MAD/m²</strong>` +
-      `<span style="margin:0 8px;color:#ddd">|</span>` +
-      `<span style="color:var(--text-sec)">Neuf standard :</span> <strong>${fmtNum(benchmarks.neufStandard)} MAD/m²</strong>` +
-      `<span style="margin:0 8px;color:#ddd">|</span>` +
-      `<span style="color:var(--text-sec)">Studio neuf standing :</span> <strong>${fmtNum(benchmarks.studioNeuf)} MAD/m²</strong></span><br>` +
-      `<strong>Prix nu</strong> (${fmtNum(Math.round(nuUtile))} MAD/m² utile) : ${fmtDiff(diffNu)} du marché neuf standing<br>` +
-      `<strong>Prix meublé</strong> (${fmtNum(Math.round(meubleUtile))} MAD/m² utile) : ${fmtDiff(diffMeuble)} du marché — ameublement hôtelier inclus` +
-      `<br><span style="font-size:.78rem;color:var(--text-sec)">Sources : Agenz.ma, Yakeey.com, Nuroa.ma (annonces actives mars 2026)</span>`;
+    el.innerHTML =
+      `<strong>① Terrain — comparaison marché Maarif R+5 :</strong><br>` +
+      `<span style="color:var(--text-sec)">Votre terrain :</span> <strong>${fmtNum(Math.round(terrainM2))} MAD/m²</strong> (${fmtNum(TERRAIN.prix)} MAD ÷ ${TERRAIN.surface} m²)<br>` +
+      `<span style="color:var(--text-sec)">Moyenne marché R+5 :</span> <strong>~${fmtNum(benchTerrain)} MAD/m²</strong> ` +
+      `<span style="font-size:.78rem;color:var(--text-sec)">(174m²→20K, 220m²→23K, 395m²→18K, 460m²→22K, 447m²→17K)</span><br>` +
+      `→ Votre terrain est ${fmtDiff(diffTerrain)} du marché` +
+      `<br><br>` +
+      `<strong>② Prix de revient nu à nu — vs vente neuf Maarif :</strong><br>` +
+      `<span style="color:var(--text-sec)">Votre prix nu :</span> <strong>${fmtNum(Math.round(nuUtile))} MAD/m²</strong> utile (terrain + construction, sans ameublement)<br>` +
+      `<span style="color:var(--text-sec)">Vente studio neuf standing :</span> <strong>~${fmtNum(benchAppart.studioNeuf)} MAD/m²</strong> <span style="font-size:.78rem;color:var(--text-sec)">(Nuroa.ma, prix vente nu)</span><br>` +
+      `→ Prix nu ${fmtDiff(diffNu)} du marché neuf standing — et votre projet inclut en plus l'ameublement hôtelier complet (+${fmtNum(ameublement)} MAD)` +
+      `<br><span style="font-size:.78rem;color:var(--text-sec);margin-top:6px;display:inline-block">Sources : Marocgest, Nuroa.ma, Agenz.ma, Yakeey.com, Mubawab (annonces actives mars 2026)</span>`;
   }
 
   // Update benchmark KPI card
-  setText("su-benchmark", "~" + fmtNum(benchmarks.studioNeuf));
+  setText("su-benchmark", "~" + fmtNum(benchAppart.studioNeuf));
   const benchSub = document.getElementById("su-benchmark")?.closest(".kpi-card")?.querySelector(".kpi-sub");
   if (benchSub) benchSub.textContent = "MAD/m² studio neuf Maarif";
 }
