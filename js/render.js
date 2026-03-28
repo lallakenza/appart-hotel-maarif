@@ -948,7 +948,7 @@ function renderWealth(S) {
       const equityPct = (d.equityJour1Pct * 100).toFixed(0);
       if (d.equityJour1 > 0) {
         msgEl.innerHTML = `<strong style="color:#059669">Equity créée dès le Jour 1 : +${fmtMAD(d.equityApresTVA)}</strong> — En construisant vous-même (construction groupée), vous créez un actif dont la valeur de marché (capitalisation du NOI) dépasse le coût de construction de <strong>${equityPct}%</strong>. ` +
-          `La récupération de la TVA construction (<strong>${fmtMAD(d.tvaRecuperee)}</strong>) réduit encore votre coût net réel.`;
+          `La récupération de la TVA construction + mobilier (<strong>${fmtMAD(d.tvaRecuperee)}</strong>) réduit encore votre coût net réel.`;
       } else {
         msgEl.innerHTML = `Le coût de construction est supérieur à la valeur de capitalisation dans ce scénario. C'est normal en phase projet — la valeur se crée via les cash-flows futurs et l'appréciation immobilière.`;
       }
@@ -1658,7 +1658,7 @@ function renderCapexOpex(S) {
           <td class="num">${fmtMAD(p[0].is)}</td>
           <td class="num">${fmtMAD(p[1].is)}</td>
           <td class="num">${fmtMAD(p[2].is)}</td>
-          <td style="font-size:.78rem;color:var(--text-sec)">Exo. CA devises</td>
+          <td style="font-size:.78rem;color:var(--text-sec)">Exo. devises 5 ans (Art.6-I CGI)</td>
         `;
         opexTbody.appendChild(trIS);
       }

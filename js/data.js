@@ -503,10 +503,17 @@ const FINANCEMENT_SOURCES = {
 // Mais IS sur la société marocaine si SCI ou SARL
 const FISCALITE = {
   tvaTaux: 0.10,             // taux réduit hébergement touristique
-  isTaux: 0.20,              // IS société marocaine
-  caDevisesPct: 0.40,        // part du CA en devises (exonérée IS) — à confirmer
+  isTaux: 0.20,              // IS société marocaine — taux unique 2026+ pour BNF < 100M MAD
+  caDevisesPct: 0.40,        // part du CA en devises (proportion, pas taux d'exonération)
+  // ═══ EXONÉRATION IS HÔTELS — Art. 6-I-B-3° CGI Maroc ═══
+  // Établissements hôteliers : exonération totale IS sur la part CA en devises
+  // Durée : 60 mois (5 ans) à compter du 1er exercice d'hébergement en devises
+  // Après 5 ans : la part devises est taxée au taux normal (20% depuis PLF 2026)
+  // Source : Art. 6-I CGI, Art. 19-I-A CGI, Circulaire 717 DGI
+  exoDevisesAns: 5,          // 5 ans d'exonération IS sur part devises (Art. 6-I-B-3° CGI)
   amortissementAns: 20,      // bâtiment amorti linéairement sur 20 ans (5%/an) — terrain non amortissable
-  exoEquipementsMois: 36,    // exonération TVA équipements
+  amortissementMobilierAns: 7, // mobilier/ameublement amorti sur 7 ans (14.3%/an)
+  exoEquipementsMois: 36,    // exonération TVA équipements (Art. 92-I-6° CGI)
   exoTaxeProAns: 5,          // exonération taxe pro nouvelles constructions
   residenceFiscale: "UAE",   // pas d'impôt sur le revenu aux UAE
 };

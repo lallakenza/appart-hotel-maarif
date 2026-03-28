@@ -112,6 +112,11 @@ function compute(scenario) {
   const constructionHTForAmort = budgetConstruction / 1.20; // extraction du HT depuis TTC
   const amortissementAnnuel = constructionHTForAmort / FISCALITE.amortissementAns;
 
+  // --- Amortissement mobilier (linéaire sur 7 ans) ---
+  // Le mobilier est un actif distinct amorti sur sa durée de vie
+  const amortMobilierAns = FISCALITE.amortissementMobilierAns || 7;
+  const amortissementMobilier = ameublement / amortMobilierAns;
+
   // --- Projections annuelles ---
   const projections = [];
   let cumulCF = 0; // pas d'apport cash, apport = terrain
@@ -342,8 +347,10 @@ function compute(scenario) {
     const capitalRestantDu = soldeTK + soldeBQ;
 
     // IS — L'amortissement est une charge non-cash qui réduit le bénéfice imposable
-    // Amortissement sur 20 ans (seulement pendant la durée de vie fiscale)
-    const dotationAmort = y < FISCALITE.amortissementAns ? amortissementAnnuel : 0;
+    // Amortissement construction sur 20 ans + mobilier sur 7 ans
+    const dotationAmortConstruction = y < FISCALITE.amortissementAns ? amortissementAnnuel : 0;
+    const dotationAmortMobilier = y < amortMobilierAns ? amortissementMobilier : 0;
+    const dotationAmort = dotationAmortConstruction + dotationAmortMobilier;
     const cashFlowAvantIS = ebitda - debtServiceTotal;
 
     // Résultat fiscal : basé sur le revenu DÉCLARÉ (hors part informelle)
@@ -352,9 +359,15 @@ function compute(scenario) {
     const ebitdaDeclare = revDeclare - chargesTotal;
     const resultatFiscal = ebitdaDeclare - debtServiceTotal - dotationAmort;
     const beneficeImposable = Math.max(0, resultatFiscal);
-    const partLocale = beneficeImposable * (1 - FISCALITE.caDevisesPct);
+
+    // ═══ EXONÉRATION IS DEVISES — Art. 6-I-B-3° CGI Maroc ═══
+    // 5 premières années : exonération totale IS sur la part CA en devises (40%)
+    // Après An 5 : la part devises est taxée au taux normal (20% depuis PLF 2026)
+    const exoDevisesAns = FISCALITE.exoDevisesAns || 5;
+    const pctExonere = y < exoDevisesAns ? FISCALITE.caDevisesPct : 0;
+    const partLocale = beneficeImposable * (1 - pctExonere);
     const is = partLocale * FISCALITE.isTaux;
-    const economieIS = dotationAmort * (1 - FISCALITE.caDevisesPct) * FISCALITE.isTaux;
+    const economieIS = dotationAmort * (1 - pctExonere) * FISCALITE.isTaux;
 
     // Cash-flow net réel (inclut la part informelle en trésorerie)
     const cashFlowNet = cashFlowAvantIS - is;
@@ -518,11 +531,12 @@ function compute(scenario) {
   const cfMoyenY11_20 = projections.slice(10, 20).reduce((s, p) => s + p.cashFlowNet, 0) / 10 / 12;
 
   // ═══ DAY 1 EQUITY — Construction groupée vs achat individuel ═══
-  // TVA récupérée sur construction (construit comme opérateur commercial)
-  const tvaRecupereeEst = constructionHTForAmort * 0.20; // = TVA construction
-  // Coût net de construction après récupération TVA
-  const coutConstructionNetTVA = budgetConstruction - tvaRecupereeEst; // HT
-  const coutTotalNetTVA = coutTerrain + coutConstructionNetTVA + ameublement + (ecoEnabled ? coutNetEco : 0);
+  // TVA récupérée sur construction + ameublement (opérateur commercial, Art. 92-I-6° CGI)
+  const tvaRecupereeEst = constructionHTForAmort * 0.20 + ameublement / 1.20 * 0.20; // construction + mobilier
+  // Coût net après récupération TVA (construction revient au HT, ameublement idem)
+  const coutConstructionNetTVA = budgetConstruction - constructionHTForAmort * 0.20; // = HT construction
+  const ameubleNetTVA = ameublement - ameublement / 1.20 * 0.20; // = HT ameublement
+  const coutTotalNetTVA = coutTerrain + coutConstructionNetTVA + ameubleNetTVA + (ecoEnabled ? coutNetEco : 0);
   // Coût par unité après récupération TVA
   const coutRevientParUnite = totalProjet / nbUnites;
   const coutRevientNetTVAParUnite = coutTotalNetTVA / nbUnites;
@@ -587,13 +601,17 @@ function compute(scenario) {
   // Le terrain n'a PAS de TVA. Seul le budget construction est TTC (20%)
   const constructionHT = budgetConstruction / 1.20;
   const tvaConstruction = constructionHT * 0.20; // TVA payée sur construction
+  // TVA sur ameublement — récupérable via Art. 92-I-6° CGI (36 mois)
+  const ameubleHT = ameublement / 1.20;
+  const tvaAmeublement = ameubleHT * 0.20;
+  const tvaTotaleRecuperable = tvaConstruction + tvaAmeublement;
 
   // TVA déductible annuelle sur charges d'exploitation (20% sur services, 14% sur utilities)
   // Charges soumises à TVA 20%: gestion, consommables, comptable, internet, entretien, divers
   // Charges soumises à TVA 14%: eau/électricité, assurance
   // Charges sans TVA: salaires, taxe professionnelle
   const tvaProjections = [];
-  let creditTVARestant = tvaConstruction; // crédit initial = TVA construction
+  let creditTVARestant = tvaTotaleRecuperable; // crédit initial = TVA construction + ameublement
   for (let y = 0; y < PROJECTION_YEARS; y++) {
     const p = projections[y];
     const ch = p.chargesDetail;
@@ -629,7 +647,7 @@ function compute(scenario) {
 
   const tvaCollecteeAn1 = tvaProjections[0].tvaCollectee;
   const tvaDeductibleAn1 = tvaProjections[0].tvaDeductible;
-  const creditTVA = tvaConstruction; // crédit total initial
+  const creditTVA = tvaTotaleRecuperable; // crédit total initial (construction + ameublement)
   const anneesRecupCredit = tvaProjections.findIndex(t => t.creditRestant <= 0);
   const dureeRecupCredit = anneesRecupCredit >= 0 ? anneesRecupCredit + 1 : null;
 
@@ -762,7 +780,7 @@ function compute(scenario) {
       cashMachineIdx, cfMoyenY1_5, cfMoyenY6_10, cfMoyenY11_20,
       day1Equity,
     },
-    tva: { constructionHT, tvaConstruction, tvaCollecteeAn1, tvaDeductibleAn1, creditTVA, dureeRecupCredit, tvaProjections },
+    tva: { constructionHT, tvaConstruction, tvaAmeublement, tvaTotaleRecuperable, tvaCollecteeAn1, tvaDeductibleAn1, creditTVA, dureeRecupCredit, tvaProjections },
     projections,
     debtProjections,
     sensitivity,
