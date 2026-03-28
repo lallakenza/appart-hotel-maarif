@@ -1828,29 +1828,29 @@ tr:hover td{background:#f8fafc}
 
     <h4 style="margin:12px 0 8px;color:var(--primary)">Prix/nuit par scénario</h4>
     <div class="table-wrap"><table>
-      <thead><tr><th>Scénario</th><th>Studio (modèle)</th><th>Marché réel (pro)</th><th>Verdict</th></tr></thead>
+      <thead><tr><th>Scénario</th><th>Studio (modèle)</th><th>Référence marché</th><th>Écart vs marché</th><th>Verdict</th></tr></thead>
       <tbody>
-        <tr><td>Pessimiste</td><td>500 MAD</td><td>Min pro : 600 MAD</td><td style="color:var(--green)">🟢 Conservateur</td></tr>
-        <tr><td>Prudent</td><td>580 MAD</td><td>Médiane particulier : 570</td><td style="color:var(--gold)">🟡 Réaliste</td></tr>
-        <tr><td>Réaliste</td><td>650 MAD</td><td>Médiane pro : 700</td><td style="color:var(--green)">🟢 Conservateur</td></tr>
-        <tr><td>Favorable</td><td>720 MAD</td><td>Fourchette haute pro : 780</td><td style="color:var(--gold)">🟡 Réaliste</td></tr>
-        <tr><td>Optimiste</td><td>780 MAD</td><td>Max top operators : 770</td><td style="color:var(--red)">🔴 Optimiste</td></tr>
+        <tr><td>Pessimiste</td><td>500 MAD</td><td>Min pro : 600 MAD</td><td style="color:var(--green)">−17%</td><td style="color:var(--green)">🟢 Très prudent</td></tr>
+        <tr><td>Prudent</td><td>580 MAD</td><td>Médiane particulier : 570</td><td style="color:var(--gold)">+2%</td><td style="color:var(--gold)">🟡 Aligné marché particulier</td></tr>
+        <tr><td>Réaliste</td><td>650 MAD</td><td>Médiane pro : 700</td><td style="color:var(--green)">−7%</td><td style="color:var(--green)">🟢 Sous la médiane pro</td></tr>
+        <tr><td>Favorable</td><td>720 MAD</td><td>Fourchette haute pro : 780</td><td style="color:var(--green)">−8%</td><td style="color:var(--gold)">🟡 Atteignable (top 50% pro)</td></tr>
+        <tr><td>Optimiste</td><td>780 MAD</td><td>Max top operators : 770</td><td style="color:var(--red)">+1%</td><td style="color:var(--red)">🔴 Dépasse le marché</td></tr>
       </tbody>
     </table></div>
-    <p style="font-size:.82rem;color:var(--text-sec)">Le scénario "prudent" à 580 MAD est le plus réaliste pour les 2 premières années (nouvel entrant sans avis, discount 10-15%). Sources : Airbtics, AirROI, SandsOfWealth, ListingOK.</p>
+    <p style="font-size:.82rem;color:var(--text-sec)">Lecture : 🟢 = prix sous le marché (hypothèse prudente), 🟡 = prix au niveau du marché (réaliste), 🔴 = prix au-dessus du marché (agressif). Le scénario "prudent" à 580 MAD est le plus réaliste pour les 2 premières années (nouvel entrant sans avis, discount 10-15%). Sources : Airbtics, AirROI, SandsOfWealth, ListingOK.</p>
 
     <h4 style="margin:16px 0 8px;color:var(--primary)">Taux d'occupation par scénario</h4>
     <div class="table-wrap"><table>
-      <thead><tr><th>Scénario</th><th>Taux (modèle)</th><th>Marché réel</th><th>Verdict</th></tr></thead>
+      <thead><tr><th>Scénario</th><th>Taux (modèle)</th><th>Référence marché</th><th>Écart</th><th>Verdict</th></tr></thead>
       <tbody>
-        <tr><td>Pessimiste</td><td>35%</td><td>Médiane AirROI : 35,8%</td><td style="color:var(--gold)">🟡 = Médiane !</td></tr>
-        <tr><td>Prudent</td><td>42%</td><td>Entre médiane et moyenne</td><td style="color:var(--gold)">🟡 Réaliste</td></tr>
-        <tr><td>Réaliste</td><td>48%</td><td>Airbtics médiane : 49%</td><td style="color:var(--gold)">🟡 Réaliste</td></tr>
-        <tr><td>Favorable</td><td>54%</td><td>Top 25% : 58%</td><td style="color:var(--gold)">🟡 Réaliste</td></tr>
-        <tr><td>Optimiste</td><td>60%</td><td>Top 25% seulement</td><td style="color:var(--red)">🔴 Optimiste</td></tr>
+        <tr><td>Pessimiste</td><td>35%</td><td>Médiane AirROI : 35,8%</td><td style="color:var(--gold)">−2%</td><td style="color:var(--gold)">🟡 = Médiane marché</td></tr>
+        <tr><td>Prudent</td><td>42%</td><td>Moyenne marché : ~43%</td><td style="color:var(--gold)">−2%</td><td style="color:var(--gold)">🟡 Sous la moyenne</td></tr>
+        <tr><td>Réaliste</td><td>48%</td><td>Airbtics médiane pro : 49%</td><td style="color:var(--green)">−2%</td><td style="color:var(--green)">🟢 Sous médiane pro</td></tr>
+        <tr><td>Favorable</td><td>54%</td><td>Top 25% : 58%</td><td style="color:var(--gold)">−7%</td><td style="color:var(--gold)">🟡 Sous le top 25%</td></tr>
+        <tr><td>Optimiste</td><td>60%</td><td>Top 25% : 58%</td><td style="color:var(--red)">+3%</td><td style="color:var(--red)">🔴 Dépasse le top 25%</td></tr>
       </tbody>
     </table></div>
-    <p style="font-size:.82rem;color:var(--text-sec)">Le "pessimiste" à 35% correspond à la MÉDIANE du marché. Un vrai scénario pessimiste serait à 25-30%.</p>
+    <p style="font-size:.82rem;color:var(--text-sec)">⚠ Le "pessimiste" à 35% correspond à la MÉDIANE du marché — ce n'est pas un vrai scénario catastrophe (qui serait 25-30%). Lecture : 🟢 = sous le marché, 🟡 = au niveau, 🔴 = au-dessus.</p>
 
     <h4 style="margin:16px 0 8px;color:var(--primary)">Répartition canaux (corrigée avec évolution)</h4>
     <div class="table-wrap"><table>
@@ -2041,11 +2041,11 @@ tr:hover td{background:#f8fafc}
 </main>
 
 <!-- Scripts — strict order: data → engine → render → charts → app -->
-<script src="js/data.js?v=61"></script>
-<script src="js/engine.js?v=61"></script>
-<script src="js/render.js?v=61"></script>
-<script src="js/charts.js?v=61"></script>
-<script src="js/app.js?v=61"></script>
+<script src="js/data.js?v=62"></script>
+<script src="js/engine.js?v=62"></script>
+<script src="js/render.js?v=62"></script>
+<script src="js/charts.js?v=62"></script>
+<script src="js/app.js?v=62"></script>
 
 </body>
 </html>
