@@ -80,7 +80,6 @@ function refresh() {
     applyOverrides();
   }
   currentState = compute(currentScenario);
-  currentState.gestion = computeGestionComparison(currentScenario);
   currentState.gestionDuel = computeGestionDuel(currentScenario);
   render(currentState);
   rebuildCharts(currentState);
