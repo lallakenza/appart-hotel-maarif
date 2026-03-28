@@ -213,7 +213,7 @@ const SCENARIOS = {
     partDirect: 0.20,          // 20% direct (walk-in, quelques contacts)
     partInformel: 0.10,        // 10% informel (peu de réseau, peu de cash)
     nbEmployes: 2,             // Minimum : 1 concierge + 1 ménage
-    consommablesParNuitee: 45, // Amenities basiques pour limiter les coûts
+    // consommablesParNuitee supprimé — utilise CHARGES.consommablesParNuitee (30 MAD) pour tous les scénarios
     source: "Nouvel entrant — forte dépendance OTA, pricing d'entrée, occupation basse Y1",
   },
   prudent_moyen: {
@@ -227,7 +227,6 @@ const SCENARIOS = {
     partDirect: 0.22,
     partInformel: 0.13,
     nbEmployes: 2,
-    consommablesParNuitee: 48,
     source: "Montée en puissance — début de clientèle directe, pricing progressif",
   },
   moyen: {
@@ -241,7 +240,6 @@ const SCENARIOS = {
     partDirect: 0.25,
     partInformel: 0.20,        // Bouche-à-oreille, WhatsApp, repeat guests cash
     nbEmployes: 2,
-    consommablesParNuitee: 50,
     source: "Médiane marché — mix canaux équilibré, pricing aligné opérateurs pro Maarif",
   },
   moyen_optimiste: {
@@ -255,7 +253,6 @@ const SCENARIOS = {
     partDirect: 0.27,
     partInformel: 0.25,        // Réseau établi, corporate en cash, repeat guests
     nbEmployes: 2,
-    consommablesParNuitee: 55, // Meilleure qualité amenities (positionnement premium)
     source: "Établi — clientèle fidèle, bonne note Booking, forte part directe",
   },
   optimiste: {
@@ -269,7 +266,6 @@ const SCENARIOS = {
     partDirect: 0.28,
     partInformel: 0.30,        // Maximum informel : réseau, corporate, long séjour cash
     nbEmployes: 3,             // Volume justifie un 3e employé (réception renforcée)
-    consommablesParNuitee: 60, // Premium amenities, linge haut de gamme
     source: "Top 25% — leader segment, RevPAR élevé, 3 employés nécessaires",
   },
 };

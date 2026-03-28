@@ -422,7 +422,8 @@ function compute(scenario) {
   const irrFlows = [-apportNet, ...projections.map((p, i) =>
     i === projections.length - 1 ? p.cashFlowNet + valeurResiduelle : p.cashFlowNet
   )];
-  const tri = computeIRR(irrFlows, 0.10);
+  const triRaw = computeIRR(irrFlows, 0.10);
+  const tri = (isFinite(triRaw) && triRaw > -1 && triRaw < 10) ? triRaw : null;
 
   // VAN (NPV) — Valeur Actuelle Nette au taux d'actualisation 8%, avec valeur résiduelle
   const tauxActualisation = 0.08;
@@ -577,7 +578,7 @@ function compute(scenario) {
     const testRevN = testRevH * (1 - partOTA * commissionOTA) + sc.loyerCommercial * 12;
     const testCh = _chargesForOcc(testOcc);
     const testEbitda = testRevN - testCh;
-    const testDebt = interetsDiffereTK + annuiteBQ;
+    const testDebt = interetsDiffereTK + interetsDiffereBQ;
     const testCFavIS = testEbitda - testDebt;
     const testResultatFiscal = testCFavIS - amortissementAnnuel;
     const testIS = Math.max(0, testResultatFiscal) * (1 - FISCALITE.caDevisesPct) * FISCALITE.isTaux;
@@ -591,7 +592,7 @@ function compute(scenario) {
     const revN = revH * (1 - partOTA * commissionOTA) + sc.loyerCommercial * 12;
     const ch = _chargesForOcc(occRate);
     const ebit = revN - ch;
-    const debtY1 = interetsDiffereTK + annuiteBQ;
+    const debtY1 = interetsDiffereTK + interetsDiffereBQ;
     const cfAvIS = ebit - debtY1;
     const resFiscal = cfAvIS - amortissementAnnuel;
     const impot = Math.max(0, resFiscal) * (1 - FISCALITE.caDevisesPct) * FISCALITE.isTaux;

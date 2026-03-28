@@ -1631,7 +1631,7 @@ function renderGestionDuel(S) {
       <div class="kpi-card"><div class="kpi-label">CF Net An 1 — Auto-géré</div><div class="kpi-value ${aY1.cashFlowNet >= 0 ? 'kpi-green' : 'kpi-red'}">${fmtMAD(aY1.cashFlowNet)}</div><div class="kpi-sub">TRI ${fmtPct(A.kpi.tri)}</div></div>
       <div class="kpi-card"><div class="kpi-label">CF Net An 1 — Société</div><div class="kpi-value ${gY1.cashFlowNet >= 0 ? 'kpi-green' : 'kpi-red'}">${fmtMAD(gY1.cashFlowNet)}</div><div class="kpi-sub">TRI ${fmtPct(G.kpi.tri)}</div></div>
       <div class="kpi-card"><div class="kpi-label">Gain CF An 1</div><div class="kpi-value kpi-green">+${fmtMAD(deltaCF)}</div><div class="kpi-sub">En faveur auto-géré</div></div>
-      <div class="kpi-card"><div class="kpi-label">Gain TRI</div><div class="kpi-value kpi-green">+${((A.kpi.tri - G.kpi.tri) * 100).toFixed(2)} pts</div><div class="kpi-sub">${fmtPct(A.kpi.tri)} vs ${fmtPct(G.kpi.tri)}</div></div>
+      <div class="kpi-card"><div class="kpi-label">Gain TRI</div><div class="kpi-value kpi-green">${(A.kpi.tri != null && G.kpi.tri != null) ? '+' + ((A.kpi.tri - G.kpi.tri) * 100).toFixed(2) + ' pts' : '–'}</div><div class="kpi-sub">${fmtPct(A.kpi.tri)} vs ${fmtPct(G.kpi.tri)}</div></div>
     `;
   }
 
