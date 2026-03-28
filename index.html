@@ -423,10 +423,16 @@ tr:hover td{background:#f8fafc}
   #card-montage{display:none}
 
   /* ─── Tables ─── */
-  .table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:0 -12px;padding:0 12px}
-  table{font-size:.75rem;min-width:480px}
-  th{padding:8px 8px;font-size:.65rem;white-space:nowrap}
-  td{padding:6px 8px}
+  .table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:0 -12px;padding:0 12px;max-width:100vw}
+  table{font-size:.72rem}
+  .table-wrap table{min-width:580px}
+  .table-wrap table[data-cols="wide"]{min-width:720px}
+  th{padding:6px 6px;font-size:.62rem;white-space:nowrap}
+  td{padding:5px 6px;white-space:nowrap}
+  td:first-child,th:first-child{white-space:normal}
+  /* Tables NOT in .table-wrap (simple 2-col) don't need min-width */
+  .card>table{min-width:0;font-size:.78rem}
+  .card>table td,.card>table th{white-space:normal;padding:6px 8px}
 
   /* ─── Toggle buttons ─── */
   .toggle-group{border-radius:5px}
@@ -958,7 +964,7 @@ tr:hover td{background:#f8fafc}
     <div class="card" id="card-montage"><div class="card-title">Montage Financier</div><div class="chart-box"><canvas id="chart-montage"></canvas></div></div>
   </div>
   <div class="card"><div class="card-title">Programme Architectural</div>
-    <div class="table-wrap"><table><thead><tr><th>Niveau</th><th>Type</th><th>Surface int.</th><th>Terrasse</th><th>Surface utile</th><th>Position</th><th>Exposition</th><th>Catégorie</th></tr></thead><tbody id="programme-tbody"></tbody></table></div>
+    <div class="table-wrap"><table data-cols="wide"><thead><tr><th>Niveau</th><th>Type</th><th>Surface int.</th><th>Terrasse</th><th>Surface utile</th><th>Position</th><th>Exposition</th><th>Catégorie</th></tr></thead><tbody id="programme-tbody"></tbody></table></div>
   </div>
 
   <!-- SURFACE UTILE -->
@@ -984,7 +990,7 @@ tr:hover td{background:#f8fafc}
   <!-- SCENARIO COMPARISON TABLE -->
   <div class="card" id="scenario-comparison">
     <div class="card-title">Comparaison des 5 Scénarios</div>
-    <div class="table-wrap"><table><thead><tr><th>Scénario</th><th>Occ.</th><th>Prix/nuit</th><th>Rdt Brut</th><th>CF An1</th><th>TRI</th><th>Payback</th><th>DSCR</th><th>VAN</th></tr></thead><tbody id="scenario-comparison-tbody"></tbody></table></div>
+    <div class="table-wrap"><table data-cols="wide"><thead><tr><th>Scénario</th><th>Occ.</th><th>Prix/nuit</th><th>Rdt Brut</th><th>CF An1</th><th>TRI</th><th>Payback</th><th>DSCR</th><th>VAN</th></tr></thead><tbody id="scenario-comparison-tbody"></tbody></table></div>
   </div>
 
   <!-- Charge variant moved to Gestion Duel section -->
@@ -1005,7 +1011,7 @@ tr:hover td{background:#f8fafc}
     <div class="card"><div class="card-title">Projection Revenus</div><div class="chart-box"><canvas id="chart-rev-evolution"></canvas></div></div>
   </div>
   <div class="card"><div class="card-title">Détail par Année</div>
-    <div class="table-wrap"><table><thead><tr><th>Année</th><th>Occ. eff.</th><th>Rev. Brut Hôtel</th><th>Commissions</th><th>Rev. Net Hôtel</th><th>Local Commercial</th><th>Total</th></tr></thead><tbody id="rev-table-tbody"></tbody></table></div>
+    <div class="table-wrap"><table data-cols="wide"><thead><tr><th>Année</th><th>Occ. eff.</th><th>Rev. Brut Hôtel</th><th>Commissions</th><th>Rev. Net Hôtel</th><th>Local Commercial</th><th>Total</th></tr></thead><tbody id="rev-table-tbody"></tbody></table></div>
   </div>
 </div>
 
@@ -1308,7 +1314,7 @@ tr:hover td{background:#f8fafc}
 
   <!-- Tableau prévisionnel enrichi -->
   <div class="card"><div class="card-title">Compte de Résultat Prévisionnel</div>
-    <div class="table-wrap"><table><thead><tr><th>Année</th><th>Revenus</th><th>Charges</th><th>EBITDA</th><th>Marge</th><th>Dette</th><th>IS</th><th>Cash-Flow Net</th><th>CF/mois</th><th>Cumul</th></tr></thead><tbody id="cf-tbody"></tbody></table></div>
+    <div class="table-wrap"><table data-cols="wide"><thead><tr><th>Année</th><th>Revenus</th><th>Charges</th><th>EBITDA</th><th>Marge</th><th>Dette</th><th>IS</th><th>Cash-Flow Net</th><th>CF/mois</th><th>Cumul</th></tr></thead><tbody id="cf-tbody"></tbody></table></div>
   </div>
 </div>
 
@@ -1444,7 +1450,7 @@ tr:hover td{background:#f8fafc}
       <strong>Exploitation :</strong> TVA collectée à 10% sur hébergement, mais TVA payée à 20% sur services (gestion, entretien, commissions, etc.) et 14% sur utilities.<br>
       <strong>Résultat :</strong> Le solde annuel (collectée - déductible) rembourse progressivement le crédit de construction. Pas de TVA à payer tant que le crédit n'est pas épuisé.
     </div>
-    <div class="table-wrap"><table>
+    <div class="table-wrap"><table data-cols="wide">
       <thead><tr><th>Année</th><th>TVA Collectée</th><th>TVA Déductible</th><th>Solde Annuel</th><th>Crédit Restant</th><th>TVA à Payer</th></tr></thead>
       <tbody id="fisc-tva-tbody"></tbody>
     </table></div>
@@ -1492,7 +1498,7 @@ tr:hover td{background:#f8fafc}
   <div class="card">
     <div class="card-title">Programmes de Subvention & Aides Éligibles</div>
     <div class="info-box" style="margin-bottom:16px" id="sub-info-text">Ce tableau recense toutes les subventions nationales, sectorielles et fiscales auxquelles le projet est potentiellement éligible.</div>
-    <div class="table-wrap"><table>
+    <div class="table-wrap"><table data-cols="wide">
       <thead><tr><th>Programme</th><th>Institution</th><th>Type</th><th>Offre</th><th>Montant Estimé</th><th>Éligibilité</th></tr></thead>
       <tbody id="sub-table-tbody"></tbody>
     </table></div>
@@ -1850,7 +1856,7 @@ tr:hover td{background:#f8fafc}
   <div class="card">
     <div class="card-title">2. Saisonnalité (intégrée au modèle)</div>
     <p style="font-size:.85rem;margin-bottom:12px">L'occupation varie de 26% en janvier à 51% en août. Cela signifie des mois de cash-flow très négatif en hiver. Le modèle intègre désormais 12 coefficients mensuels.</p>
-    <div class="table-wrap"><table>
+    <div class="table-wrap"><table data-cols="wide">
       <thead><tr><th>Mois</th><th>Coeff.</th><th>Mois</th><th>Coeff.</th><th>Mois</th><th>Coeff.</th></tr></thead>
       <tbody>
         <tr><td>Janvier</td><td><strong>0.61</strong> (26%)</td><td>Mai</td><td>1.13 (48%)</td><td>Septembre</td><td>1.19 (51%)</td></tr>
@@ -2014,11 +2020,11 @@ tr:hover td{background:#f8fafc}
 </main>
 
 <!-- Scripts — strict order: data → engine → render → charts → app -->
-<script src="js/data.js?v=55"></script>
-<script src="js/engine.js?v=55"></script>
-<script src="js/render.js?v=55"></script>
-<script src="js/charts.js?v=55"></script>
-<script src="js/app.js?v=55"></script>
+<script src="js/data.js?v=56"></script>
+<script src="js/engine.js?v=56"></script>
+<script src="js/render.js?v=56"></script>
+<script src="js/charts.js?v=56"></script>
+<script src="js/app.js?v=56"></script>
 
 </body>
 </html>
