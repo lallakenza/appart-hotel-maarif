@@ -281,10 +281,10 @@ const CHARGES = {
   // ONEE, benchmark opérateurs STR Maroc, cabinets comptables Casa
   // ═══════════════════════════════════════════════════════════════
 
-  // --- Société de gestion — 20% du CA hébergement brut ---
-  // Confirmé : HouseBooking, YourHostHelper, Welkeys Maroc ~20%
-  // Inclut : gestion réservations, accueil, check-in/out, suivi opérationnel
-  tauxGestion: 0.20,
+  // --- Gestion — 15% du CA hébergement brut ---
+  // Propriétaire gère lui-même (depuis UAE) avec concierge + ménage sur place
+  // Pas de société de gestion externe (HouseBooking ~20% → non retenu)
+  tauxGestion: 0.15,
 
   // --- Utilities : EAU + ÉLECTRICITÉ ---
   // Tarif commercial Lydec Casablanca : ~1.07 MAD/kWh (vs 1.17 résidentiel)
