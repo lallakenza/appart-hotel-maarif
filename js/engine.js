@@ -94,7 +94,8 @@ function compute(scenario) {
   const nBQ = (BANQUE_CLASSIQUE.dureeAns - BANQUE_CLASSIQUE.differeAns) * 12;
   const mensualiteBQ = pmt(rBQ, nBQ, montantBanque);
   const annuiteBQ = mensualiteBQ * 12;
-  const coutTotalBQ = annuiteBQ * BANQUE_CLASSIQUE.dureeAns;
+  const interetsDiffereBQ = montantBanque * BANQUE_CLASSIQUE.tauxAnnuel;
+  const coutTotalBQ = (interetsDiffereBQ * BANQUE_CLASSIQUE.differeAns) + (annuiteBQ * (BANQUE_CLASSIQUE.dureeAns - BANQUE_CLASSIQUE.differeAns));
 
   // --- Montage financier (pourcentages) ---
   // MDM n'est PAS dans le montage : elle est remboursée à l'investisseur après coup
@@ -378,10 +379,10 @@ function compute(scenario) {
     });
   }
 
-  // --- Métriques clés (basées sur investissement NET = après MDM) ---
+  // --- Métriques clés (basées sur totalProjet — MDM = fonds de roulement, pas réduction du coût) ---
   const y1 = projections[0];
-  const rendementBrut = (y1.revBrutHotel + y1.revCommercial) / investissementNet;
-  const rendementNet = y1.cashFlowNet / investissementNet;
+  const rendementBrut = (y1.revBrutHotel + y1.revCommercial) / totalProjet;
+  const rendementNet = y1.cashFlowNet / totalProjet;
   const rendementNetApport = y1.cashFlowNet / apportNet; // apport net = terrain - MDM cashback
   const revpar = y1.revBrutHotel / (nbUnites * 365);
   const coutParNuitee = y1.chargesTotal / (y1.nuiteesAn || nuiteesParAn);
@@ -553,8 +554,17 @@ function compute(scenario) {
     const testSalaires = (nbEmployesSc >= 3
       ? (CHARGES.salaireConcierge + CHARGES.salaireMenage * 2)
       : (CHARGES.salaireConcierge + CHARGES.salaireMenage)) * 12 * (1 + CHARGES.chargesSociales);
+    // Charges manquantes identifiées par l'audit :
+    const cycleRenouv = CHARGES.renouvellementMobilierCycle || 7;
+    const testProvisionRenouv = (CHARGES.renouvellementMobilierParUnite * nbUnites) / cycleRenouv;
+    const testMarketingLancement = CHARGES.budgetMarketingLancement || 0; // An 1
+    const testFraisCreation = CHARGES.fraisCreation || 0; // An 1
+    const testSyndic = CHARGES.syndic || 0;
+    // taxeHabitation = 0 en An 1 (exonération 5 ans)
+
     return testRevH * CHARGES.tauxGestion + testConsommables + CHARGES.comptableAnnuel +
-           testUtilities + testSalaires + CHARGES.assurance + CHARGES.entretienBase + CHARGES.divers;
+           testUtilities + testSalaires + CHARGES.assurance + CHARGES.entretienBase + CHARGES.divers +
+           testProvisionRenouv + testMarketingLancement + testFraisCreation + testSyndic;
   }
 
   // Répartition canaux hors boucle (pour break-even, sensibilité, debt projections)
@@ -590,31 +600,12 @@ function compute(scenario) {
   });
 
   // --- Debt projections for full loan duration (max of TK and BQ) ---
+  // Réutilise l'EBITDA des projections principales (saisonnalité + ramp-up + charges complètes)
   const maxLoanYears = Math.max(TAMWILKOM.dureeAns, BANQUE_CLASSIQUE.dureeAns);
   const debtProjections = [];
   for (let y = 0; y < maxLoanYears; y++) {
-    const growth = Math.pow(1 + REVENUE_ASSUMPTIONS.croissanceTarifs, y);
-    const prixS = sc.prixNuitStudio * growth;
-    const prixL = sc.prixNuitLoft * growth;
-    const revH = (nbStudios * prixS + nbLofts * prixL) * 365 * occ;
-    const revN = revH * (1 - partOTA * commissionOTA) + sc.loyerCommercial * 12;
-    const gestionY = revH * CHARGES.tauxGestion;
-    const nuiteesY = nbUnites * 365 * occ;
-    const nbOccY = nbUnites * occ;
-    let utilitiesY = (CHARGES.utilitiesFixe + nbOccY * CHARGES.utilitiesVarParUnite + CHARGES.internetTv) * 12;
-    let consommablesY = nuiteesY * consommablesPN;
-    if (ecoEnabled) {
-      utilitiesY *= (1 - GO_SIYAHA_ECO.reductionUtilities);
-      consommablesY *= (1 - GO_SIYAHA_ECO.reductionConsommables);
-    }
-    const salairesY = (nbEmployesSc >= 3
-      ? (CHARGES.salaireConcierge + CHARGES.salaireMenage * 2)
-      : (CHARGES.salaireConcierge + CHARGES.salaireMenage)) * 12 * (1 + CHARGES.chargesSociales);
-    const taxesProY = y < FISCALITE.exoTaxeProAns ? 0 : CHARGES.taxesPro;
-    const entretienY = y < 5 ? CHARGES.entretienBase : CHARGES.entretienMature;
-    const chTotal = gestionY + consommablesY + CHARGES.comptableAnnuel + utilitiesY +
-      CHARGES.assurance + entretienY + salairesY + taxesProY + CHARGES.divers;
-    const ebitdaY = revN - chTotal;
+    // EBITDA : prendre des projections principales si disponible (cohérence saisonnalité/ramp-up)
+    const ebitdaY = y < projections.length ? projections[y].ebitda : projections[projections.length - 1].ebitda;
 
     // TK debt
     const isDiffTK = y < TAMWILKOM.differeAns;
