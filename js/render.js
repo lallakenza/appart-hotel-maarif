@@ -175,7 +175,7 @@ function renderVerdict(S) {
   const beatsEpargne = K.wealthTrajectory ? K.wealthTrajectory[19].projectWealth > K.wealthTrajectory[19].epargne : false;
   const beatsBourse = K.wealthTrajectory ? K.wealthTrajectory[19].projectWealth > K.wealthTrajectory[19].bourse : false;
   const triOk = K.tri != null && K.tri > 0.12; // TRI > 12%
-  const hasCashMachine = K.cashMachineIdx != null && K.cashMachineIdx <= 15;
+  const wbOk = K.wbAvg20 != null && K.wbAvg20 >= 20_000; // Wealth building > 20K/mois
 
   if (mult20 >= 5) score += 2;        // Capital ×5+ en 20 ans → 2 pts
   else if (mult20 >= 3) score += 1;   // Capital ×3+ → 1 pt
@@ -185,7 +185,7 @@ function renderVerdict(S) {
 
   // Secondary criteria (risque court terme — 2 pts max, ne plombe pas le score)
   if (breakEven && margeSecurite > 0.05) score++; // Marge sécurité occupation
-  if (hasCashMachine) score++;                     // Machine à cash avant An 15
+  if (wbOk) score++;                               // Wealth building > 20K/mois
 
   const maxScore = 7;
 
@@ -239,7 +239,7 @@ function renderVerdict(S) {
     <div class="verdict-metric">${dot(beatsEpargne)} ${beatsEpargne ? 'Bat' : 'Sous'} épargne UAE 6.25%</div>
     <div class="verdict-metric">${dot(beatsBourse)} ${beatsBourse ? 'Bat' : 'Sous'} bourse MASI 8%</div>
     <div class="verdict-metric">${dot(triOk)} TRI: ${K.tri != null ? fmtPct(K.tri) : '–'}</div>
-    <div class="verdict-metric">${dot(hasCashMachine)} Cash machine: ${K.cashMachineIdx ? 'An ' + K.cashMachineIdx : '> 15 ans'}</div>
+    <div class="verdict-metric">${dot(wbOk)} Wealth building: ${K.wbAvg20 ? fmtMAD(K.wbAvg20) + '/mois' : '–'}</div>
     <div class="verdict-metric" style="opacity:.7">${dot(margeSecurite > 0.05)} Break-even: ${breakEven ? fmtPct(breakEven, 0) : '?'} (marge ${fmtPct(margeSecurite, 0)})</div>
   `;
 }
@@ -920,19 +920,70 @@ function renderWealth(S) {
     });
   }
 
-  // Cash machine
+  // Wealth Building Breakdown
   setText("wlth-cf15", fmtMAD(K.cfMoyenY1_5));
   setText("wlth-cf610", fmtMAD(K.cfMoyenY6_10));
   setText("wlth-cf1120", fmtMAD(K.cfMoyenY11_20));
-  const machineEl = document.getElementById("wlth-machine-msg");
-  if (machineEl) {
-    if (K.cashMachineIdx) {
-      machineEl.innerHTML = `<strong>La machine à cash démarre en Année ${K.cashMachineIdx}</strong> : à partir de cette année, le CF net dépasse 600K MAD/an (50K/mois). ` +
-        `Après libération de la dette TK (An 8), le CF explose de +${fmtMAD(K.cfMoyenY11_20 - K.cfMoyenY1_5)}/mois en moyenne. ` +
-        `Les premières années difficiles (DSCR < 1) sont le prix à payer pour construire cette machine.`;
-    } else {
-      machineEl.innerHTML = `Le CF net n'atteint pas 600K/an sur l'horizon 20 ans dans ce scénario. CF moyen post-dette : ${fmtMAD(K.cfPostDebtAvg || 0)}/an.`;
-    }
+
+  // Wealth building decomposition
+  const wbEl = document.getElementById("wlth-machine-msg");
+  if (wbEl && K.wealthBuildingByYear) {
+    const wb = K.wealthBuildingByYear;
+    const y1 = wb[0];
+    const y10 = wb[9];
+    const y20 = wb[19];
+    const avg = K.wbAvg20;
+
+    wbEl.innerHTML = `
+      <div style="margin-bottom:12px">
+        <strong>Création de richesse : ${fmtMAD(avg)}/mois en moyenne sur 20 ans</strong>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px">
+        <div style="background:var(--bg-offset,#f5f5f5);padding:10px;border-radius:8px;text-align:center">
+          <div style="font-size:11px;opacity:.7">An 1</div>
+          <div style="font-size:18px;font-weight:700;color:var(--accent,#0ea5e9)">${fmtMAD(y1.totalMensuel)}<small>/mois</small></div>
+        </div>
+        <div style="background:var(--bg-offset,#f5f5f5);padding:10px;border-radius:8px;text-align:center">
+          <div style="font-size:11px;opacity:.7">An 10</div>
+          <div style="font-size:18px;font-weight:700;color:var(--accent,#0ea5e9)">${fmtMAD(y10.totalMensuel)}<small>/mois</small></div>
+        </div>
+        <div style="background:var(--bg-offset,#f5f5f5);padding:10px;border-radius:8px;text-align:center">
+          <div style="font-size:11px;opacity:.7">An 20</div>
+          <div style="font-size:18px;font-weight:700;color:var(--accent,#0ea5e9)">${fmtMAD(y20.totalMensuel)}<small>/mois</small></div>
+        </div>
+      </div>
+      <table style="width:100%;font-size:13px;border-collapse:collapse">
+        <thead><tr style="border-bottom:1px solid var(--border,#ddd)">
+          <th style="text-align:left;padding:4px 6px">Composante</th>
+          <th style="text-align:right;padding:4px 6px">An 1</th>
+          <th style="text-align:right;padding:4px 6px">An 10</th>
+          <th style="text-align:right;padding:4px 6px">An 20</th>
+        </tr></thead>
+        <tbody>
+          <tr><td style="padding:4px 6px">💰 Cash-flow net</td>
+            <td style="text-align:right;padding:4px 6px">${fmtMAD(y1.cfNetMensuel)}</td>
+            <td style="text-align:right;padding:4px 6px">${fmtMAD(y10.cfNetMensuel)}</td>
+            <td style="text-align:right;padding:4px 6px">${fmtMAD(y20.cfNetMensuel)}</td></tr>
+          <tr><td style="padding:4px 6px">🏦 Rembt capital prêt</td>
+            <td style="text-align:right;padding:4px 6px">${fmtMAD(y1.equityMensuel)}</td>
+            <td style="text-align:right;padding:4px 6px">${fmtMAD(y10.equityMensuel)}</td>
+            <td style="text-align:right;padding:4px 6px">${fmtMAD(y20.equityMensuel)}</td></tr>
+          <tr><td style="padding:4px 6px">📈 Appréciation bien</td>
+            <td style="text-align:right;padding:4px 6px">${fmtMAD(y1.appreciationMensuel)}</td>
+            <td style="text-align:right;padding:4px 6px">${fmtMAD(y10.appreciationMensuel)}</td>
+            <td style="text-align:right;padding:4px 6px">${fmtMAD(y20.appreciationMensuel)}</td></tr>
+          <tr style="font-weight:700;border-top:2px solid var(--border,#ddd)">
+            <td style="padding:4px 6px">Total</td>
+            <td style="text-align:right;padding:4px 6px">${fmtMAD(y1.totalMensuel)}</td>
+            <td style="text-align:right;padding:4px 6px">${fmtMAD(y10.totalMensuel)}</td>
+            <td style="text-align:right;padding:4px 6px">${fmtMAD(y20.totalMensuel)}</td></tr>
+        </tbody>
+      </table>
+      <div style="margin-top:10px;font-size:12px;opacity:.8;line-height:1.5">
+        Même quand le cash-flow est négatif, vous construisez de la richesse via le remboursement du capital (les locataires paient votre dette) et l'appréciation du bien immobilier.
+        ${y1.cfNetMensuel < 0 ? `<br><strong>An 1</strong> : le CF est négatif (${fmtMAD(y1.cfNetMensuel)}/mois), mais ${fmtMAD(y1.equityMensuel + y1.appreciationMensuel)}/mois de richesse se construit silencieusement.` : ''}
+      </div>
+    `;
   }
 
   // Day 1 Equity

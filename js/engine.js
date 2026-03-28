@@ -528,9 +528,32 @@ function compute(scenario) {
     };
   });
 
-  // Cash machine inflection: year when CF net > 50K/month (600K/year)
-  const cashMachineYear = projections.findIndex(p => p.cashFlowNet >= 600_000);
-  const cashMachineIdx = cashMachineYear >= 0 ? cashMachineYear + 1 : null;
+  // ═══ WEALTH BUILDING PER MONTH — Le vrai KPI ═══
+  // Décomposition : cash-flow net + remboursement capital (equity) + appréciation du bien
+  const appreciationAnnuelle = totalProjet * tauxAppreciation; // 2%/an sur valeur initiale (conservateur)
+  const wealthBuildingByYear = projections.map((p, i) => {
+    const cfNet = p.cashFlowNet;
+    const equityPaydown = p.capitalTK + p.capitalBQ; // principal remboursé = equity construite
+    const appreciation = appreciationAnnuelle; // linéarisé pour lisibilité
+    const totalAnnuel = cfNet + equityPaydown + appreciation;
+    return {
+      year: i + 1,
+      cfNet,
+      equityPaydown,
+      appreciation,
+      totalAnnuel,
+      totalMensuel: totalAnnuel / 12,
+      cfNetMensuel: cfNet / 12,
+      equityMensuel: equityPaydown / 12,
+      appreciationMensuel: appreciation / 12,
+    };
+  });
+  // KPI principal : moyenne An 1-5 et An 11-20 pour montrer la progression
+  const wbAvgY1_5 = wealthBuildingByYear.slice(0, 5).reduce((s, w) => s + w.totalMensuel, 0) / 5;
+  const wbAvgY6_10 = wealthBuildingByYear.slice(5, 10).reduce((s, w) => s + w.totalMensuel, 0) / 5;
+  const wbAvgY11_20 = wealthBuildingByYear.slice(10, 20).reduce((s, w) => s + w.totalMensuel, 0) / 10;
+  // Headline KPI : wealth building moyen sur 20 ans
+  const wbAvg20 = wealthBuildingByYear.reduce((s, w) => s + w.totalMensuel, 0) / 20;
 
   // CF mensuel moyen par tranche
   const cfMoyenY1_5 = projections.slice(0, 5).reduce((s, p) => s + p.cashFlowNet, 0) / 5 / 12;
@@ -792,7 +815,8 @@ function compute(scenario) {
       isCumule, ratioIS, rendementStabilise, cfGrowthY10, cfGrowthY20,
       // Wealth building
       capitalInvesti, wealthMilestones, altComparisons, wealthTrajectory,
-      cashMachineIdx, cfMoyenY1_5, cfMoyenY6_10, cfMoyenY11_20,
+      wealthBuildingByYear, wbAvg20, wbAvgY1_5, wbAvgY6_10, wbAvgY11_20,
+      cfMoyenY1_5, cfMoyenY6_10, cfMoyenY11_20,
       day1Equity,
     },
     tva: { constructionHT, tvaConstruction, tvaAmeublement, tvaTotaleRecuperable, tvaCollecteeAn1, tvaDeductibleAn1, creditTVA, dureeRecupCredit, tvaProjections },
