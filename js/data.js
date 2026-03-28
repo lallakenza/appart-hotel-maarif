@@ -5,6 +5,12 @@
 // ============================================================
 //
 // CHANGELOG:
+// 28/03/2026 (v57) — Correction taux banque SARL :
+//   - BANQUE_CLASSIQUE : 4,35% → 5,20% (le 4,35% était le taux résidentiel particulier)
+//   - Source : BAM T4-2025 taux débiteur moyen TPME = 5,22%, Médias24 jan 2026 chef entreprise = 5,15%
+// 28/03/2026 (v56) — Fix mobile + audit corrections :
+//   - Amortissement mobilier sur HT (TVA récupérable Art. 92-I-6° CGI)
+//   - Tables responsive mobile (data-cols="wide" + overflow-x scroll)
 // 28/03/2026 — Intégration recommandations analyse qualitative :
 //   - BANQUE_CLASSIQUE : 5,25%/15ans → 4,35%/20ans + 1an différé (source Médias24 sept 2025)
 //   - REVENUE_ASSUMPTIONS.tauxAppreciation : nouveau champ 2%/an (séparé de croissanceTarifs 3%)
@@ -419,19 +425,24 @@ const TAMWILKOM = {
   projetMin: 2_500_000,      // 2,5 MDH minimum
 };
 
-// Banque classique — crédit investissement ENTREPRISE
+// Banque classique — crédit investissement ENTREPRISE (SARL / TPME)
+// ⚠ CORRECTION 28/03/2026 : 4,35% était le taux RÉSIDENTIEL moyen (particuliers)
+//   Pour une SARL, les taux sont plus élevés (profil entreprise = plus de risque)
 // Source : Bank Al-Maghrib T4-2025 — Taux débiteur moyen TPME : 5,22%
-// Taux directeur BAM : 2.50% (maintenu mars 2026)
+// Source : Médias24 janv 2026 — Chef d'entreprise : meilleur taux = 5,15% TAEG
+// Taux directeur BAM : 2.50% (mars 2026, réduit depuis 2.75% en juin 2024)
 // Fourchette marché TPME investissement : 5,17% – 5,61%
 // Grandes entreprises : 4,74% – 4,96%
 // NB : ce projet (7M MAD) relève de la catégorie TPME
-// Durée : 7-20 ans pour investissement
+// Durée : 7-20 ans pour investissement professionnel
 const BANQUE_CLASSIQUE = {
-  tauxAnnuel: 0.0435,        // taux crédit immobilier sept 2025 (Medias24 : 4,35% sur 25 ans)
-  dureeAns: 20,              // allongé à 20 ans (recommandation analyse qualitative)
+  tauxAnnuel: 0.0520,        // taux TPME investissement (BAM T4-2025 : moy 5,22%)
+  dureeAns: 20,              // 20 ans (maximum courant pour investissement pro)
   differeAns: 1,             // 1 an de différé capital
-  // Ancien : 5,25% sur 15 ans — trop cher, mensualités élevées, CF négatif Y1-7
-  // Nouveau : 4,35% sur 20 ans — réduit mensualités ~25%, améliore survie opérationnelle
+  // Historique :
+  // V1 : 5,25% / 15 ans — initial
+  // V2 : 4,35% / 20 ans — erreur, c'était le taux résidentiel particulier (Médias24 sept 2025)
+  // V3 : 5,20% / 20 ans — corrigé avec taux TPME réel (BAM T4-2025 + Médias24 jan 2026)
 };
 
 // ======= SOURCES & FEEDBACK FINANCEMENT MDM =======

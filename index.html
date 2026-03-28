@@ -1800,10 +1800,17 @@ tr:hover td{background:#f8fafc}
   <h2 class="section-title">Analyse Cabinet Immobilier</h2>
   <p class="section-sub" style="margin-bottom:16px">Analyse qualitative critique indépendante — Mars 2026 (mise à jour 28/03/2026)</p>
 
-  <!-- Mise à jour banner -->
+  <!-- Mise à jour banners -->
+  <div class="card" style="border-left:4px solid var(--red);background:#fef2f2;margin-bottom:12px">
+    <div class="card-title" style="color:var(--red)">Corrections Audit v57 — 28/03/2026</div>
+    <p style="font-size:.85rem;margin:0 0 8px 0"><strong>BUG 1 — IS exonération limitée à 5 ans :</strong> L'ancien modèle appliquait l'exonération IS indéfiniment. Corrigé : Art. 6-I-B-3° CGI = exonération 100% sur devises pour <strong>5 ans seulement</strong>. Impact : +719K MAD d'IS cumulé sur 20 ans.</p>
+    <p style="font-size:.85rem;margin:0 0 8px 0"><strong>BUG 2 — Amortissement mobilier manquant :</strong> Le mobilier (440K MAD) n'était pas amorti. Corrigé : amortissement linéaire 7 ans sur base HT (Art. 92-I-6° CGI, TVA récupérable).</p>
+    <p style="font-size:.85rem;margin:0 0 8px 0"><strong>BUG 3 — TVA ameublement non créditée :</strong> La TVA 20% sur l'ameublement (73K MAD) n'était pas ajoutée au crédit TVA construction. Corrigé.</p>
+    <p style="font-size:.85rem;margin:0 0 8px 0"><strong>BUG 4 — Taux banque résidentiel au lieu d'entreprise :</strong> Le taux de 4,35% était le taux moyen <strong>résidentiel particulier</strong> (Médias24 sept 2025). Pour une SARL/TPME, le taux réel est <strong>5,20%</strong> (BAM T4-2025, Médias24 jan 2026). Corrigé. Impact : mensualités +10%, CF réduit.</p>
+  </div>
   <div class="card" style="border-left:4px solid var(--gold);background:#fffbeb">
-    <div class="card-title" style="color:var(--gold)">Mise à jour 28/03/2026</div>
-    <p style="font-size:.85rem;margin:0">Crédit banque ajusté à 4,35%/20 ans avec 1 an de différé (au lieu de 5,25%/15 ans). Saisonnalité mensuelle intégrée (12 coefficients). Ramp-up An 1 (65% occ, 85% ADR). Coûts additionnels : taxe habitation, provision mobilier, marketing, frais SARL. Syndic retiré (immeuble indivisible, monopropriété). Correction : la loi 80-14 n'impose PAS de plafond de 120 jours (confusion avec la loi ELAN française). MDM Invest sera utilisé comme fonds de roulement.</p>
+    <div class="card-title" style="color:var(--gold)">Mise à jour initiale 28/03/2026</div>
+    <p style="font-size:.85rem;margin:0">Saisonnalité mensuelle intégrée (12 coefficients). Ramp-up An 1 (65% occ, 85% ADR). Coûts additionnels : taxe habitation, provision mobilier, marketing, frais SARL. Syndic retiré (immeuble indivisible, monopropriété). Correction : la loi 80-14 n'impose PAS de plafond de 120 jours (confusion avec la loi ELAN française). MDM Invest sera utilisé comme fonds de roulement.</p>
   </div>
 
   <!-- 1. Audit des hypothèses -->
@@ -1886,17 +1893,21 @@ tr:hover td{background:#f8fafc}
 
   <!-- 4. Financement optimisé -->
   <div class="card">
-    <div class="card-title">4. Financement optimisé</div>
-    <h4 style="margin:12px 0 8px;color:var(--primary)">Crédit banque : 4,35% / 20 ans / 1 an différé</h4>
+    <div class="card-title">4. Financement — Taux SARL corrigé</div>
+    <h4 style="margin:12px 0 8px;color:var(--primary)">Crédit banque SARL : 5,20% / 20 ans / 1 an différé</h4>
     <div class="table-wrap"><table>
-      <thead><tr><th>Paramètre</th><th>Ancien</th><th>Nouveau</th><th>Impact</th></tr></thead>
+      <thead><tr><th>Paramètre</th><th>V1 (initial)</th><th>V2 (erreur)</th><th>V3 (corrigé)</th><th>Source</th></tr></thead>
       <tbody>
-        <tr><td>Taux annuel</td><td style="color:var(--red)">5,25%</td><td style="color:var(--green)">4,35%</td><td>Coût intérêts réduit</td></tr>
-        <tr><td>Durée</td><td style="color:var(--red)">15 ans</td><td style="color:var(--green)">20 ans</td><td>Mensualités -25%</td></tr>
-        <tr><td>Différé capital</td><td style="color:var(--red)">0 an</td><td style="color:var(--green)">1 an</td><td>Trésorerie An 1 préservée</td></tr>
+        <tr><td>Taux annuel</td><td style="color:var(--red)">5,25%</td><td style="color:var(--gold)">4,35%</td><td style="color:var(--green)"><strong>5,20%</strong></td><td>BAM T4-2025 TPME</td></tr>
+        <tr><td>Durée</td><td style="color:var(--red)">15 ans</td><td style="color:var(--green)">20 ans</td><td style="color:var(--green)">20 ans</td><td>Max investissement pro</td></tr>
+        <tr><td>Différé capital</td><td style="color:var(--red)">0 an</td><td style="color:var(--green)">1 an</td><td style="color:var(--green)">1 an</td><td>Négociable</td></tr>
       </tbody>
     </table></div>
-    <p style="font-size:.85rem;margin-top:8px">Source : Médias24, taux crédit immobilier sept 2025. La durée allongée réduit les mensualités et améliore la survie opérationnelle des premières années critiques.</p>
+    <div style="margin-top:8px;padding:10px 14px;background:#fef2f2;border-left:4px solid var(--red);border-radius:4px">
+      <p style="font-size:.82rem;margin:0;color:var(--red)"><strong>⚠ ERREUR CORRIGÉE</strong> : Le taux de 4,35% (V2) provenait de Médias24 sept 2025, mais c'était le taux moyen <strong>résidentiel toutes catégories</strong> (fonctionnaires 3,90%, salariés 4,40%, etc.). Pour une SARL/TPME, le taux réel est 5,17%-5,61% (BAM T4-2025). Chef d'entreprise : meilleur taux 5,15% (Médias24 jan 2026). Le modèle utilise désormais <strong>5,20%</strong>.</p>
+    </div>
+    <h4 style="margin:16px 0 8px;color:var(--primary)">Tamwilcom : 2,50% / 7 ans / 2 ans différé</h4>
+    <p style="font-size:.85rem">Le taux Tamwilcom de 2,5% correspond aux produits de co-financement (Ilayki Invest : 2% HT pour entreprises dirigées par des femmes, Intelaka : taux préférentiel). Ce taux s'applique uniquement à la part Tamwilcom (1-5M MAD, max 40% du projet). La part bancaire porte le taux TPME (5,20%).</p>
 
     <h4 style="margin:16px 0 8px;color:var(--primary)">Go Siyaha : bonus, pas financement central</h4>
     <p style="font-size:.85rem">Taux de conversion demandes→financement : ~4,5% (24 projets financés sur 531 approuvés, fév 2025). <strong>Recommandation : traiter comme un bonus</strong>, ne pas intégrer dans le plan de base.</p>
@@ -1979,11 +1990,12 @@ tr:hover td{background:#f8fafc}
       </tbody>
     </table></div>
 
-    <h4 style="margin:16px 0 8px;color:var(--primary)">Projections ajustées</h4>
-    <p style="font-size:.85rem">• TRI ajusté : ~10-13% (avec valeur résiduelle à 2%/an)</p>
-    <p style="font-size:.85rem">• Wealth creation : ~12-16M MAD sur 20 ans (vs ~22M initialement)</p>
-    <p style="font-size:.85rem">• Breakeven opérationnel : An 4-5</p>
+    <h4 style="margin:16px 0 8px;color:var(--primary)">Projections ajustées (post-corrections v57)</h4>
+    <p style="font-size:.85rem">• TRI ajusté : ~8-12% (avec valeur résiduelle à 2%/an) — réduit par taux SARL 5,20% et IS après An 5</p>
+    <p style="font-size:.85rem">• Wealth creation : ~10-14M MAD sur 20 ans (vs ~22M initialement)</p>
+    <p style="font-size:.85rem">• Breakeven opérationnel : An 5-6 (retardé par taux plus élevé + IS à partir An 6)</p>
     <p style="font-size:.85rem">• Cash-flow confortable : à partir An 8-10 (dette TK remboursée)</p>
+    <p style="font-size:.85rem">• Impact taux 5,20% vs 4,35% : mensualités +~10%, coût total intérêts +~400K MAD sur 20 ans</p>
   </div>
 
   <!-- 9. Recommandations -->
@@ -2020,11 +2032,11 @@ tr:hover td{background:#f8fafc}
 </main>
 
 <!-- Scripts — strict order: data → engine → render → charts → app -->
-<script src="js/data.js?v=56"></script>
-<script src="js/engine.js?v=56"></script>
-<script src="js/render.js?v=56"></script>
-<script src="js/charts.js?v=56"></script>
-<script src="js/app.js?v=56"></script>
+<script src="js/data.js?v=57"></script>
+<script src="js/engine.js?v=57"></script>
+<script src="js/render.js?v=57"></script>
+<script src="js/charts.js?v=57"></script>
+<script src="js/app.js?v=57"></script>
 
 </body>
 </html>
