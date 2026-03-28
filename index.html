@@ -1456,6 +1456,16 @@ tr:hover td{background:#f8fafc}
     </table></div>
   </div>
   <div class="card">
+    <div class="card-title" style="display:flex;justify-content:space-between;align-items:center">
+      <span>Projection TVA — 20 ans</span>
+      <div id="tva-chart-toggle" style="display:flex;gap:4px">
+        <button class="scenario-btn active" data-tva-mode="credit" style="font-size:.72rem;padding:4px 10px">Crédit TVA</button>
+        <button class="scenario-btn" data-tva-mode="payer" style="font-size:.72rem;padding:4px 10px">TVA à payer</button>
+      </div>
+    </div>
+    <div class="chart-box"><canvas id="chart-tva"></canvas></div>
+  </div>
+  <div class="card">
     <div class="card-title">Régime Fiscal Résidence de Tourisme</div>
     <div class="table-wrap"><table><thead><tr><th>Avantage</th><th>Détail</th><th>Durée</th></tr></thead><tbody>
       <tr><td>TVA réduite 10%</td><td>Hébergement et restauration touristiques (au lieu de 20%)</td><td><span class="badge badge-green">Permanent</span></td></tr>
@@ -2032,11 +2042,11 @@ tr:hover td{background:#f8fafc}
 </main>
 
 <!-- Scripts — strict order: data → engine → render → charts → app -->
-<script src="js/data.js?v=58"></script>
-<script src="js/engine.js?v=58"></script>
-<script src="js/render.js?v=58"></script>
-<script src="js/charts.js?v=58"></script>
-<script src="js/app.js?v=58"></script>
+<script src="js/data.js?v=59"></script>
+<script src="js/engine.js?v=59"></script>
+<script src="js/render.js?v=59"></script>
+<script src="js/charts.js?v=59"></script>
+<script src="js/app.js?v=59"></script>
 
 </body>
 </html>

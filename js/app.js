@@ -366,6 +366,13 @@ document.addEventListener("DOMContentLoaded", () => {
   // Bind control panel toggle
   document.getElementById("ctrl-toggle").addEventListener("click", toggleControlPanel);
 
+  // Bind TVA chart toggle
+  document.querySelectorAll("#tva-chart-toggle button").forEach(btn => {
+    btn.addEventListener("click", () => {
+      if (_currentState) chartTVA(_currentState, btn.dataset.tvaMode);
+    });
+  });
+
   // Bind basic control panel inputs (range + number)
   CTRL_FIELDS.forEach(f => {
     const range = document.getElementById("ctrl-" + f.id);

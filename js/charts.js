@@ -40,6 +40,7 @@ function rebuildCharts(state) {
   chartOccupancy();
   chartSensitivity(state);
   chartIS(state);
+  chartTVA(state);
   chartAlternatives(state);
   chartRendementEvolution(state);
   chartCRD(state);
@@ -923,6 +924,122 @@ function chartIS(S) {
       scales: { y: { ticks: { callback: v => fmtK(v) } } },
       plugins: { tooltip: { callbacks: { label: c => c.dataset.label + ": " + fmtMAD(c.parsed.y) } } }
     }
+  });
+}
+
+// --- TVA: Crédit TVA restant / TVA à payer (toggle) ---
+let _tvaChartMode = "credit"; // "credit" or "payer"
+
+function chartTVA(S, mode) {
+  if (mode) _tvaChartMode = mode;
+  destroyChart("tva");
+  const ctx = document.getElementById("chart-tva")?.getContext("2d");
+  if (!ctx || !S.tva || !S.tva.tvaProjections) return;
+
+  const proj = S.tva.tvaProjections;
+  const labels = proj.map(t => "An " + t.year);
+
+  if (_tvaChartMode === "credit") {
+    // Crédit TVA restant — bar chart décroissant
+    const creditData = proj.map(t => t.creditRestant);
+    const zeroIdx = creditData.findIndex(v => v <= 0);
+    _charts.tva = new Chart(ctx, {
+      type: "bar",
+      data: {
+        labels,
+        datasets: [{
+          label: "Crédit TVA restant",
+          data: creditData,
+          backgroundColor: creditData.map((v, i) => v > 0 ? CHART_COLORS.amber + "cc" : CHART_COLORS.green + "40"),
+          borderColor: creditData.map(v => v > 0 ? CHART_COLORS.amber : CHART_COLORS.green),
+          borderWidth: 1,
+          borderRadius: 4,
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: { callback: v => fmtK(v) },
+            title: { display: true, text: "Crédit TVA restant (MAD)" }
+          }
+        },
+        plugins: {
+          legend: { display: false },
+          tooltip: { callbacks: { label: c => "Crédit restant: " + fmtMAD(c.parsed.y) } },
+          annotation: zeroIdx >= 0 ? {
+            annotations: {
+              line1: {
+                type: "line", xMin: zeroIdx - 0.5, xMax: zeroIdx - 0.5,
+                borderColor: CHART_COLORS.green, borderWidth: 2, borderDash: [6, 3],
+                label: { display: true, content: "Crédit absorbé", position: "start", backgroundColor: CHART_COLORS.green, font: { size: 10 } }
+              }
+            }
+          } : {}
+        }
+      }
+    });
+  } else {
+    // TVA à payer — stacked: collectée vs déductible + line TVA à payer
+    _charts.tva = new Chart(ctx, {
+      type: "bar",
+      data: {
+        labels,
+        datasets: [
+          {
+            label: "TVA collectée",
+            data: proj.map(t => t.tvaCollectee),
+            backgroundColor: CHART_COLORS.red + "99",
+            borderRadius: 4,
+            stack: "stack0",
+          },
+          {
+            label: "TVA déductible",
+            data: proj.map(t => -t.tvaDeductible),
+            backgroundColor: CHART_COLORS.green + "99",
+            borderRadius: 4,
+            stack: "stack0",
+          },
+          {
+            label: "TVA à payer",
+            data: proj.map(t => t.tvaAPayer),
+            type: "line",
+            borderColor: CHART_COLORS.primary,
+            backgroundColor: CHART_COLORS.primary + "20",
+            fill: true,
+            tension: 0.3,
+            pointRadius: 3,
+            borderWidth: 2,
+            yAxisID: "y",
+          }
+        ]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        scales: {
+          y: {
+            ticks: { callback: v => fmtK(v) },
+            title: { display: true, text: "MAD" }
+          }
+        },
+        plugins: {
+          tooltip: {
+            callbacks: {
+              label: c => {
+                const val = Math.abs(c.parsed.y);
+                return c.dataset.label + ": " + fmtMAD(val);
+              }
+            }
+          }
+        }
+      }
+    });
+  }
+
+  // Update toggle buttons
+  document.querySelectorAll("#tva-chart-toggle button").forEach(btn => {
+    btn.classList.toggle("active", btn.dataset.tvaMode === _tvaChartMode);
   });
 }
 
