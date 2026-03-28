@@ -789,31 +789,45 @@ function computeGestionComparison(scenario) {
 // Runs compute() twice: once with current params, once with overrides
 // Returns delta on key metrics without mutating global state
 // ============================================================
-function computeChargeVariant(scenario) {
-  // --- Snapshot current charge values ---
+// ============================================================
+// GESTION DUEL — Full 20-year comparison: Auto-géré vs Société de gestion
+// Each mode runs compute() with appropriate charge overrides
+// ============================================================
+function computeGestionDuel(scenario) {
   const saved = {
     assurance: CHARGES.assurance,
     internetTv: CHARGES.internetTv,
     divers: CHARGES.divers,
     tauxGestion: CHARGES.tauxGestion,
+    nbEmployes: CHARGES.nbEmployes,
+    salaireConcierge: CHARGES.salaireConcierge,
+    salaireMenage: CHARGES.salaireMenage,
   };
 
-  // Base result = already computed (passed from app.js), but we need the variant
-  // Apply reduced charges
-  CHARGES.assurance = 13_000;       // 18K → 13K
-  CHARGES.internetTv = 833;         // 1200 → 833 MAD/mois (~10K/an)
-  CHARGES.divers = 10_000;          // 15K → 10K
-  CHARGES.tauxGestion = 0;          // 15% → 0% (auto-géré)
+  // ── MODE A : Gestion personnelle (auto-géré depuis UAE) ──
+  // Pas de commission gestion, charges réduites (négociation directe)
+  // 2 employés (concierge + ménage), pas de manager supplémentaire
+  // L'investisseur gère pricing/OTA/coordination depuis UAE
+  CHARGES.tauxGestion = 0;
+  CHARGES.assurance = 13_000;       // Négociation bâtiment neuf
+  CHARGES.internetTv = 833;         // ~10K/an, IPTV économique
+  CHARGES.divers = 10_000;          // Optimisation divers
+  const autoGere = compute(scenario);
 
-  const variant = compute(scenario);
-
-  // Restore original values
+  // ── MODE B : Société de gestion (propriétaire passif) ──
+  // Commission 20% du CA hébergement brut (HouseBooking, local)
+  // Charges standard (pas d'optimisation, la société gère les contrats)
+  // 2 employés (fournis/supervisés par la société)
+  CHARGES.tauxGestion = 0.20;       // Standard société de gestion Maroc
   CHARGES.assurance = saved.assurance;
   CHARGES.internetTv = saved.internetTv;
   CHARGES.divers = saved.divers;
-  CHARGES.tauxGestion = saved.tauxGestion;
+  const societeGestion = compute(scenario);
 
-  return variant;
+  // Restore original values
+  Object.assign(CHARGES, saved);
+
+  return { autoGere, societeGestion };
 }
 
 function fmt(n) { return Math.round(n).toLocaleString("fr-FR"); }

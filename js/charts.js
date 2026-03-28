@@ -43,6 +43,7 @@ function rebuildCharts(state) {
   chartAlternatives(state);
   chartRendementEvolution(state);
   chartCRD(state);
+  chartGestionDuel(state);
 }
 
 // ======================== RICH TOOLTIP SYSTEM ========================
@@ -1141,6 +1142,109 @@ function chartRendementEvolution(S) {
             afterLabel: (c) => {
               const p = S.projections[c.dataIndex];
               return "CF: " + fmtMAD(p.cashFlowNet) + "/an";
+            }
+          }
+        }
+      }
+    }
+  });
+}
+
+// ======================== GESTION DUEL CHART ========================
+function chartGestionDuel(S) {
+  const D = S.gestionDuel;
+  if (!D) return;
+  const ctx = document.getElementById("chart-gestion-duel");
+  if (!ctx) return;
+  destroyChart("gestionDuel");
+
+  const labels = D.autoGere.projections.map(p => "An " + p.year);
+  const autoCF = D.autoGere.projections.map(p => Math.round(p.cashFlowNet));
+  const socCF = D.societeGestion.projections.map(p => Math.round(p.cashFlowNet));
+  const autoCum = D.autoGere.projections.map(p => Math.round(p.cumulCashFlow));
+  const socCum = D.societeGestion.projections.map(p => Math.round(p.cumulCashFlow));
+
+  _charts.gestionDuel = new Chart(ctx, {
+    type: "bar",
+    data: {
+      labels,
+      datasets: [
+        {
+          label: "CF Auto-géré",
+          data: autoCF,
+          backgroundColor: autoCF.map(v => v >= 0 ? "rgba(22,163,74,0.7)" : "rgba(220,38,38,0.5)"),
+          borderRadius: 3,
+          order: 2,
+          barPercentage: 0.9,
+          categoryPercentage: 0.5,
+        },
+        {
+          label: "CF Société",
+          data: socCF,
+          backgroundColor: socCF.map(v => v >= 0 ? "rgba(37,99,235,0.5)" : "rgba(220,38,38,0.3)"),
+          borderRadius: 3,
+          order: 2,
+          barPercentage: 0.9,
+          categoryPercentage: 0.5,
+        },
+        {
+          label: "Cumul Auto-géré",
+          data: autoCum,
+          type: "line",
+          borderColor: "#16a34a",
+          backgroundColor: "transparent",
+          borderWidth: 2.5,
+          pointRadius: 0,
+          pointHoverRadius: 5,
+          tension: 0.3,
+          order: 1,
+          yAxisID: "y1",
+        },
+        {
+          label: "Cumul Société",
+          data: socCum,
+          type: "line",
+          borderColor: "#2563eb",
+          borderDash: [6, 3],
+          backgroundColor: "transparent",
+          borderWidth: 2,
+          pointRadius: 0,
+          pointHoverRadius: 5,
+          tension: 0.3,
+          order: 1,
+          yAxisID: "y1",
+        },
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: "index", intersect: false },
+      scales: {
+        y: {
+          position: "left",
+          title: { display: true, text: "CF Net annuel (MAD)" },
+          ticks: { callback: v => fmtK(v) },
+          grid: { color: "rgba(0,0,0,0.04)" },
+        },
+        y1: {
+          position: "right",
+          title: { display: true, text: "CF cumulé (MAD)" },
+          ticks: { callback: v => fmtK(v) },
+          grid: { drawOnChartArea: false },
+        },
+        x: { grid: { display: false } },
+      },
+      plugins: {
+        legend: { display: true, position: "top", labels: { usePointStyle: true, boxWidth: 12 } },
+        tooltip: {
+          callbacks: {
+            label: c => c.dataset.label + ": " + fmtMAD(c.parsed.y),
+            afterBody: (items) => {
+              if (items.length === 0) return '';
+              const i = items[0].dataIndex;
+              const gain = autoCF[i] - socCF[i];
+              return "Gain auto-géré: +" + fmtMAD(gain) + "/an";
             }
           }
         }

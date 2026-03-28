@@ -81,7 +81,7 @@ function refresh() {
   }
   currentState = compute(currentScenario);
   currentState.gestion = computeGestionComparison(currentScenario);
-  currentState.chargeVariant = computeChargeVariant(currentScenario);
+  currentState.gestionDuel = computeGestionDuel(currentScenario);
   render(currentState);
   rebuildCharts(currentState);
 }
@@ -293,6 +293,16 @@ function findMatchingScenario(vals) {
     }
   }
   return null;
+}
+
+// --- Gestion Duel tab switching ---
+function switchGestionTab(tab) {
+  ['compare', 'auto', 'societe'].forEach(t => {
+    const panel = document.getElementById('gd-panel-' + t);
+    const btn = document.getElementById('gd-tab-' + t);
+    if (panel) panel.style.display = t === tab ? '' : 'none';
+    if (btn) btn.classList.toggle('active', t === tab);
+  });
 }
 
 function toggleControlPanel() {
