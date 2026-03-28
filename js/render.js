@@ -609,7 +609,7 @@ function renderCharges(S) {
   setText("ch-nuitee", fmtNum(S.kpi.coutParNuitee) + " MAD");
 
   const items = [
-    { name: "Société de gestion (20% CA héberg.)", val: ch.gestion },
+    { name: `Gestion (${Math.round(CHARGES.tauxGestion * 100)}% CA héberg.)`, val: ch.gestion },
     { name: "Salaires 2 employés (charges incl.)",  val: ch.salaires },
     { name: "Eau + Électricité + Internet",          val: ch.utilities },
     { name: "Consommables ménage & linge",           val: ch.consommables },
@@ -1501,7 +1501,7 @@ function renderCapexOpex(S) {
   if (p.length < 3) return;
 
   const opexItems = [
-    { poste: "Société de gestion (20% CA héberg.)", key: "gestion", nature: "Variable" },
+    { poste: `Gestion (${Math.round(CHARGES.tauxGestion * 100)}% CA héberg.)`, key: "gestion", nature: "Variable" },
     { poste: "Salaires (concierge + ménage)", key: "salaires", nature: "Fixe" },
     { poste: "Eau + Électricité + Internet", key: "utilities", nature: "Semi-variable" },
     { poste: "Consommables (linge, amenities)", key: "consommables", nature: "Variable" },

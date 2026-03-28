@@ -226,7 +226,7 @@ function chartChargesBreakdown(S) {
   _charts.chargesBreak = new Chart(ctx, {
     type: "doughnut",
     data: {
-      labels: ["Sté gestion (20%)", "Salaires", "Utilities", "Consommables", "Comptable", "Assurance", "Entretien", "Taxes pro", "Divers"],
+      labels: [`Gestion (${Math.round(CHARGES.tauxGestion*100)}%)`, "Salaires", "Utilities", "Consommables", "Comptable", "Assurance", "Entretien", "Taxes pro", "Divers"],
       datasets: [{
         data: [ch.gestion, ch.salaires, ch.utilities, ch.consommables, ch.comptable, ch.assurance, ch.entretien, ch.taxesPro, ch.divers],
         backgroundColor: [CHART_COLORS.red, CHART_COLORS.primary, CHART_COLORS.blue, CHART_COLORS.teal, CHART_COLORS.gray, CHART_COLORS.gold, CHART_COLORS.amber, CHART_COLORS.primaryLight, "#cbd5e1"]
@@ -302,7 +302,7 @@ function chartRevenusVsCharges(S) {
               <div class="ctt-row ctt-sub"><span>Commissions plateformes</span><span class="ctt-val" style="color:var(--muted)">-${fmtMAD(p.commissions)}</span></div>
               <div class="ctt-row ctt-total"><span>Revenus nets</span><span class="ctt-val">${fmtMAD(p.revTotal)}</span></div>
               <div class="ctt-divider"></div>
-              <div class="ctt-row ctt-neg-row"><span>Sté gestion (20%)</span><span class="ctt-val ctt-neg">-${fmtK(ch.gestion)}</span></div>
+              <div class="ctt-row ctt-neg-row"><span>Gestion (${Math.round(CHARGES.tauxGestion*100)}%)</span><span class="ctt-val ctt-neg">-${fmtK(ch.gestion)}</span></div>
               <div class="ctt-row ctt-neg-row"><span>Salaires + charges</span><span class="ctt-val ctt-neg">-${fmtK(ch.salaires)}</span></div>
               <div class="ctt-row ctt-neg-row"><span>Utilities</span><span class="ctt-val ctt-neg">-${fmtK(ch.utilities)}</span></div>
               <div class="ctt-row ctt-neg-row"><span>Autres</span><span class="ctt-val ctt-neg">-${fmtK(autres)}</span></div>
