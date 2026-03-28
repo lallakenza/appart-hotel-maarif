@@ -65,6 +65,7 @@ function render(state) {
   renderGoSiyaha(state);
   renderMontages(state);
   renderCapexOpex(state);
+  renderChargeVariant(state);
 }
 
 // --- Header badge (dynamic total projet) ---
@@ -1608,6 +1609,179 @@ function renderCapexOpex(S) {
       `Le service de la dette représente <strong>${(p[0].debtServiceTotal / opexAn1 * 100).toFixed(0)}%</strong> des décaissements annuels. ` +
       `Le point mort se situe à un taux d'occupation d'environ <strong>${Math.ceil((p[0].chargesTotal + p[0].debtServiceTotal) / (p[0].revTotal / SCENARIOS[S.scenario].tauxOccupation) * 100)}%</strong>.`;
   }
+}
+
+// --- Charge Variant Comparison ---
+function renderChargeVariant(S) {
+  const container = document.getElementById("charge-variant-card");
+  if (!container) return;
+  const V = S.chargeVariant;
+  if (!V) return;
+
+  const base = S; // current (with standard charges)
+  const bY1 = base.projections[0];
+  const vY1 = V.projections[0];
+
+  // Key comparison metrics
+  const rows = [
+    {
+      label: "Charges An 1",
+      base: bY1.chargesTotal,
+      variant: vY1.chargesTotal,
+      fmt: fmtMAD,
+    },
+    {
+      label: "EBITDA An 1",
+      base: bY1.ebitda,
+      variant: vY1.ebitda,
+      fmt: fmtMAD,
+    },
+    {
+      label: "Cash-Flow Net An 1",
+      base: bY1.cashFlowNet,
+      variant: vY1.cashFlowNet,
+      fmt: fmtMAD,
+      highlight: true,
+    },
+    {
+      label: "Rendement Net",
+      base: base.kpi.rendementNet,
+      variant: V.kpi.rendementNet,
+      fmt: fmtPct,
+    },
+    {
+      label: "Rendement / Apport",
+      base: base.kpi.rendementNetApport,
+      variant: V.kpi.rendementNetApport,
+      fmt: fmtPct,
+    },
+    {
+      label: "TRI (20 ans)",
+      base: base.kpi.tri,
+      variant: V.kpi.tri,
+      fmt: fmtPct,
+      highlight: true,
+    },
+    {
+      label: "VAN (8%)",
+      base: base.kpi.van,
+      variant: V.kpi.van,
+      fmt: fmtMAD,
+    },
+    {
+      label: "Payback",
+      base: base.kpi.paybackYear,
+      variant: V.kpi.paybackYear,
+      fmtCustom: v => v ? v + " ans" : "> 20 ans",
+    },
+    {
+      label: "Seuil Rentabilité",
+      base: base.kpi.breakEvenOcc,
+      variant: V.kpi.breakEvenOcc,
+      fmt: (v) => fmtPct(v, 0),
+    },
+    {
+      label: "DSCR An 1",
+      base: base.kpi.dscr,
+      variant: V.kpi.dscr,
+      fmtCustom: v => v === Infinity ? "∞" : v.toFixed(2) + "x",
+    },
+  ];
+
+  // Changed charges detail
+  const changes = [
+    { poste: "Gestion", avant: Math.round(CHARGES.tauxGestion * 100) + "% CA", apres: "0% (auto-géré)", economie: bY1.chargesDetail.gestion },
+    { poste: "Assurance", avant: fmtMAD(CHARGES.assurance) + "/an", apres: "13 000 MAD/an", economie: CHARGES.assurance - 13000 },
+    { poste: "Internet/TV", avant: fmtNum(CHARGES.internetTv) + " MAD/mois", apres: "833 MAD/mois", economie: (CHARGES.internetTv - 833) * 12 },
+    { poste: "Divers", avant: fmtMAD(CHARGES.divers) + "/an", apres: "10 000 MAD/an", economie: CHARGES.divers - 10000 },
+  ];
+  const totalEco = changes.reduce((s, c) => s + c.economie, 0);
+
+  let html = '';
+
+  // Adjustments table
+  html += '<div class="table-wrap" style="margin-bottom:16px"><table>';
+  html += '<thead><tr><th>Poste modifié</th><th>Actuel</th><th>Réduit</th><th style="text-align:right">Économie An 1</th></tr></thead><tbody>';
+  changes.forEach(c => {
+    html += `<tr><td>${c.poste}</td><td>${c.avant}</td><td style="color:var(--green);font-weight:600">${c.apres}</td><td class="num" style="color:var(--green)">${fmtMAD(c.economie)}</td></tr>`;
+  });
+  html += `<tr style="font-weight:700;background:#ecfdf5"><td>Total économie An 1</td><td></td><td></td><td class="num" style="color:var(--green)">${fmtMAD(totalEco)}</td></tr>`;
+  html += '</tbody></table></div>';
+
+  // Comparison table
+  html += '<div class="table-wrap"><table>';
+  html += '<thead><tr><th>Métrique</th><th>Actuel</th><th>Charges réduites</th><th style="text-align:right">Delta</th></tr></thead><tbody>';
+  rows.forEach(r => {
+    const fmtFn = r.fmtCustom || r.fmt;
+    const bStr = fmtFn(r.base);
+    const vStr = fmtFn(r.variant);
+    let delta, deltaColor;
+    if (r.fmtCustom && !r.fmt) {
+      // Custom format — compute delta manually for payback (lower is better)
+      if (r.label === "Payback") {
+        const d = (r.variant || 99) - (r.base || 99);
+        delta = d < 0 ? d + " an(s)" : d > 0 ? "+" + d + " an(s)" : "=";
+        deltaColor = d < 0 ? "var(--green)" : d > 0 ? "var(--red)" : "";
+      } else {
+        delta = "–";
+        deltaColor = "";
+      }
+    } else if (r.fmt === fmtPct) {
+      const d = r.variant - r.base;
+      delta = (d >= 0 ? "+" : "") + (d * 100).toFixed(2) + " pts";
+      deltaColor = d > 0 ? "var(--green)" : d < 0 ? "var(--red)" : "";
+    } else if (r.fmt === fmtMAD) {
+      const d = r.variant - r.base;
+      delta = (d >= 0 ? "+" : "") + fmtMAD(d);
+      deltaColor = d > 0 ? "var(--green)" : d < 0 ? "var(--red)" : "";
+      // For charges, lower is better (invert color)
+      if (r.label.includes("Charges")) {
+        deltaColor = d < 0 ? "var(--green)" : d > 0 ? "var(--red)" : "";
+      }
+    } else {
+      delta = "–";
+      deltaColor = "";
+    }
+
+    const rowStyle = r.highlight ? ' style="background:#eff6ff;font-weight:600"' : '';
+    html += `<tr${rowStyle}><td>${r.label}</td><td class="num">${bStr}</td><td class="num" style="color:var(--green)">${vStr}</td><td class="num" style="color:${deltaColor}">${delta}</td></tr>`;
+  });
+  html += '</tbody></table></div>';
+
+  // CF projection mini-chart (5 year comparison)
+  html += '<div style="margin-top:16px"><strong>Cash-Flow Net — 5 premières années :</strong></div>';
+  html += '<div class="table-wrap" style="margin-top:8px"><table>';
+  html += '<thead><tr><th>Année</th>';
+  for (let y = 1; y <= 5; y++) html += `<th style="text-align:right">An ${y}</th>`;
+  html += '</tr></thead><tbody>';
+  html += '<tr><td>Actuel</td>';
+  for (let y = 0; y < 5; y++) {
+    const cf = base.projections[y] ? base.projections[y].cashFlowNet : 0;
+    html += `<td class="num" style="color:${cf >= 0 ? 'var(--green)' : 'var(--red)'}">${fmtMAD(cf)}</td>`;
+  }
+  html += '</tr><tr style="background:#ecfdf5"><td><strong>Réduit</strong></td>';
+  for (let y = 0; y < 5; y++) {
+    const cf = V.projections[y] ? V.projections[y].cashFlowNet : 0;
+    html += `<td class="num" style="color:${cf >= 0 ? 'var(--green)' : 'var(--red)'}"><strong>${fmtMAD(cf)}</strong></td>`;
+  }
+  html += '</tr><tr><td style="font-style:italic">Gain</td>';
+  for (let y = 0; y < 5; y++) {
+    const bCF = base.projections[y] ? base.projections[y].cashFlowNet : 0;
+    const vCF = V.projections[y] ? V.projections[y].cashFlowNet : 0;
+    const gain = vCF - bCF;
+    html += `<td class="num" style="color:var(--green);font-style:italic">+${fmtMAD(gain)}</td>`;
+  }
+  html += '</tr></tbody></table></div>';
+
+  // Note
+  html += '<div class="info-box" style="margin-top:12px">';
+  html += '<strong>Hypothèses du scénario "charges réduites" :</strong> ';
+  html += 'Gestion 0% (auto-géré, pas de commission), assurance 13K (négociation bâtiment neuf), ';
+  html += 'internet/TV 10K/an (IPTV économique), divers 10K. ';
+  html += 'Les salaires, consommables, comptable, provisions et taxes restent inchangés.';
+  html += '</div>';
+
+  container.innerHTML = html;
 }
 
 // --- Utility ---

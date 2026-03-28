@@ -81,6 +81,7 @@ function refresh() {
   }
   currentState = compute(currentScenario);
   currentState.gestion = computeGestionComparison(currentScenario);
+  currentState.chargeVariant = computeChargeVariant(currentScenario);
   render(currentState);
   rebuildCharts(currentState);
 }

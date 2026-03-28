@@ -784,4 +784,36 @@ function computeGestionComparison(scenario) {
   };
 }
 
+// ============================================================
+// CHARGE VARIANT — Compares current charges vs. "charges réduites"
+// Runs compute() twice: once with current params, once with overrides
+// Returns delta on key metrics without mutating global state
+// ============================================================
+function computeChargeVariant(scenario) {
+  // --- Snapshot current charge values ---
+  const saved = {
+    assurance: CHARGES.assurance,
+    internetTv: CHARGES.internetTv,
+    divers: CHARGES.divers,
+    tauxGestion: CHARGES.tauxGestion,
+  };
+
+  // Base result = already computed (passed from app.js), but we need the variant
+  // Apply reduced charges
+  CHARGES.assurance = 13_000;       // 18K → 13K
+  CHARGES.internetTv = 833;         // 1200 → 833 MAD/mois (~10K/an)
+  CHARGES.divers = 10_000;          // 15K → 10K
+  CHARGES.tauxGestion = 0;          // 15% → 0% (auto-géré)
+
+  const variant = compute(scenario);
+
+  // Restore original values
+  CHARGES.assurance = saved.assurance;
+  CHARGES.internetTv = saved.internetTv;
+  CHARGES.divers = saved.divers;
+  CHARGES.tauxGestion = saved.tauxGestion;
+
+  return variant;
+}
+
 function fmt(n) { return Math.round(n).toLocaleString("fr-FR"); }
