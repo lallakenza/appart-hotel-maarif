@@ -56,6 +56,7 @@ function render(state) {
   renderCharges(state);
   renderFinancement(state);
   renderCashFlow(state);
+  renderWealth(state);
   renderGestion(state);
   renderGestionDuel(state);
   renderMarche(state);
@@ -158,23 +159,35 @@ function renderScenarioComparison(S) {
 }
 
 // --- Verdict Go / No-Go ---
+// WEALTH-ORIENTED scoring: long-term value creation is the primary driver
 function renderVerdict(S) {
   const y1 = S.projections[0];
-  const dscr = S.kpi.dscr;
-  const cfPositif = y1.cashFlowNet > 0;
-  const dscrOk = dscr >= 1.2;
-  const rdtApport = S.kpi.rendementNetApport;
-  const breakEven = S.kpi.breakEvenOcc;
+  const K = S.kpi;
+  const dscr = K.dscr;
+  const breakEven = K.breakEvenOcc;
   const currentOcc = SCENARIOS[S.scenario].tauxOccupation;
   const margeSecurite = breakEven ? currentOcc - breakEven : 0;
 
-  // Score: 0-5 based on key metrics
+  // ═══ WEALTH-BASED SCORING (7 points) ═══
+  // Primary criteria (wealth creation — 5 pts max)
   let score = 0;
-  if (cfPositif) score++;
-  if (dscrOk) score++;
-  if (rdtApport > 0.03) score++;
-  if (breakEven && margeSecurite > 0.08) score++;
-  if (S.kpi.paybackYear && S.kpi.paybackYear <= 10) score++;
+  const mult20 = K.wealthMilestones ? K.wealthMilestones[3].multiple : 0;
+  const beatsEpargne = K.wealthTrajectory ? K.wealthTrajectory[19].projectWealth > K.wealthTrajectory[19].epargne : false;
+  const beatsBourse = K.wealthTrajectory ? K.wealthTrajectory[19].projectWealth > K.wealthTrajectory[19].bourse : false;
+  const triOk = K.tri != null && K.tri > 0.12; // TRI > 12%
+  const hasCashMachine = K.cashMachineIdx != null && K.cashMachineIdx <= 15;
+
+  if (mult20 >= 5) score += 2;        // Capital ×5+ en 20 ans → 2 pts
+  else if (mult20 >= 3) score += 1;   // Capital ×3+ → 1 pt
+  if (beatsEpargne) score++;           // Bat le livret épargne UAE 6.25%
+  if (beatsBourse) score++;            // Bat la bourse MASI 8%
+  if (triOk) score++;                  // TRI > 12%
+
+  // Secondary criteria (risque court terme — 2 pts max, ne plombe pas le score)
+  if (breakEven && margeSecurite > 0.05) score++; // Marge sécurité occupation
+  if (hasCashMachine) score++;                     // Machine à cash avant An 15
+
+  const maxScore = 7;
 
   const banner = document.getElementById("verdict-banner");
   const svg = document.getElementById("verdict-svg");
@@ -185,44 +198,49 @@ function renderVerdict(S) {
 
   if (!banner) return;
 
-  // SVG icon paths
   const svgCheck = '<path d="M20 6L9 17l-5-5"/>';
   const svgAlert = '<path d="M12 9v4"/><path d="M12 17h.01"/><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>';
   const svgX = '<circle cx="12" cy="12" r="10"/><path d="M15 9l-6 6"/><path d="M9 9l6 6"/>';
 
   banner.className = "verdict-banner";
-  if (score >= 4) {
+  if (score >= 5) {
     banner.classList.add("verdict-go");
     svg.innerHTML = svgCheck;
-    title.textContent = "Projet viable — Go conditionnel";
-    subtitle.textContent = "Les fondamentaux sont solides. Le projet génère un cash-flow positif avec une marge de sécurité sur l'occupation. Attention aux risques opérationnels (gestion à distance, saturation Maarif).";
-  } else if (score >= 2) {
+    title.textContent = "Machine à Richesse — Go";
+    subtitle.textContent = `Ce projet multiplie votre capital par ×${mult20.toFixed(1)} en 20 ans et bat toutes les alternatives passives. ` +
+      `Les premières années de cash-flow tendu sont le prix d'entrée pour construire un actif générateur de revenus croissants. ` +
+      `Le fonds de roulement MDM (764K) couvre les années DSCR < 1.`;
+  } else if (score >= 3) {
     banner.classList.add("verdict-caution");
     svg.innerHTML = svgAlert;
-    title.textContent = "Projet fragile — Go avec réserves";
-    subtitle.textContent = "Le cash-flow est positif mais la marge de sécurité est faible. Un taux d'occupation inférieur aux prévisions mettrait le projet en difficulté. Négocier de meilleures conditions de financement améliorerait significativement le profil.";
+    title.textContent = "Création de richesse modérée — Go avec réserves";
+    subtitle.textContent = `Le projet crée de la richesse (×${mult20.toFixed(1)} en 20 ans) mais ne domine pas clairement toutes les alternatives. ` +
+      `Le risque opérationnel (gestion à distance, saisonnalité) doit être pesé contre le potentiel de création de valeur.`;
   } else {
     banner.classList.add("verdict-nogo");
     svg.innerHTML = svgX;
-    title.textContent = "Projet à risque — No-Go recommandé";
-    subtitle.textContent = "Le cash-flow est négatif ou le DSCR insuffisant dans ce scénario. Les conditions actuelles ne permettent pas de couvrir la dette. Reconsidérer le montage financier ou le positionnement tarifaire.";
+    title.textContent = "Création de richesse insuffisante — No-Go";
+    subtitle.textContent = `Dans ce scénario, le projet ne crée pas assez de richesse pour justifier les risques opérationnels. ` +
+      `Un placement passif offrirait un meilleur rapport rendement/risque. Revoir les hypothèses tarifaires ou le financement.`;
   }
 
-  // Score badge with mini bar
-  const scoreBar = Array.from({length: 5}, (_, i) =>
+  // Score badge
+  const scoreBar = Array.from({length: maxScore}, (_, i) =>
     `<span${i < score ? ' class="filled"' : ''}></span>`
   ).join('');
-  scoreBadge.innerHTML = `<span class="verdict-score-bar">${scoreBar}</span> ${score}/5`;
+  scoreBadge.innerHTML = `<span class="verdict-score-bar">${scoreBar}</span> ${score}/${maxScore}`;
 
   // Metric helper
   function dot(ok) { return `<span class="verdict-dot ${ok ? 'dot-ok' : 'dot-warn'}"></span>`; }
   function dotBad(ok) { return `<span class="verdict-dot ${ok ? 'dot-ok' : 'dot-bad'}"></span>`; }
 
   metrics.innerHTML = `
-    <div class="verdict-metric">${dotBad(cfPositif)} CF An 1: ${fmtMAD(y1.cashFlowNet)}</div>
-    <div class="verdict-metric">${dot(dscrOk)} DSCR: ${dscr === Infinity ? '∞' : dscr.toFixed(2) + 'x'}</div>
-    <div class="verdict-metric">${dot(margeSecurite > 0.08)} Break-even: ${breakEven ? fmtPct(breakEven, 0) : '?'}</div>
-    <div class="verdict-metric">${dot(rdtApport > 0.03)} Rdt/apport: ${fmtPct(rdtApport)}</div>
+    <div class="verdict-metric">${dotBad(mult20 >= 5)} Multiple ×${mult20.toFixed(1)} en 20 ans</div>
+    <div class="verdict-metric">${dot(beatsEpargne)} ${beatsEpargne ? 'Bat' : 'Sous'} épargne UAE 6.25%</div>
+    <div class="verdict-metric">${dot(beatsBourse)} ${beatsBourse ? 'Bat' : 'Sous'} bourse MASI 8%</div>
+    <div class="verdict-metric">${dot(triOk)} TRI: ${K.tri != null ? fmtPct(K.tri) : '–'}</div>
+    <div class="verdict-metric">${dot(hasCashMachine)} Cash machine: ${K.cashMachineIdx ? 'An ' + K.cashMachineIdx : '> 15 ans'}</div>
+    <div class="verdict-metric" style="opacity:.7">${dot(margeSecurite > 0.05)} Break-even: ${breakEven ? fmtPct(breakEven, 0) : '?'} (marge ${fmtPct(margeSecurite, 0)})</div>
   `;
 }
 
@@ -869,6 +887,95 @@ function renderGestion(S) {
   // Recommandation
   const recEl = document.getElementById("gest-recommandation");
   if (recEl) recEl.textContent = G.recommandation;
+}
+
+// --- Wealth Building ---
+function renderWealth(S) {
+  const K = S.kpi;
+  if (!K.wealthMilestones) return;
+
+  // Hero KPIs
+  const wlthTotal = K.wealthMilestones[3].totalWealth; // Y20
+  const multiple = K.wealthMilestones[3].multiple;
+  setText("wlth-total", fmtMAD(wlthTotal));
+  setText("wlth-multiple", "×" + multiple.toFixed(1) + " votre mise de départ");
+  setText("wlth-capital", fmtMAD(K.capitalInvesti));
+
+  // Milestones table
+  const tb = document.getElementById("wlth-milestones-tbody");
+  if (tb) {
+    tb.innerHTML = "";
+    K.wealthMilestones.forEach(m => {
+      const tr = document.createElement("tr");
+      const isY20 = m.year === 20;
+      tr.style.cssText = isY20 ? "background:#d1fae5;font-weight:700" : "";
+      tr.innerHTML = `
+        <td>${m.year} ans</td>
+        <td class="num">${fmtMAD(m.propValue)}</td>
+        <td class="num">${fmtMAD(m.equity)}</td>
+        <td class="num">${fmtMAD(m.cumulCash)}</td>
+        <td class="num" style="color:#059669;font-weight:700">${fmtMAD(m.totalWealth)}</td>
+        <td style="text-align:center;font-weight:700;color:${m.multiple >= 5 ? '#059669' : m.multiple >= 3 ? '#2563eb' : '#6b7280'}">×${m.multiple.toFixed(1)}</td>`;
+      tb.appendChild(tr);
+    });
+  }
+
+  // Cash machine
+  setText("wlth-cf15", fmtMAD(K.cfMoyenY1_5));
+  setText("wlth-cf610", fmtMAD(K.cfMoyenY6_10));
+  setText("wlth-cf1120", fmtMAD(K.cfMoyenY11_20));
+  const machineEl = document.getElementById("wlth-machine-msg");
+  if (machineEl) {
+    if (K.cashMachineIdx) {
+      machineEl.innerHTML = `<strong>La machine à cash démarre en Année ${K.cashMachineIdx}</strong> : à partir de cette année, le CF net dépasse 600K MAD/an (50K/mois). ` +
+        `Après libération de la dette TK (An 8), le CF explose de +${fmtMAD(K.cfMoyenY11_20 - K.cfMoyenY1_5)}/mois en moyenne. ` +
+        `Les premières années difficiles (DSCR < 1) sont le prix à payer pour construire cette machine.`;
+    } else {
+      machineEl.innerHTML = `Le CF net n'atteint pas 600K/an sur l'horizon 20 ans dans ce scénario. CF moyen post-dette : ${fmtMAD(K.cfPostDebtAvg || 0)}/an.`;
+    }
+  }
+
+  // Day 1 Equity
+  const d = K.day1Equity;
+  if (d) {
+    setText("wlth-cout-total", fmtMAD(d.coutTotalNetTVA));
+    setText("wlth-cout-unite", fmtMAD(d.coutRevientNetTVAParUnite) + " / unité (après TVA)");
+    setText("wlth-tva-recup", fmtMAD(d.tvaRecuperee));
+    setText("wlth-val-marche", fmtMAD(d.valeurMarcheCapitalisation));
+    setText("wlth-cap-rate", "NOI stabilisé / cap rate " + (d.capRateMarche * 100).toFixed(0) + "%");
+    const msgEl = document.getElementById("wlth-day1-msg");
+    if (msgEl) {
+      const equityPct = (d.equityJour1Pct * 100).toFixed(0);
+      if (d.equityJour1 > 0) {
+        msgEl.innerHTML = `<strong style="color:#059669">Equity créée dès le Jour 1 : +${fmtMAD(d.equityApresTVA)}</strong> — En construisant vous-même (construction groupée), vous créez un actif dont la valeur de marché (capitalisation du NOI) dépasse le coût de construction de <strong>${equityPct}%</strong>. ` +
+          `La récupération de la TVA construction (<strong>${fmtMAD(d.tvaRecuperee)}</strong>) réduit encore votre coût net réel.`;
+      } else {
+        msgEl.innerHTML = `Le coût de construction est supérieur à la valeur de capitalisation dans ce scénario. C'est normal en phase projet — la valeur se crée via les cash-flows futurs et l'appréciation immobilière.`;
+      }
+    }
+  }
+
+  // Alternatives comparison table
+  const altTb = document.getElementById("wlth-alt-tbody");
+  if (altTb && K.altComparisons) {
+    altTb.innerHTML = "";
+    // Project row first
+    const projM = K.wealthMilestones;
+    const trP = document.createElement("tr");
+    trP.style.cssText = "background:#d1fae5;font-weight:700";
+    trP.innerHTML = `<td style="color:#059669">Ce projet</td>` +
+      projM.map(m => `<td class="num" style="color:#059669">${fmtMAD(m.totalWealth)}</td>`).join("") +
+      `<td style="text-align:center;color:#059669">×${projM[3].multiple.toFixed(1)}</td>`;
+    altTb.appendChild(trP);
+    // Alternatives
+    K.altComparisons.forEach(alt => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `<td>${alt.name}</td>` +
+        alt.milestones.map(m => `<td class="num">${fmtMAD(m.value)}</td>`).join("") +
+        `<td style="text-align:center">×${(alt.milestones[3].value / K.capitalInvesti).toFixed(1)}</td>`;
+      altTb.appendChild(tr);
+    });
+  }
 }
 
 // --- Marché ---

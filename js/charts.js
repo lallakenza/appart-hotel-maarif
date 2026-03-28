@@ -44,6 +44,7 @@ function rebuildCharts(state) {
   chartRendementEvolution(state);
   chartCRD(state);
   chartGestionDuel(state);
+  chartWealthTrajectory(state);
 }
 
 // ======================== RICH TOOLTIP SYSTEM ========================
@@ -1245,6 +1246,107 @@ function chartGestionDuel(S) {
               const i = items[0].dataIndex;
               const gain = autoCF[i] - socCF[i];
               return "Gain auto-géré: +" + fmtMAD(gain) + "/an";
+            }
+          }
+        }
+      }
+    }
+  });
+}
+
+// ======================== WEALTH TRAJECTORY ========================
+function chartWealthTrajectory(S) {
+  destroyChart("wealthTrajectory");
+  const ctx = document.getElementById("chart-wealth-trajectory")?.getContext("2d");
+  if (!ctx || !S.kpi.wealthTrajectory) return;
+
+  const wt = S.kpi.wealthTrajectory;
+  const labels = wt.map(w => "An " + w.year);
+
+  _charts.wealthTrajectory = new Chart(ctx, {
+    type: "line",
+    data: {
+      labels,
+      datasets: [
+        {
+          label: "Ce projet",
+          data: wt.map(w => w.projectWealth),
+          borderColor: CHART_COLORS.green,
+          backgroundColor: CHART_COLORS.green + "20",
+          borderWidth: 3,
+          fill: true,
+          tension: 0.3,
+          pointRadius: 0,
+          pointHoverRadius: 6,
+        },
+        {
+          label: "S&P 500 (10%)",
+          data: wt.map(w => w.sp500),
+          borderColor: "#8b5cf6",
+          borderWidth: 2,
+          borderDash: [6, 3],
+          fill: false,
+          tension: 0.3,
+          pointRadius: 0,
+        },
+        {
+          label: "Bourse MASI (8%)",
+          data: wt.map(w => w.bourse),
+          borderColor: CHART_COLORS.blue,
+          borderWidth: 2,
+          borderDash: [6, 3],
+          fill: false,
+          tension: 0.3,
+          pointRadius: 0,
+        },
+        {
+          label: "Livret épargne UAE (6.25%)",
+          data: wt.map(w => w.epargne),
+          borderColor: CHART_COLORS.amber,
+          borderWidth: 2,
+          borderDash: [4, 4],
+          fill: false,
+          tension: 0.3,
+          pointRadius: 0,
+        },
+        {
+          label: "SCPI Europe (6%)",
+          data: wt.map(w => w.scpi),
+          borderColor: CHART_COLORS.gray,
+          borderWidth: 1.5,
+          borderDash: [3, 3],
+          fill: false,
+          tension: 0.3,
+          pointRadius: 0,
+        },
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: "index", intersect: false },
+      scales: {
+        y: {
+          ticks: { callback: v => (v / 1_000_000).toFixed(1) + "M" },
+          title: { display: true, text: "Patrimoine (MAD)" },
+          grid: { color: "rgba(0,0,0,0.04)" },
+        },
+        x: { grid: { display: false } }
+      },
+      plugins: {
+        legend: { position: "bottom", labels: { usePointStyle: true, padding: 12, font: { size: 11 } } },
+        tooltip: {
+          callbacks: {
+            label: function(c) {
+              return c.dataset.label + ": " + fmtMAD(c.parsed.y);
+            },
+            afterBody: function(items) {
+              if (items.length === 0) return "";
+              const idx = items[0].dataIndex;
+              const projet = wt[idx].projectWealth;
+              const epargne = wt[idx].epargne;
+              const delta = projet - epargne;
+              return delta > 0 ? "\nGain vs épargne: +" + fmtMAD(delta) : "";
             }
           }
         }

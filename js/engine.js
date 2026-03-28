@@ -461,6 +461,102 @@ function compute(scenario) {
     total: wealthTotal,
   };
 
+  // ═══ WEALTH MILESTONES — Y5, Y10, Y15, Y20 ═══
+  // Capital investi total de l'utilisateur (apport en devises)
+  const capitalInvesti = 2_500_000; // 2.5 MDH en devises étrangères
+
+  // Equity build-up: property value + cumul CF - remaining debt
+  const wealthMilestones = [5, 10, 15, 20].map(year => {
+    const idx = Math.min(year - 1, projections.length - 1);
+    const p = projections[idx];
+    const propValue = totalProjet * Math.pow(1 + tauxAppreciation, year);
+    const equity = propValue - p.capitalRestantDu; // valeur bien - dette restante
+    const cumulCash = p.cumulCashFlow;
+    const totalWealth = equity + cumulCash;
+    const multiple = totalWealth / capitalInvesti;
+    return { year, propValue, equity, cumulCash, totalWealth, multiple, debtRemaining: p.capitalRestantDu };
+  });
+
+  // Comparaison alternatives sur même horizon (sur capitalInvesti = 2.5 MDH)
+  const altRates = [
+    { name: "Livret épargne UAE", rate: 0.0625 },
+    { name: "SCPI Europe (6%)", rate: 0.06 },
+    { name: "Bourse MASI (8%)", rate: 0.08 },
+    { name: "Bourse S&P 500 (10%)", rate: 0.10 },
+  ];
+  const altComparisons = altRates.map(alt => ({
+    name: alt.name,
+    rate: alt.rate,
+    milestones: [5, 10, 15, 20].map(y => ({
+      year: y,
+      value: capitalInvesti * Math.pow(1 + alt.rate, y),
+    })),
+  }));
+
+  // Wealth trajectory year by year (for chart)
+  const wealthTrajectory = projections.map((p, i) => {
+    const year = i + 1;
+    const propValue = totalProjet * Math.pow(1 + tauxAppreciation, year);
+    const equity = propValue - p.capitalRestantDu;
+    return {
+      year,
+      projectWealth: equity + p.cumulCashFlow,
+      epargne: capitalInvesti * Math.pow(1 + 0.0625, year),
+      scpi: capitalInvesti * Math.pow(1 + 0.06, year),
+      bourse: capitalInvesti * Math.pow(1 + 0.08, year),
+      sp500: capitalInvesti * Math.pow(1 + 0.10, year),
+    };
+  });
+
+  // Cash machine inflection: year when CF net > 50K/month (600K/year)
+  const cashMachineYear = projections.findIndex(p => p.cashFlowNet >= 600_000);
+  const cashMachineIdx = cashMachineYear >= 0 ? cashMachineYear + 1 : null;
+
+  // CF mensuel moyen par tranche
+  const cfMoyenY1_5 = projections.slice(0, 5).reduce((s, p) => s + p.cashFlowNet, 0) / 5 / 12;
+  const cfMoyenY6_10 = projections.slice(5, 10).reduce((s, p) => s + p.cashFlowNet, 0) / 5 / 12;
+  const cfMoyenY11_20 = projections.slice(10, 20).reduce((s, p) => s + p.cashFlowNet, 0) / 10 / 12;
+
+  // ═══ DAY 1 EQUITY — Construction groupée vs achat individuel ═══
+  // TVA récupérée sur construction (construit comme opérateur commercial)
+  const tvaRecupereeEst = constructionHTForAmort * 0.20; // = TVA construction
+  // Coût net de construction après récupération TVA
+  const coutConstructionNetTVA = budgetConstruction - tvaRecupereeEst; // HT
+  const coutTotalNetTVA = coutTerrain + coutConstructionNetTVA + ameublement + (ecoEnabled ? coutNetEco : 0);
+  // Coût par unité après récupération TVA
+  const coutRevientParUnite = totalProjet / nbUnites;
+  const coutRevientNetTVAParUnite = coutTotalNetTVA / nbUnites;
+  // Surface locative
+  const surfaceMoyenne = surfaceLocative / nbUnites;
+  // Coût par m² de revient
+  const coutM2RevientBrut = coutRevientParUnite / surfaceMoyenne;
+  const coutM2RevientNetTVA = coutRevientNetTVAParUnite / surfaceMoyenne;
+  // Prix marché pour un immeuble de rapport opérationnel en Maarif :
+  // Méthode capitalisation des revenus : valeur = NOI / cap rate
+  // NOI An 2 (stabilisé) : EBITDA An 2 (ramp-up terminé)
+  const ebitdaAn2 = projections.length >= 2 ? projections[1].ebitda : projections[0].ebitda;
+  const capRateMarche = 0.07; // 7% cap rate Maarif commercial — benchmark immo locatif Casa
+  const valeurMarcheCapitalisation = ebitdaAn2 / capRateMarche;
+  // Avantage construction groupée = valeur marché capitalisation vs coût réel
+  const equityJour1 = valeurMarcheCapitalisation - totalProjet;
+  const equityApresTVA = valeurMarcheCapitalisation - coutTotalNetTVA;
+
+  const day1Equity = {
+    coutRevientParUnite,
+    coutRevientNetTVAParUnite,
+    surfaceMoyenne,
+    coutM2RevientBrut,
+    coutM2RevientNetTVA,
+    coutTotalNetTVA,
+    tvaRecuperee: tvaRecupereeEst,
+    valeurMarcheCapitalisation,
+    capRateMarche,
+    ebitdaAn2,
+    equityJour1,
+    equityApresTVA,
+    equityJour1Pct: totalProjet > 0 ? equityJour1 / totalProjet : 0,
+  };
+
   // Debt Freedom Year — année où toute la dette est remboursée
   const debtFreedomIdx = projections.findIndex(p => p.debtServiceTotal === 0);
   const debtFreedomYear = debtFreedomIdx >= 0 ? debtFreedomIdx + 1 : null;
@@ -661,6 +757,10 @@ function compute(scenario) {
       tri, van, tauxActualisation, cashOnCash, cfMensuelAn1, margeCF,
       wealthTotal, wealthBreakdown, multipleApport, debtFreedomYear, cfPostDebtAvg,
       isCumule, ratioIS, rendementStabilise, cfGrowthY10, cfGrowthY20,
+      // Wealth building
+      capitalInvesti, wealthMilestones, altComparisons, wealthTrajectory,
+      cashMachineIdx, cfMoyenY1_5, cfMoyenY6_10, cfMoyenY11_20,
+      day1Equity,
     },
     tva: { constructionHT, tvaConstruction, tvaCollecteeAn1, tvaDeductibleAn1, creditTVA, dureeRecupCredit, tvaProjections },
     projections,
