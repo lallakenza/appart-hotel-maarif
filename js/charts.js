@@ -1043,21 +1043,29 @@ function chartTVA(S, mode) {
   });
 }
 
-// --- NEW: Alternative investments comparison ---
+// --- Alternative investments comparison (TRI = vrai rendement comparable) ---
 function chartAlternatives(S) {
   destroyChart("alternatives");
   const ctx = document.getElementById("chart-alternatives")?.getContext("2d");
   if (!ctx) return;
 
-  const rdt = S.kpi.rendementNetApport * 100;
+  // TRI (IRR) = rendement annualisé sur 20 ans incluant valeur résiduelle — le seul comparable juste
+  const tri = S.kpi.tri != null ? S.kpi.tri * 100 : null;
+  const rdtStab = S.kpi.rendementStabilise ? S.kpi.rendementStabilise * 100 : null;
+  const projectVal = tri ?? rdtStab ?? 0;
+  const projectLabel = tri != null ? "Ce projet (TRI 20 ans)" : "Ce projet (rdt stabilisé)";
+
   const alternatives = [
-    { name: "Ce projet (An 1)",    val: rdt },
-    { name: "SCPI Europe",          val: 4.5 },
-    { name: "Immo locatif Casa",    val: 5.5 },
-    { name: "Obligations Maroc",    val: 3.5 },
+    { name: projectLabel,           val: projectVal, isProject: true },
+    { name: "Bourse S&P 500",       val: 10.0 },
+    { name: "Bourse MASI (moy.)",   val: 8.0 },
     { name: "Livret épargne UAE",   val: 6.25 },
-    { name: "Bourse MASI (moy.)",   val: 7.0 },
+    { name: "Immo locatif Casa",    val: 5.5 },
+    { name: "SCPI Europe",          val: 4.5 },
+    { name: "Obligations Maroc",    val: 3.5 },
   ];
+
+  const projectColor = projectVal > 10 ? CHART_COLORS.green : projectVal > 6 ? CHART_COLORS.amber : CHART_COLORS.red;
 
   _charts.alternatives = new Chart(ctx, {
     type: "bar",
@@ -1065,9 +1073,9 @@ function chartAlternatives(S) {
       labels: alternatives.map(a => a.name),
       datasets: [{
         data: alternatives.map(a => a.val),
-        backgroundColor: alternatives.map((a, i) => i === 0 ? (rdt > 4 ? CHART_COLORS.green : rdt > 2 ? CHART_COLORS.amber : CHART_COLORS.red) : CHART_COLORS.gray + '80'),
-        borderColor: alternatives.map((a, i) => i === 0 ? (rdt > 4 ? CHART_COLORS.green : rdt > 2 ? CHART_COLORS.amber : CHART_COLORS.red) : 'transparent'),
-        borderWidth: alternatives.map((a, i) => i === 0 ? 2 : 0),
+        backgroundColor: alternatives.map(a => a.isProject ? projectColor : CHART_COLORS.gray + '80'),
+        borderColor: alternatives.map(a => a.isProject ? projectColor : 'transparent'),
+        borderWidth: alternatives.map(a => a.isProject ? 2 : 0),
         borderRadius: 6,
       }]
     },
@@ -1075,13 +1083,13 @@ function chartAlternatives(S) {
       indexAxis: "y",
       responsive: true, maintainAspectRatio: false,
       scales: {
-        x: { ticks: { callback: v => v + "%", stepSize: 1 }, grid: { color: 'rgba(0,0,0,0.04)' }, title: { display: true, text: "Rendement annuel net (%)" } },
+        x: { min: 0, ticks: { callback: v => v + "%", stepSize: 2 }, grid: { color: 'rgba(0,0,0,0.04)' }, title: { display: true, text: "Rendement annualisé (%)" } },
         y: { grid: { display: false } }
       },
       plugins: {
         legend: { display: false },
         tooltip: {
-          callbacks: { label: c => c.label + ": " + c.parsed.x.toFixed(1) + "% rendement net annuel" + (c.dataIndex === 0 ? " (sur apport terrain)" : " (benchmark)") }
+          callbacks: { label: c => c.label + ": " + c.parsed.x.toFixed(1) + "%" + (c.dataIndex === 0 ? " (TRI incluant appréciation + CF + valeur résiduelle)" : " (benchmark passif)") }
         }
       }
     }
