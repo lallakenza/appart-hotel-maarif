@@ -258,7 +258,7 @@ function chartRevenusVsCharges(S) {
       { label: "Lofts", data: S.projections.map(p => p.revLofts - (p.commissions * p.revLofts / p.revBrutHotel)), backgroundColor: "#3b6b9a", stack: "rev" },
       { label: "Local commercial", data: S.projections.map(p => p.revCommercial), backgroundColor: "#6b9fd4", stack: "rev" },
       // Charges stack
-      { label: "Gestion (20%)", data: S.projections.map(p => p.chargesDetail.gestion), backgroundColor: "#dc2626", stack: "ch" },
+      { label: `Gestion (${Math.round(CHARGES.tauxGestion*100)}%)`, data: S.projections.map(p => p.chargesDetail.gestion), backgroundColor: "#dc2626", stack: "ch" },
       { label: "Salaires", data: S.projections.map(p => p.chargesDetail.salaires), backgroundColor: "#ef4444", stack: "ch" },
       { label: "Utilities", data: S.projections.map(p => p.chargesDetail.utilities), backgroundColor: "#f87171", stack: "ch" },
       { label: "Autres charges", data: S.projections.map(p => { const c = p.chargesDetail; return c.consommables + c.comptable + c.assurance + c.entretien + c.taxesPro + c.divers; }), backgroundColor: "#fca5a5", stack: "ch" },
@@ -837,7 +837,7 @@ function chartCFWaterfall(S) {
   const steps = [
     { label: "Revenus bruts", value: y1.revBrutHotel + y1.revCommercial, type: "positive" },
     { label: "Commissions OTA", value: -y1.commissions, type: "negative" },
-    { label: "Gestion (20%)", value: -ch.gestion, type: "negative" },
+    { label: `Gestion (${Math.round(CHARGES.tauxGestion*100)}%)`, value: -ch.gestion, type: "negative" },
     { label: "Salaires", value: -ch.salaires, type: "negative" },
     { label: "Utilities", value: -ch.utilities, type: "negative" },
     { label: "Consommables", value: -ch.consommables, type: "negative" },
