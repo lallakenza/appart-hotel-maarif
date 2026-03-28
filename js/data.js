@@ -292,11 +292,10 @@ const CHARGES = {
   // Eau : ~150-250 MAD/mois par unité occupée
   // Parties communes (hall, couloirs, éclairage, ascenseur) : ~1,500 MAD/mois fixe
   // MODÈLE : partie fixe + partie variable (proportionnelle à l'occupation)
-  utilitiesFixe: 2_500,      // MAD / mois — parties communes + base incompressible (veille, frigo)
+  utilitiesFixe: 500,         // MAD / mois — parties communes LED + ascenseur basse conso (bâtiment neuf)
   utilitiesVarParUnite: 400,  // MAD / mois / unité occupée (eau + élec + clim)
-  // Pour occupation 48% (5.3 unités occupées en moy) : 2500 + 5.3×400 = 4,620 MAD/mois
-  // Pour occupation 60% (6.6 unités) : 2500 + 6.6×400 = 5,140 MAD/mois
-  // Ancien fixe 6,000 était dans la bonne fourchette mais ne variait pas
+  // Pour occupation 48% (5.3 unités occupées en moy) : 500 + 5.3×400 = 2,620 MAD/mois
+  // Pour occupation 60% (6.6 unités) : 500 + 6.6×400 = 3,140 MAD/mois
 
   internetTv: 1_200,          // MAD / mois — fibre pro Inwi/Maroc Telecom 100Mbps (~400) + IPTV (800)
   // Source : Inwi Pro 2025, fournisseurs IPTV Maroc. 11 unités partagent 1 connexion pro
@@ -349,11 +348,10 @@ const CHARGES = {
   // Linge de maison, produits ménage, amenities (savon, shampoing, café/thé)
   // Estimé : 40-60 MAD par nuitée occupée (fournitures + amortissement linge)
   // Source : benchmark opérateurs STR Maroc, Mews hospitality 2025
-  consommablesParNuitee: 50,  // MAD / nuitée occupée — linge, ménage, amenities
-  // Pour 11 unités × 365j × 48% occ = 1,928 nuitées → 96,400 MAD/an
-  // Ancien : 1,500/mois = 18,000/an — LARGEMENT sous-estimé
-  // Note : une grosse partie du coût ménage est dans les salaires (employé dédié)
-  // Ici c'est uniquement les fournitures consommables
+  consommablesParNuitee: 30,  // MAD / nuitée occupée — linge, amenities basiques, produits ménagers
+  // Pour 11 unités × 365j × 48% occ = 1,928 nuitées → 57,840 MAD/an
+  // Amenities ~7 MAD + produits ménagers ~5 MAD + linge (usure+lavage) ~15 MAD + divers ~3 MAD
+  // Le ménage lui-même est internalisé via employé dédié (salaireMenage)
 
   menageLinge: 0,             // Internalisé via employé dédié (salaireMenage)
 
@@ -371,7 +369,7 @@ const CHARGES = {
   // Budget marketing de lancement (An 1 uniquement)
   // Photos pro, config listings, promotions Booking Genius, Google Ads
   // Source : analyse qualitative mars 2026
-  budgetMarketingLancement: 80_000,  // MAD one-shot An 1
+  budgetMarketingLancement: 20_000,  // MAD one-shot An 1 — photos pro + création listings
 
   // Frais création SARL + autorisations touristiques (An 1, one-shot)
   fraisCreation: 20_000,             // MAD one-shot An 1
