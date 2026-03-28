@@ -415,8 +415,12 @@ const MDM_INVEST = {
 // Projet min : 2,5 MDH (OK — notre projet = 7 MDH)
 // Éligibilité MRE : titre de séjour valide OU retour définitif < 1 an
 // Commercialisé via les banques partenaires marocaines
+// ⚠ TVA SUR INTÉRÊTS (Art. 99-2° CGI) : les taux ci-dessous sont HT.
+// La banque facture en plus 10% de TVA sur les intérêts.
+// Pour une entreprise assujettie TVA (hôtel 10%), cette TVA est DÉDUCTIBLE (Art. 92 CGI).
+// Le moteur utilise les taux HT (= coût net correct) et gère la TVA intérêts séparément.
 const TAMWILKOM = {
-  tauxAnnuel: 0.025,         // HT (confirmé Tamwilcom)
+  tauxAnnuel: 0.025,         // HT — TTC réel = 2.75% (TVA 10% récupérable)
   dureeAns: 7,
   differeAns: 2,
   plafond: 5_000_000,
@@ -436,7 +440,7 @@ const TAMWILKOM = {
 // NB : ce projet (7M MAD) relève de la catégorie TPME
 // Durée : 7-20 ans pour investissement professionnel
 const BANQUE_CLASSIQUE = {
-  tauxAnnuel: 0.0520,        // taux TPME investissement (BAM T4-2025 : moy 5,22%)
+  tauxAnnuel: 0.0520,        // HT — TTC réel = 5.72% (TVA 10% récupérable). BAM T4-2025 TPME moy 5,22%
   dureeAns: 20,              // 20 ans (maximum courant pour investissement pro)
   differeAns: 1,             // 1 an de différé capital
   // Historique :

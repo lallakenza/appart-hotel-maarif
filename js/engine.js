@@ -4,6 +4,11 @@
 // ============================================================
 //
 // CHANGELOG:
+// 28/03/2026 (v58) — TVA sur intérêts bancaires :
+//   - Ajout TVA 10% sur intérêts (Art. 99-2° CGI) dans TVA déductible
+//   - Les taux data.js sont HT ; la banque facture TVA 10% sur intérêts
+//   - Pour entreprise assujettie TVA (hôtel), cette TVA est récupérable (Art. 92 CGI)
+//   - Impact : ~25K/an de TVA déductible en plus → crédit TVA absorbé plus vite
 // 28/03/2026 — Intégration modèle réaliste :
 //   - Saisonnalité mensuelle : boucle 12 mois × coefficients (remplace occ × 365 flat)
 //   - Ramp-up An 1 : pénalise occupation (×0.65) et ADR (×0.85)
@@ -627,7 +632,14 @@ function compute(scenario) {
     const tva20Charges = (ch.gestion + ch.consommables + ch.comptable + ch.entretien + ch.divers) * 0.20 / 1.20;
     const tva14Charges = (ch.utilities + ch.assurance) * 0.14 / 1.14;
     const tvaPlatformes = p.commissions * 0.20 / 1.20; // commissions plateformes = service à 20%
-    const tvaDeductible = tva20Charges + tva14Charges + tvaPlatformes;
+
+    // TVA sur intérêts bancaires (10%, Art. 99-2° CGI)
+    // Les taux dans data.js sont HT. La banque facture TVA 10% sur les intérêts.
+    // Pour une entreprise assujettie TVA (hôtel 10%), cette TVA est déductible (Art. 92 CGI).
+    // On utilise les intérêts HT déjà calculés dans les projections.
+    const tvaInteretsBancaires = (p.interetsTK + p.interetsBQ) * 0.10;
+
+    const tvaDeductible = tva20Charges + tva14Charges + tvaPlatformes + tvaInteretsBancaires;
 
     // Solde TVA annuel = collectée - déductible
     const soldeTVA = tvaCollectee - tvaDeductible;
@@ -641,6 +653,7 @@ function compute(scenario) {
       year: y + 1,
       tvaCollectee,
       tvaDeductible,
+      tvaInteretsBancaires,  // pour affichage détaillé
       soldeTVA,
       creditRestant: creditTVARestant,
       tvaAPayer: creditTVARestant <= 0 ? Math.max(0, soldeTVA) : 0,
