@@ -114,8 +114,10 @@ function compute(scenario) {
 
   // --- Amortissement mobilier (linéaire sur 7 ans) ---
   // Le mobilier est un actif distinct amorti sur sa durée de vie
+  // TVA récupérable (Art. 92-I-6° CGI) → on amortit sur le HT, pas le TTC
   const amortMobilierAns = FISCALITE.amortissementMobilierAns || 7;
-  const amortissementMobilier = ameublement / amortMobilierAns;
+  const ameubleHTForAmort = ameublement / 1.20; // extraction HT (TVA récupérable)
+  const amortissementMobilier = ameubleHTForAmort / amortMobilierAns;
 
   // --- Projections annuelles ---
   const projections = [];
