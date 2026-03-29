@@ -801,11 +801,13 @@ function renderCashFlow(S) {
   setText("cf-rdt-projet-insight", rdtProjetInsight);
 
   setText("cf-rdt-apport",  fmtPct(K.rendementNetApport));
-  // Insight Rdt Apport: leverage multiplier
-  const leverageX = K.rendementNet > 0 ? (K.rendementNetApport / K.rendementNet).toFixed(1) : "–";
-  const leverageInsight = leverageX !== "–"
+  // Insight Rdt Apport: leverage multiplier or negative warning
+  const leverageX = K.rendementNet > 0 ? (K.rendementNetApport / K.rendementNet).toFixed(1) : null;
+  const leverageInsight = leverageX
     ? "Levier ×" + leverageX + " vs rendement projet"
-    : "Effet de levier";
+    : K.rendementNetApport < 0
+    ? "CF An 1 négatif — levier amplifie la perte"
+    : "Effet de levier neutre";
   setText("cf-rdt-apport-insight", leverageInsight);
 
   setText("cf-coc",         fmtPct(K.cashOnCash));
