@@ -891,6 +891,69 @@ Après application de tous corrections (bugs 1-4):
 
 ---
 
+## 3.5 Changelog Versions v60–v64 (29/03/2026)
+
+### v60 — Wealth Building KPI
+**Fichiers modifiés:** `engine.js`, `render.js`, `index.html`
+
+Remplacement du KPI "Cash Machine: An X" par un KPI **Wealth Building mensuel** décomposé en 3 composantes:
+
+| Composante | Formule | Exemple (Réaliste An 1) |
+|-----------|---------|------------------------|
+| Cash-flow net | CF net annuel / 12 | ~864 MAD/mois |
+| Remboursement capital (equity) | capitalTK + capitalBQ / 12 | ~5 500 MAD/mois |
+| Appréciation du bien | totalProjet × 2% / 12 | ~7 233 MAD/mois |
+
+Ajout de moyennes par période: Y1-5, Y6-10, Y11-20, et moyenne 20 ans. Affichage sous forme de grille 3×3 avec tableau de décomposition et message conditionnel (CF négatif premières années vs positif).
+
+### v61 — Alternatives Chart (TRI)
+**Fichiers modifiés:** `charts.js`
+
+Le graphique "Comparaison Investissements Alternatifs" utilisait `rendementNetApport` (An 1 = 0.6%), métrique trompeuse car elle ne capte que le yield An 1 sans plus-value ni equity. Corrigé pour utiliser le **TRI (IRR) sur 20 ans** (17.9% en réaliste) — le vrai taux de rendement annualisé. Fallback sur `rendementStabilise` si TRI indisponible.
+
+### v62 — Analyse Tables (Écart vs Marché)
+**Fichiers modifiés:** `render.js`, `index.html`
+
+Ajout d'une colonne **"Écart vs marché"** aux tables d'audit prix/nuit et taux d'occupation dans la page #analyse. Légende unifiée avec verdicts clairs: 🟢 = sous le marché (prudent), 🟡 = au niveau (réaliste), 🔴 = au-dessus (agressif). Les anciens verdicts confus ("Réaliste" étiqueté "Conservateur") ont été remplacés par des comparaisons factuelles avec référence marché.
+
+### v63 — UX Audit (10 améliorations CSS)
+**Fichiers modifiés:** `index.html` (CSS inline)
+
+Audit UX complet avec le framework design:design-critique. 10 améliorations implémentées:
+
+1. Couleur `--green` changée de `#16a34a` à `#047857` pour conformité WCAG AA (contraste 4.5:1+)
+2. `.exec-kpi-value` agrandi à 1.35rem avec meilleur contraste
+3. Animation `fadeInContent` sur transitions de vues
+4. Animation `shimmer` + classe `.chart-loading` pour les graphiques
+5. Zebra striping sur les tableaux (`tbody tr:nth-child(odd)`)
+6. Boutons scénario agrandis (padding 10px 16px, hover lift)
+7. Mobile: boutons scénario `min-height: 38px`
+8. Mobile: scroll horizontal fluide pour wealth building
+9. `.nav-item.active` amélioré avec `box-shadow`
+10. `.kpi-insight` font agrandi de 0.72rem à 0.8rem
+
+Breakpoints responsive: 900px (tablet), 700px (wealth grids), 600px (mobile), 380px (extra small).
+
+### v64 — Insights Dynamiques KPI Cards
+**Fichiers modifiés:** `render.js`, `index.html`
+
+Remplacement des sous-titres statiques des 8 KPI cards Cash-Flow par des **insights dynamiques contextuels** qui changent en fonction du scénario sélectionné:
+
+| KPI | Insight | Exemple (Réaliste) | Exemple (Pessimiste) |
+|-----|---------|-------------------|---------------------|
+| CF Net An 1 | Mensuel + multiplicateur Y1→Y10 | "864 MAD/mois · ×60.4 en An 10" | "-17 985 MAD/mois · positif dès An 8" |
+| TRI (IRR) | Comparaison vs benchmarks | "Bat S&P 500 (10%) et MASI (8%)" | "Bat l'épargne UAE (6,25%)" |
+| VAN (NPV) | Multiple de l'apport | "+2.6× l'apport à 8%" | "Projet détruit 19% de l'apport" |
+| Payback | Break-even occupancy | "Break-even à 25% d'occupation" | "Break-even à 36% d'occupation" |
+| Rdt Net/Projet | Trajectoire vers stabilisé | "→ 52.3% stabilisé (Y15-20)" | "→ 16.5% stabilisé (Y15-20)" |
+| Rdt Net/Apport | Multiplicateur levier | "Levier ×4.5 vs rendement projet" | "CF An 1 négatif — levier amplifie la perte" |
+| Cash-on-Cash | Comparaison alternatives | "Sous immo locatif Casa (5,5%)" | "CF négatif An 1 — positif après ramp-up" |
+| Marge CF | Montant net gardé | "Marge serrée — 864 MAD net/mois" | "Marge négative An 1 — ramp-up" |
+
+Seuils de comparaison utilisés: S&P 500 (10%), MASI Maroc (8%), livret épargne UAE (6.25%), immobilier locatif Casa (5.5%).
+
+---
+
 ## CONTACT ET SUPPORT
 
 - **Développeur:** Appart'Hôtel Maarif Dev Team
