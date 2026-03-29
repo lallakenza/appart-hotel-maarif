@@ -4,6 +4,15 @@
 // ============================================================
 //
 // CHANGELOG:
+// 29/03/2026 — Insights dynamiques sur les 8 KPI cards Cash-Flow :
+//   - CF Net An 1 : mensuel + multiplicateur Y1→Y10
+//   - TRI : comparaison vs S&P 500, MASI, épargne UAE
+//   - VAN : multiple de l'apport au taux d'actualisation
+//   - Payback : break-even occupancy
+//   - Rdt Net/Projet : trajectoire vers rendement stabilisé Y15-20
+//   - Rdt Net/Apport : multiplicateur levier vs rendement projet
+//   - Cash-on-Cash : comparaison vs livret UAE et immo Casa
+//   - Marge CF : montant net gardé par mois
 // 28/03/2026 — Affichage des nouvelles données :
 //   - renderRevenus : colonne "Occ. eff." + badge ramp-up par année
 //   - renderCharges : lignes syndic, taxeHabitation, provisionRenouv, marketing, fraisCréation
@@ -745,19 +754,81 @@ function renderCashFlow(S) {
   const y1 = S.projections[0];
   const K = S.kpi;
 
-  // Row 1: CF Net, TRI, VAN, Payback
+  // Row 1: CF Net, TRI, VAN, Payback — with dynamic insights
   setText("cf-net-an1",     fmtMAD(y1.cashFlowNet));
-  setText("cf-net-mensuel", fmtMAD(K.cfMensuelAn1) + " / mois");
-  setText("cf-tri",         isFinite(K.tri) ? fmtPct(K.tri, 1) : "N/A");
-  setText("cf-van",         fmtMAD(K.van));
-  setText("cf-van-taux",    "Taux d'actualisation : " + fmtPct(K.tauxActualisation, 0));
-  setText("cf-payback",     K.paybackYear ? K.paybackYear + " ans" : "> " + PROJECTION_YEARS + " ans");
+  // Insight CF Net: monthly + Y1→Y10 growth trajectory
+  const cfY10 = S.projections.length >= 10 ? S.projections[9].cashFlowNet : null;
+  const cfInsight = fmtMAD(K.cfMensuelAn1) + "/mois"
+    + (cfY10 != null && y1.cashFlowNet > 0
+       ? " · ×" + (cfY10 / y1.cashFlowNet).toFixed(1) + " en An 10"
+       : y1.cashFlowNet <= 0 ? " · positif dès An " + (S.projections.findIndex(p => p.cashFlowNet > 0) + 1) : "");
+  setText("cf-net-mensuel", cfInsight);
 
-  // Row 2: Rendements
+  setText("cf-tri",         isFinite(K.tri) ? fmtPct(K.tri, 1) : "N/A");
+  // Insight TRI: compare vs MASI 8% and S&P 10%
+  const triPct = K.tri != null ? K.tri * 100 : 0;
+  const triInsight = triPct > 10
+    ? "Bat S&P 500 (10%) et MASI (8%)"
+    : triPct > 8
+    ? "Bat MASI (8%), sous S&P 500 (10%)"
+    : triPct > 6.25
+    ? "Bat l'épargne UAE (6,25%)"
+    : "Sous les alternatives passives";
+  setText("cf-tri-insight", triInsight);
+
+  setText("cf-van",         fmtMAD(K.van));
+  // Insight VAN: express as multiple of apport + verdict
+  const vanMultiple = K.van / S.financement.apportNet;
+  const vanInsight = K.van >= 0
+    ? "+" + vanMultiple.toFixed(1) + "× l'apport à " + fmtPct(K.tauxActualisation, 0)
+    : "Projet détruit " + fmtPct(Math.abs(vanMultiple), 0) + " de l'apport";
+  setText("cf-van-taux", vanInsight);
+
+  setText("cf-payback",     K.paybackYear ? K.paybackYear + " ans" : "> " + PROJECTION_YEARS + " ans");
+  // Insight Payback: break-even occupancy context
+  const paybackInsight = K.breakEvenOcc != null
+    ? "Break-even à " + fmtPct(K.breakEvenOcc, 0) + " d'occupation"
+    : "Sur apport personnel";
+  setText("cf-payback-insight", paybackInsight);
+
+  // Row 2: Rendements — with dynamic insights
   setText("cf-rdt-projet",  fmtPct(K.rendementNet));
+  // Insight Rdt Projet: compare An1 vs stabilisé Y15-20
+  const rdtStabPct = K.rendementStabilise ? (K.rendementStabilise * 100).toFixed(1) : null;
+  const rdtProjetInsight = rdtStabPct
+    ? "→ " + rdtStabPct + "% stabilisé (Y15-20)"
+    : "Cash yield An 1";
+  setText("cf-rdt-projet-insight", rdtProjetInsight);
+
   setText("cf-rdt-apport",  fmtPct(K.rendementNetApport));
+  // Insight Rdt Apport: leverage multiplier
+  const leverageX = K.rendementNet > 0 ? (K.rendementNetApport / K.rendementNet).toFixed(1) : "–";
+  const leverageInsight = leverageX !== "–"
+    ? "Levier ×" + leverageX + " vs rendement projet"
+    : "Effet de levier";
+  setText("cf-rdt-apport-insight", leverageInsight);
+
   setText("cf-coc",         fmtPct(K.cashOnCash));
+  // Insight Cash-on-Cash: compare vs alternatives
+  const cocPct = K.cashOnCash * 100;
+  const cocInsight = cocPct > 6.25
+    ? "Bat livret UAE (6,25%) et immo Casa (5,5%)"
+    : cocPct > 5.5
+    ? "Bat immo locatif Casa (5,5%)"
+    : cocPct > 0
+    ? "Sous immo locatif Casa (5,5%)"
+    : "CF négatif An 1 — positif après ramp-up";
+  setText("cf-coc-insight", cocInsight);
+
   setText("cf-marge",       fmtPct(K.margeCF));
+  // Insight Marge CF: contextual interpretation
+  const margePct = K.margeCF * 100;
+  const margeInsight = margePct > 10
+    ? fmtMAD(Math.round(K.margeCF * y1.revTotal / 12)) + " net gardé/mois"
+    : margePct > 0
+    ? "Marge serrée — " + fmtMAD(Math.round(K.margeCF * y1.revTotal / 12)) + " net/mois"
+    : "Marge négative An 1 — ramp-up";
+  setText("cf-marge-insight", margeInsight);
 
   // Trajectoire long-terme
   setText("cf-wealth",        fmtMAD(K.wealthTotal));
