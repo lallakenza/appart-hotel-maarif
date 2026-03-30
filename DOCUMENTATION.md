@@ -1,6 +1,6 @@
 # Documentation Tableau de Bord Financier — Appart'Hôtel Maarif
 
-**Version:** 2.3 (v72)
+**Version:** 2.4 (v73)
 **Date:** 30 Mars 2026
 **Langue:** Français
 **Public Cible:** Analystes financiers, investisseurs, auditeurs
@@ -1023,6 +1023,29 @@ Renommage de l'onglet navigation "Cash-Flow" en **"Rentabilité"** : la section 
 - 36 tooltips `(?)` sur tous les paramètres avancés avec explications contextuelles
 - CSS responsive tooltips mobile
 
+### v73 — Page Hypothèses & Méthodologie complète
+**Date:** 30/03/2026
+**Fichiers modifiés:** `render.js`, `index.html`
+
+Nouvelle page "Hypothèses" dans le dashboard, accessible via la navigation principale. Documente exhaustivement toutes les hypothèses du modèle financier avec sources et justifications.
+
+**10 sections :**
+
+1. **Hypothèses de Revenus** (14 paramètres) — loyer, canaux OTA/direct/informel, commissions, croissance, inflation, indexation, taux d'actualisation, appréciation, ramp-up, évolution canaux
+2. **Charges d'Exploitation** (20 postes) — gestion, salaires, CNSS, utilities, assurance, entretien, comptable, consommables, taxes, marketing, frais SARL, renouvellement mobilier
+3. **Structure de Financement** (14 paramètres) — budget, terrain, Tamwilkom, banque classique, MDM Invest, planning construction
+4. **Fiscalité et TVA** (9 paramètres) — TVA, IS, exonérations devises, amortissement bâtiment/mobilier, exo équipements/taxe pro
+5. **Hypothèses de Marché** (16 indicateurs) — visiteurs, nuitées, occupation multi-sources, ADR, concurrence, tendances
+6. **Les 5 Scénarios** — tableau comparatif avec occupation, ADR studio/loft, loyer, part OTA, source/justification
+7. **Saisonnalité Mensuelle** — 12 coefficients avec exemple pour 48% d'occupation et contexte
+8. **Méthodologie de Calcul** — PMT, TRI (Newton-Raphson), VAN, DSCR, break-even, appréciation composée, amortissement, IS, wealth building
+9. **Limites du Modèle** — 9 simplifications documentées (break-even sans saisonnalité, IS taux unique, pas de report déficit, TVA agrégée, inflation uniforme, pas de vacance commerciale, etc.)
+10. **Sources** — 8 catégories de sources référencées (marché STR, tarification, tourisme, financement MRE, fiscalité, charges/salaires, immobilier, Mondial 2030)
+
+**Technique :** Fonction `renderHypotheses()` dans render.js (~200 lignes). Toutes les valeurs sont tirées dynamiquement des constantes data.js (REVENUE_ASSUMPTIONS, CHARGES, FISCALITE, TAMWILKOM, BANQUE_CLASSIQUE, MARKET_DATA, SCENARIOS, etc.). La page se met à jour automatiquement si l'utilisateur modifie les paramètres avancés.
+
+---
+
 ### v72 — Audit approfondi : corrections critiques et modérées
 **Date:** 30/03/2026
 **Fichiers modifiés:** `engine.js`, `render.js`, `charts.js`, `index.html`
@@ -1327,7 +1350,7 @@ Scripts chargés avec `?v=N` dans index.html (actuellement v=68). Incrémenté �
 ## CONTACT ET SUPPORT
 
 - **Développeur:** Appart'Hôtel Maarif Dev Team
-- **Dernière mise à jour:** 30 Mars 2026 (v72)
+- **Dernière mise à jour:** 30 Mars 2026 (v73)
 - **Déploiement:** GitHub Pages (gh-pages branch)
 - **Repository:** `lallakenza/appart-hotel-maarif`
 
