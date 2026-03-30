@@ -1059,6 +1059,17 @@ function renderWealth(S) {
     `;
   }
 
+  // ═══ Interactive Year Explorer ═══
+  const slider = document.getElementById("wlth-year-slider");
+  if (slider && K.wealthBuildingByYear) {
+    // Store data globally for slider callback
+    window.__wbData = K.wealthBuildingByYear;
+    window.__wbDebtFree = K.debtFreedomYear;
+    slider.value = 1;
+    updateWealthYearExplorer(1);
+    slider.oninput = function() { updateWealthYearExplorer(+this.value); };
+  }
+
   // Day 1 Equity
   const d = K.day1Equity;
   if (d) {
@@ -1099,6 +1110,57 @@ function renderWealth(S) {
         `<td style="text-align:center">×${(alt.milestones[3].value / K.capitalInvesti).toFixed(1)}</td>`;
       altTb.appendChild(tr);
     });
+  }
+}
+
+// ═══ Year Explorer — slider callback ═══
+function updateWealthYearExplorer(year) {
+  const wb = window.__wbData;
+  if (!wb || !wb[year - 1]) return;
+  const w = wb[year - 1];
+
+  setText("wlth-year-label", "An " + year);
+
+  setText("wlth-yr-cf", fmtMAD(w.cfNetMensuel));
+  setText("wlth-yr-eq", fmtMAD(w.equityMensuel));
+  setText("wlth-yr-ap", fmtMAD(w.appreciationMensuel));
+  setText("wlth-yr-total", fmtMAD(w.totalMensuel));
+
+  // Color CF based on sign
+  const cfEl = document.getElementById("wlth-yr-cf");
+  if (cfEl) cfEl.style.color = w.cfNetMensuel >= 0 ? "#059669" : "#dc2626";
+
+  // Stacked bar proportions
+  const bar = document.getElementById("wlth-yr-bar");
+  if (bar) {
+    const abs = Math.abs(w.cfNetMensuel) + w.equityMensuel + w.appreciationMensuel;
+    if (abs > 0) {
+      const pCf = Math.max(0, w.cfNetMensuel) / abs * 100;
+      const pEq = w.equityMensuel / abs * 100;
+      const pAp = w.appreciationMensuel / abs * 100;
+      bar.innerHTML =
+        (pCf > 0 ? `<div style="width:${pCf.toFixed(1)}%;background:#059669;display:flex;align-items:center;justify-content:center">${pCf >= 15 ? Math.round(pCf) + '%' : ''}</div>` : '') +
+        `<div style="width:${pEq.toFixed(1)}%;background:#2563eb;display:flex;align-items:center;justify-content:center">${pEq >= 15 ? Math.round(pEq) + '%' : ''}</div>` +
+        `<div style="width:${pAp.toFixed(1)}%;background:#7c3aed;display:flex;align-items:center;justify-content:center">${pAp >= 15 ? Math.round(pAp) + '%' : ''}</div>`;
+    }
+  }
+
+  // Contextual insight
+  const insEl = document.getElementById("wlth-yr-insight");
+  if (insEl) {
+    const debtFree = window.__wbDebtFree;
+    let insight = "";
+    if (w.cfNetMensuel < 0)
+      insight = "💡 CF négatif mais " + fmtMAD(w.equityMensuel + w.appreciationMensuel) + "/mois de richesse invisible (equity + appréciation)";
+    else if (debtFree && year >= debtFree)
+      insight = "🔓 Dette remboursée — 100% du cash-flow est pour vous";
+    else if (year <= 2)
+      insight = "🚀 Phase ramp-up — la richesse se construit surtout via l'equity et l'appréciation";
+    else if (w.totalMensuel > 100000)
+      insight = "🏆 " + fmtMAD(w.totalAnnuel) + "/an de création de richesse";
+    else
+      insight = "📊 " + fmtMAD(w.totalAnnuel) + " de richesse créée cette année";
+    insEl.textContent = insight;
   }
 }
 

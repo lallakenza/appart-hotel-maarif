@@ -46,6 +46,7 @@ function rebuildCharts(state) {
   chartCRD(state);
   chartGestionDuel(state);
   chartWealthTrajectory(state);
+  chartWealthBuilding(state);
 }
 
 // ======================== RICH TOOLTIP SYSTEM ========================
@@ -1472,6 +1473,104 @@ function chartWealthTrajectory(S) {
               const epargne = wt[idx].epargne;
               const delta = projet - epargne;
               return delta > 0 ? "\nGain vs épargne: +" + fmtMAD(delta) : "";
+            }
+          }
+        }
+      }
+    }
+  });
+}
+
+// ======================== WEALTH BUILDING EVOLUTION ========================
+function chartWealthBuilding(S) {
+  destroyChart("wealthBuilding");
+  const ctx = document.getElementById("chart-wealth-building")?.getContext("2d");
+  if (!ctx || !S.kpi.wealthBuildingByYear) return;
+
+  const wb = S.kpi.wealthBuildingByYear;
+  const labels = wb.map(w => "An " + w.year);
+
+  _charts.wealthBuilding = new Chart(ctx, {
+    type: "bar",
+    data: {
+      labels,
+      datasets: [
+        {
+          label: "Cash-flow net",
+          data: wb.map(w => w.cfNet),
+          backgroundColor: wb.map(w => w.cfNet >= 0 ? "rgba(5,150,105,0.75)" : "rgba(220,38,38,0.5)"),
+          borderColor: wb.map(w => w.cfNet >= 0 ? "#059669" : "#dc2626"),
+          borderWidth: 1,
+          stack: "stack1",
+          order: 3,
+        },
+        {
+          label: "Rembt capital (equity)",
+          data: wb.map(w => w.equityPaydown),
+          backgroundColor: "rgba(37,99,235,0.65)",
+          borderColor: "#2563eb",
+          borderWidth: 1,
+          stack: "stack1",
+          order: 2,
+        },
+        {
+          label: "Appréciation bien (2%/an)",
+          data: wb.map(w => w.appreciation),
+          backgroundColor: "rgba(124,58,237,0.55)",
+          borderColor: "#7c3aed",
+          borderWidth: 1,
+          stack: "stack1",
+          order: 1,
+        },
+        {
+          label: "Total /mois",
+          data: wb.map(w => w.totalMensuel),
+          type: "line",
+          borderColor: "#065f46",
+          backgroundColor: "transparent",
+          borderWidth: 2.5,
+          borderDash: [6, 3],
+          pointRadius: 3,
+          pointBackgroundColor: "#065f46",
+          yAxisID: "y1",
+          tension: 0.3,
+          order: 0,
+        },
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: "index", intersect: false },
+      scales: {
+        y: {
+          stacked: true,
+          ticks: { callback: v => (v / 1000).toFixed(0) + "K" },
+          title: { display: true, text: "Annuel (MAD)" },
+          grid: { color: "rgba(0,0,0,0.04)" },
+        },
+        y1: {
+          position: "right",
+          ticks: { callback: v => fmtK(v) + "/m" },
+          title: { display: true, text: "Mensuel" },
+          grid: { display: false },
+        },
+        x: { grid: { display: false } }
+      },
+      plugins: {
+        legend: { position: "bottom", labels: { usePointStyle: true, padding: 12, font: { size: 11 } } },
+        tooltip: {
+          callbacks: {
+            label: function(c) {
+              if (c.dataset.label === "Total /mois")
+                return c.dataset.label + ": " + fmtMAD(c.parsed.y) + "/mois";
+              return c.dataset.label + ": " + fmtMAD(c.parsed.y) + "/an";
+            },
+            footer: function(items) {
+              const idx = items[0]?.dataIndex;
+              if (idx == null) return "";
+              const w = wb[idx];
+              return "Total annuel: " + fmtMAD(w.totalAnnuel);
             }
           }
         }
