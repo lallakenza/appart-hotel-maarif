@@ -56,6 +56,7 @@ function render(state) {
   renderVerdict(state);
   renderScenarioButtons(state);
   renderKPIs(state);
+  renderHypotheses();
   renderKPIInsights(state);
   renderBudget(state);
   renderProgramme(state);
@@ -2169,6 +2170,228 @@ function _chargeDetailRows(y1) {
     `<tr><td>${label}</td><td class="num">${fmtMAD(val)}</td><td class="num">${(val / total * 100).toFixed(1)}%</td></tr>`
   ).join('') +
     `<tr style="font-weight:700;background:#fef3c7;border-top:2px solid var(--border)"><td>TOTAL</td><td class="num">${fmtMAD(total)}</td><td class="num">100%</td></tr>`;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// HYPOTHÈSES PAGE — Populates all 10 sections with live data
+// ═══════════════════════════════════════════════════════════════
+
+function renderHypotheses() {
+  const row = (a, b, c) => `<tr><td>${a}</td><td class="num">${b}</td><td>${c}</td></tr>`;
+
+  // ── 1. REVENUS ──
+  const ra = REVENUE_ASSUMPTIONS;
+  const mois = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
+  const el1 = document.getElementById('hyp-revenus');
+  if (el1) el1.innerHTML = [
+    row('Loyer commercial RDC', fmtMAD(ra.loyerCommercial) + '/mois', 'Bail commercial local RDC ~40 m² — Rue des Camélias, Maarif'),
+    row('Part OTA (défaut)', fmtPct(ra.partOTA), 'Booking 55%, Airbnb — Mordor Intelligence 2025, PriceLabs Morocco'),
+    row('Part directe', fmtPct(ra.partDirect), 'WhatsApp, téléphone, repeat guests — retours opérateurs Maarif'),
+    row('Part informelle', fmtPct(ra.partInformel), 'Cash / non-déclaré — réalité marché marocain (estimation conservatrice)'),
+    row('Commission OTA', fmtPct(ra.commissionOTA), 'Booking 15-18%, Airbnb 15.5%, moyenne pondérée ~15%'),
+    row('Croissance tarifs', fmtPct(ra.croissanceTarifs) + '/an', 'Alignée sur inflation — tendance IPC Maroc 2-3%'),
+    row('Inflation charges', fmtPct(ra.inflationCharges) + '/an', 'IPC Maroc : 2023=6.1%, 2024=1.3%, tendance ~2% — HCP, Bank Al-Maghrib'),
+    row('Indexation loyer', fmtPct(ra.indexationLoyer) + '/an', 'Pratique bail commercial marocain — dahir n° 1-16-99'),
+    row('Taux d\'actualisation (VAN)', fmtPct(ra.tauxActualisation), 'Standard immobilier commercial — entre obligataire (~5%) et equity (~12%)'),
+    row('Appréciation immobilière', fmtPct(ra.tauxAppreciation) + '/an', 'Historique Casa 1-1.5%/an (BKAM 2015-2025) + effet Mondial 2030'),
+    row('Ramp-up durée', ra.rampUp.dureeAns + ' an', 'Nouvel entrant sans avis — 12-18 mois pour atteindre potentiel'),
+    row('Ramp-up occupation', fmtPct(ra.rampUp.coefOccupation) + ' du cible', 'Coefficient réducteur An 1 — retour opérateurs Maarif'),
+    row('Ramp-up ADR', fmtPct(ra.rampUp.coefADR) + ' du cible', 'Discount lancement An 1 pour accumuler des avis'),
+    row('Évolution canaux', ra.canauxEvolution.enabled ? 'Activée' : 'Désactivée', 'OTA multiplier décroissant Y1→Y5 : ' + ra.canauxEvolution.otaMultiplier.map(m => '×' + m.toFixed(2)).join(', ')),
+  ].join('');
+
+  // ── 2. CHARGES ──
+  const ch = CHARGES;
+  const el2 = document.getElementById('hyp-charges');
+  if (el2) el2.innerHTML = [
+    row('Gestion (commission)', fmtPct(ch.tauxGestion) + ' du CA', 'Auto-gestion depuis UAE — concierge + ménage sur place'),
+    row('Salaire concierge', fmtMAD(ch.salaireConcierge) + '/mois', 'SMIG 2026 : 3 400 MAD + 15-30% (langues, responsabilité) — Décret SMIG jan 2026'),
+    row('Salaire ménage', fmtMAD(ch.salaireMenage) + '/mois', 'SMIG + prime — ménage + linge internalisé'),
+    row('Nb employés (défaut)', ch.nbEmployes, 'Minimum : 1 concierge + 1 ménage. 3 en scénario optimiste'),
+    row('Charges sociales CNSS', fmtPct(ch.chargesSociales), 'AF 6.40% + PS 8.60% + AMO 4.11% + Formation 1.60% — espace-paie.ma 2025'),
+    row('Utilities fixe', fmtMAD(ch.utilitiesFixe) + '/mois', 'Parties communes LED + ascenseur — bâtiment neuf R+5'),
+    row('Utilities variable', fmtMAD(ch.utilitiesVarParUnite) + '/unité/mois', 'Eau + élec + clim par unité occupée — tarif commercial Lydec Casa'),
+    row('Internet + TV', fmtMAD(ch.internetTv) + '/mois', 'Fibre pro Inwi/MT 100Mbps + IPTV 11 unités — Inwi Pro 2025'),
+    row('Assurance', fmtMAD(ch.assurance) + '/an', 'Multirisque hôtelier (incendie, RC, bris, perte exploitation) — courtiers Casa'),
+    row('Entretien (neuf)', fmtMAD(ch.entretienBase) + '/an', 'Années 1-5, bâtiment sous garantie — ~0.4% valeur construction'),
+    row('Entretien (mature)', fmtMAD(ch.entretienMature) + '/an', 'Après 5 ans, vieillissement normal — ~1% valeur construction'),
+    row('Comptable', fmtMAD(ch.comptableAnnuel) + '/an', 'Forfait TPE hôtelière — tenue + déclarations — lec.ma, tmsonline.ma 2025'),
+    row('Consommables', fmtMAD(ch.consommablesParNuitee) + '/nuitée', 'Linge ~15 MAD + amenities ~7 MAD + produits ~5 MAD + divers ~3 MAD'),
+    row('Taxe professionnelle', fmtMAD(ch.taxesPro) + '/an', 'Après 5 ans exo (nouvelle construction) — CGI Art. 6-I-A'),
+    row('Taxe habitation', fmtMAD(ch.taxeHabitation) + '/an', 'À partir An 6 — exo 5 ans nouvelle construction — upsilon-consulting.com'),
+    row('Divers & imprévus', fmtMAD(ch.divers) + '/an', 'Frais bancaires, fournitures, licences PMS, déplacements'),
+    row('Marketing lancement', fmtMAD(ch.budgetMarketingLancement) + ' (An 1)', 'One-shot — photos pro, création listings, promotions Booking Genius'),
+    row('Frais création SARL', fmtMAD(ch.fraisCreation) + ' (An 1)', 'One-shot — constitution SARL + autorisations touristiques'),
+    row('Renouvellement mobilier', fmtMAD(ch.renouvellementMobilierParUnite) + '/unité / ' + ch.renouvellementMobilierCycle + ' ans', 'Cycle hôtelier 5-7 ans — benchmark opérateurs STR'),
+    row('Syndic', fmtMAD(ch.syndic) + '/an', 'N/A — immeuble indivisible, monopropriété intégrale'),
+  ].join('');
+
+  // ── 3. FINANCEMENT ──
+  const el3 = document.getElementById('hyp-financement');
+  if (el3) el3.innerHTML = [
+    row('Budget total TTC', fmtMAD(BUDGET.totalTTC), 'Terrain + frais + construction (hors ameublement)'),
+    row('Ameublement/unité', fmtMAD(BUDGET.ameublementParUnite), '11 unités × 40K — achat en gros, en plus du 7M'),
+    row('Terrain', fmtMAD(TERRAIN.prix), TERRAIN.surface + ' m² — Rue des Camélias, Maarif'),
+    row('Frais acquisition', fmtPct(TERRAIN.fraisAcquisition), 'Enregistrement 4% + conservation 1.5% + notaire ~1%'),
+    row('Tamwilkom taux', fmtPct(TAMWILKOM.tauxAnnuel) + ' HT/an', 'Fixe, portion Tamwilcom — TTC réel 2.75% (TVA 10% récupérable)'),
+    row('Tamwilkom durée', TAMWILKOM.dureeAns + ' ans', 'Maximum courant MDM Tamwil — plafond 5M MAD'),
+    row('Tamwilkom différé', TAMWILKOM.differeAns + ' ans', 'Différé sur principal — intérêts payés dès le début'),
+    row('Banque taux', fmtPct(BANQUE_CLASSIQUE.tauxAnnuel) + ' HT/an', 'BAM T4-2025 TPME moy 5.22% — Médias24 jan 2026'),
+    row('Banque durée', BANQUE_CLASSIQUE.dureeAns + ' ans', 'Maximum courant investissement pro'),
+    row('Banque différé', BANQUE_CLASSIQUE.differeAns + ' an', 'Différé capital — intérêts payés pendant le différé'),
+    row('MDM Invest subvention', fmtPct(MDM_INVEST.tauxSubvention) + ' (plafond ' + fmtMAD(MDM_INVEST.plafond) + ')', 'Prime investissement MRE — Tamwilcom'),
+    row('MDM Invest engagement', MDM_INVEST.engagementAnnees + ' ans', 'Pas de désinvestissement sinon remboursement intégral'),
+    row('Construction', PLANNING.delaiConstruction + ' mois', 'Architecte Jad (Nour Architects) — R+5'),
+    row('Délai total', PLANNING.delaiTotal + ' mois', 'Autorisations + prêt (' + PLANNING.delaiAutorisationsPret + ' mois) + construction'),
+  ].join('');
+
+  // ── 4. FISCALITÉ ──
+  const fi = FISCALITE;
+  const el4 = document.getElementById('hyp-fiscalite');
+  if (el4) el4.innerHTML = [
+    row('TVA hébergement', fmtPct(fi.tvaTaux), 'Taux réduit hébergement touristique — CGI Maroc'),
+    row('IS (Impôt sur les Sociétés)', fmtPct(fi.isTaux), 'Taux unique 2026+ pour BNF < 100M MAD — PLF 2023/2026'),
+    row('Exonération IS devises', fi.exoDevisesAns + ' ans', 'Art. 6-I-B-3° CGI — exo totale sur part CA en devises (60 mois)'),
+    row('Part CA en devises', fmtPct(fi.caDevisesPct), 'Proportion estimée — clientèle internationale 83% (AirROI)'),
+    row('Amortissement bâtiment', fi.amortissementAns + ' ans (linéaire)', '5%/an sur construction HT — terrain non amortissable'),
+    row('Amortissement mobilier', fi.amortissementMobilierAns + ' ans (linéaire)', '14.3%/an sur ameublement HT (TVA récupérable Art. 92-I-6° CGI)'),
+    row('Exo TVA équipements', fi.exoEquipementsMois + ' mois', 'Art. 92-I-6° CGI — TVA récupérable sur équipements'),
+    row('Exo taxe pro', fi.exoTaxeProAns + ' ans', 'Nouvelles constructions — CGI Art. 6-I-A'),
+    row('Résidence fiscale', fi.residenceFiscale, 'UAE — pas d\'IS sur revenu des personnes. IS uniquement sur SARL marocaine'),
+  ].join('');
+
+  // ── 5. MARCHÉ ──
+  const md = MARKET_DATA;
+  const el5 = document.getElementById('hyp-marche');
+  if (el5) el5.innerHTML = [
+    row('Visiteurs Maroc 2025', fmtNum(md.visiteurs2025), 'Record historique — ONMT'),
+    row('Nuitées 2025', fmtNum(md.nuitees2025), '+9% vs 2024 — Observatoire du Tourisme'),
+    row('Taux occ. national', fmtPct(md.tauxOccupNational2025), '+3 pts vs 2024 — ONMT'),
+    row('Listings Airbnb Casa', fmtNum(md.airbnbData.totalListingsCasa), '+47.1% YoY — AirDNA'),
+    row('Listings Maarif', fmtNum(md.airbnbData.listingsMaarif), 'Quartier le plus saturé — Airbtics'),
+    row('ADR médiane Maarif', fmtMAD(md.airbnbData.adrMaarifMAD), 'SandsOfWealth 2026 — fourchette 450-850 MAD'),
+    row('ADR Studios T2', fmtMAD(md.airbnbData.adrStudioT2.median) + ' (médiane)', 'Chambre séparée 32-46 m² — Booking.com Maarif mars 2026'),
+    row('ADR Lofts', fmtMAD(md.airbnbData.adrLoftKitchenette.median) + ' (médiane)', 'Kitchenette 22-28 m² — Booking.com Maarif mars 2026'),
+    row('Occ. médiane Airbtics', fmtPct(md.airbnbData.occupancyMedianeCasa), 'Fév 2025 – jan 2026, 3649 annonces'),
+    row('Occ. médiane AirROI', fmtPct(md.airbnbData.occupancyMedianeAirROI), 'Oct 2024 – sept 2025, plus conservateur'),
+    row('Occ. top 25%', fmtPct(md.airbnbData.occupancyTop25), 'AirROI — top quartile Casa'),
+    row('Occ. pro Maarif (AirBoo)', fmtPct(md.airbnbData.occupancyByQuartier.maarif.taux), 'Biens gérés pro, note 4.5+/5 — AirBoo 2025'),
+    row('Croissance listings', fmtPct(md.airbnbData.croissanceListings) + '/an', '+50% YoY — forte pression concurrentielle'),
+    row('Clientèle internationale', fmtPct(md.airbnbData.clienteleInternationale), '83% — France 29.5% en tête (AirROI)'),
+    row('Durée séjour moyenne', md.airbnbData.dureeSejourMoyenne + ' nuits', 'AirROI Casa 2025'),
+    row('Nb concurrents analysés', BENCHMARK.nbCompetitors, BENCHMARK.source + ' — ' + BENCHMARK.date),
+  ].join('');
+
+  // ── 6. SCÉNARIOS ──
+  const el6 = document.getElementById('hyp-scenarios');
+  if (el6) el6.innerHTML = Object.entries(SCENARIOS).map(([k, sc]) =>
+    `<tr><td><strong>${sc.label}</strong><br><span style="font-size:.78rem;color:var(--text-sec)">${sc.source}</span></td>` +
+    `<td class="num">${fmtPct(sc.tauxOccupation)}</td>` +
+    `<td class="num">${fmtMAD(sc.prixNuitStudio)}</td>` +
+    `<td class="num">${fmtMAD(sc.prixNuitLoft)}</td>` +
+    `<td class="num">${fmtMAD(sc.loyerCommercial)}/m</td>` +
+    `<td class="num">${fmtPct(sc.partOTA)}</td></tr>`
+  ).join('');
+
+  // ── 7. SAISONNALITÉ ──
+  const contextes = [
+    'Creux absolu — post-fêtes', 'Reprise lente', 'Reprise progressive — printemps',
+    'Printemps', 'Pré-saison — ponts', 'Haute saison — début été',
+    'Pic absolu — diaspora', 'Haute saison — vacances', 'Rentrée — business stable',
+    'Automne', 'Ralentissement', 'Hiver (sauf fêtes)'
+  ];
+  const el7 = document.getElementById('hyp-saison');
+  if (el7) el7.innerHTML = ra.saisonnalite.map((coeff, i) =>
+    `<tr><td>${mois[i]}</td><td class="num">${coeff.toFixed(2)}</td>` +
+    `<td class="num">${(0.48 * coeff * 100).toFixed(1)}%</td>` +
+    `<td>${contextes[i]}</td></tr>`
+  ).join('');
+
+  // ── 8. MÉTHODOLOGIE ──
+  const el8 = document.getElementById('hyp-methodo');
+  if (el8) el8.innerHTML = `
+    <p><strong>Flux de calcul :</strong> data.js (constantes) → engine.js (compute) → render.js (affichage) → charts.js (graphiques)</p>
+
+    <p style="margin-top:12px"><strong>Mensualités de prêt (PMT) :</strong><br>
+    <code>PMT = P × r × (1+r)^n / [(1+r)^n − 1]</code><br>
+    Où P = principal, r = taux mensuel, n = nombre de mois. Le différé ne paie que les intérêts (P × r).</p>
+
+    <p style="margin-top:12px"><strong>TRI (Taux de Rendement Interne) :</strong><br>
+    Résolution par Newton-Raphson — 100 itérations, tolérance 1e-7. Le flux initial est −apportNet (fonds propres investis).
+    Les flux annuels sont les cash-flows nets. Le flux terminal inclut la valeur résiduelle (appréciation composée sur 20 ans) − solde dette restant.</p>
+
+    <p style="margin-top:12px"><strong>VAN (Valeur Actuelle Nette) :</strong><br>
+    <code>VAN = Σ CF_t / (1 + tauxActualisation)^t</code><br>
+    Taux d'actualisation : ${fmtPct(ra.tauxActualisation)} (configurable). Reflète le coût d'opportunité du capital.</p>
+
+    <p style="margin-top:12px"><strong>DSCR (Debt Service Coverage Ratio) :</strong><br>
+    <code>DSCR = Résultat net d'exploitation / Service de la dette annuel</code><br>
+    DSCR > 1.2 = confortable, > 1.5 = excellent, < 1.0 = déficit.</p>
+
+    <p style="margin-top:12px"><strong>Seuil de rentabilité (break-even) :</strong><br>
+    Recherche dichotomique du taux d'occupation auquel le cash-flow net = 0. Utilise les charges An 1 (snapshot) sans saisonnalité pour simplifier.</p>
+
+    <p style="margin-top:12px"><strong>Appréciation composée :</strong><br>
+    <code>Valeur(t) = Investissement × (1 + tauxAppréciation)^t</code><br>
+    L'appréciation annuelle = Valeur(t) − Valeur(t−1). Taux : ${fmtPct(ra.tauxAppreciation)}/an (BKAM/ANCFCC).</p>
+
+    <p style="margin-top:12px"><strong>Amortissement fiscal :</strong><br>
+    Construction HT / ${fi.amortissementAns} ans (${(100/fi.amortissementAns).toFixed(1)}%/an) + Mobilier HT / ${fi.amortissementMobilierAns} ans (${(100/fi.amortissementMobilierAns).toFixed(1)}%/an).
+    Le mobilier s'arrête à l'année ${fi.amortissementMobilierAns + 1} (${fi.amortissementMobilierAns} ans d'amortissement complets). Le terrain n'est pas amortissable.</p>
+
+    <p style="margin-top:12px"><strong>IS (Impôt sur les Sociétés) :</strong><br>
+    Base imposable = Résultat d'exploitation − Amortissement − Intérêts d'emprunt.
+    Part devises (${fmtPct(fi.caDevisesPct)}) exonérée pendant ${fi.exoDevisesAns} ans (Art. 6-I-B-3° CGI). Taux : ${fmtPct(fi.isTaux)}.</p>
+
+    <p style="margin-top:12px"><strong>Wealth Building :</strong><br>
+    = Equity accumulée (remboursement principal) + Appréciation immobilière composée + Cash-flows cumulés.
+    Calcul avec et sans dette (scénario remboursement anticipé).</p>
+  `;
+
+  // ── 9. LIMITES ──
+  const el9 = document.getElementById('hyp-limites');
+  if (el9) el9.innerHTML = `
+    <p><strong>Simplifications connues du modèle :</strong></p>
+    <p style="margin-top:8px">• <strong>Break-even sans saisonnalité</strong> — Le seuil de rentabilité utilise un snapshot An 1 et ignore les coefficients mensuels. En réalité, le break-even est plus difficile à atteindre en basse saison.</p>
+    <p style="margin-top:6px">• <strong>IS à taux unique</strong> — Le modèle applique ${fmtPct(fi.isTaux)} pour tous les niveaux de bénéfice. En réalité, le barème IS Maroc est progressif (10%/20%/31%), mais 20% est correct pour la tranche 300K-1M MAD où se situe ce projet.</p>
+    <p style="margin-top:6px">• <strong>Pas de report de déficit fiscal</strong> — Les pertes fiscales des premières années ne sont pas reportées sur les exercices suivants. En pratique, le CGI permet un report de 4 ans.</p>
+    <p style="margin-top:6px">• <strong>TVA simplifiée</strong> — Le modèle calcule TVA collectée − TVA déductible de manière agrégée. Un suivi mensuel réel serait plus précis (crédit TVA possible en début d'activité).</p>
+    <p style="margin-top:6px">• <strong>Inflation uniforme</strong> — Toutes les charges fixes augmentent au même taux (${fmtPct(ra.inflationCharges)}/an). En réalité, certains postes (énergie, salaires) peuvent évoluer différemment.</p>
+    <p style="margin-top:6px">• <strong>Pas de vacance locative commercial</strong> — Le loyer RDC est perçu 12/12 sans interruption. En réalité, un changement de locataire peut entraîner 2-3 mois de vacance.</p>
+    <p style="margin-top:6px">• <strong>Pas de coût de refinancement</strong> — Si les taux augmentent significativement, le modèle ne capture pas l'impact sur un éventuel refinancement.</p>
+    <p style="margin-top:6px">• <strong>Valeur résiduelle théorique</strong> — L'appréciation composée suppose un marché liquide. La vente effective d'un R+5 à Maarif peut prendre 6-18 mois avec décote.</p>
+    <p style="margin-top:6px">• <strong>Informel non modélisé fiscalement</strong> — La part informelle (cash) réduit le CA déclaré et donc l'IS, mais ce risque fiscal n'est pas quantifié.</p>
+  `;
+
+  // ── 10. SOURCES ──
+  const el10 = document.getElementById('hyp-sources');
+  if (el10) el10.innerHTML = `
+    <p><strong>Marché STR & Occupation :</strong><br>
+    Airbtics Casa (fév 2025 – jan 2026) · AirROI Casablanca (oct 2024 – sept 2025) · SandsOfWealth 2026 · AirBoo Rentabilité 2025 · EasyHost · ListingOK Casablanca 2025 · AirDNA</p>
+
+    <p style="margin-top:10px"><strong>Tarification & Concurrence :</strong><br>
+    Booking.com Maarif (mars 2026, 17 propriétés) · StayHere · AS Premium By Soho · unocapital · Faya Nova</p>
+
+    <p style="margin-top:10px"><strong>Tourisme national :</strong><br>
+    ONMT (Office National Marocain du Tourisme) · Observatoire du Tourisme · Medias24 · Challenge.ma · H24info · Telquel</p>
+
+    <p style="margin-top:10px"><strong>Financement MRE :</strong><br>
+    Tamwilcom (MDM Invest + MDM Tamwil) · Ministère des Finances · CRI Tanger · Bladi.net · LesEco.ma · Le360 · La Vie Éco · L'Économiste · OnnVision · Le Matin</p>
+
+    <p style="margin-top:10px"><strong>Fiscalité & Réglementation :</strong><br>
+    CGI Maroc (Art. 6-I-B-3°, Art. 19-I-A, Art. 92-I-6°, Art. 99-2°) · Circulaire 717 DGI · PLF 2023/2026 · upsilon-consulting.com · Dahir n° 1-16-99 (baux commerciaux)</p>
+
+    <p style="margin-top:10px"><strong>Charges & Salaires :</strong><br>
+    CNSS 2025 (espace-paie.ma) · SMIG 2026 (Décret jan 2026, neoexpertise.net) · Lydec tarifs commerciaux · Inwi Pro 2025 · lec.ma · tmsonline.ma · Mews Hospitality 2025</p>
+
+    <p style="margin-top:10px"><strong>Immobilier :</strong><br>
+    BKAM/ANCFCC indice prix actifs immobiliers · Yakeey Maarif · Agenz Casablanca · Infomédiaire 2026</p>
+
+    <p style="margin-top:10px"><strong>Mondial 2030 :</strong><br>
+    Bird & Bird · Challenge.ma · Médias24 · PremiumTravelNews</p>
+
+    <p style="margin-top:14px;font-style:italic;color:var(--text-sec)">Analyse réalisée les 27-30 mars 2026. Données vérifiées par recoupement multi-sources. Ne constitue pas un conseil en investissement.</p>
+  `;
 }
 
 // --- Utility ---

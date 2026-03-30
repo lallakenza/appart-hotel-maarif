@@ -578,6 +578,10 @@ tr:hover td{background:#f0f4f8}
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
       <span class="nav-label">Analyse</span>
     </div>
+    <div class="nav-item" data-nav="hypotheses">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+      <span class="nav-label">Hypotheses</span>
+    </div>
   </div>
 </nav>
 
@@ -2131,6 +2135,97 @@ tr:hover td{background:#f0f4f8}
   </div>
 </div>
 
+<!-- ═══════════════════ HYPOTHÈSES ═══════════════════ -->
+<div data-view="hypotheses" class="hidden">
+  <h2 class="section-title">Hypotheses et Methodologie</h2>
+  <p style="color:var(--text-sec);margin-bottom:20px;font-size:.9rem">
+    Cette page documente toutes les hypotheses, sources et methodologies utilisees dans le modele financier. Chaque parametre est justifie par des donnees de marche verifiables.
+  </p>
+
+  <!-- REVENUS -->
+  <div class="card" style="margin-bottom:16px">
+    <h3 style="color:var(--primary);margin-bottom:12px;font-size:1.05rem">1. Hypotheses de Revenus</h3>
+    <div class="table-wrap"><table>
+      <thead><tr><th style="width:30%">Parametre</th><th style="width:15%">Valeur</th><th>Source & Justification</th></tr></thead>
+      <tbody id="hyp-revenus"></tbody>
+    </table></div>
+  </div>
+
+  <!-- CHARGES -->
+  <div class="card" style="margin-bottom:16px">
+    <h3 style="color:var(--primary);margin-bottom:12px;font-size:1.05rem">2. Charges d'Exploitation</h3>
+    <div class="table-wrap"><table>
+      <thead><tr><th style="width:30%">Poste</th><th style="width:15%">Montant</th><th>Source & Justification</th></tr></thead>
+      <tbody id="hyp-charges"></tbody>
+    </table></div>
+  </div>
+
+  <!-- FINANCEMENT -->
+  <div class="card" style="margin-bottom:16px">
+    <h3 style="color:var(--primary);margin-bottom:12px;font-size:1.05rem">3. Structure de Financement</h3>
+    <div class="table-wrap"><table>
+      <thead><tr><th style="width:30%">Parametre</th><th style="width:15%">Valeur</th><th>Source & Justification</th></tr></thead>
+      <tbody id="hyp-financement"></tbody>
+    </table></div>
+  </div>
+
+  <!-- FISCALITÉ -->
+  <div class="card" style="margin-bottom:16px">
+    <h3 style="color:var(--primary);margin-bottom:12px;font-size:1.05rem">4. Fiscalite et TVA</h3>
+    <div class="table-wrap"><table>
+      <thead><tr><th style="width:30%">Parametre</th><th style="width:15%">Valeur</th><th>Source & Justification</th></tr></thead>
+      <tbody id="hyp-fiscalite"></tbody>
+    </table></div>
+  </div>
+
+  <!-- HYPOTHÈSES MARCHÉ -->
+  <div class="card" style="margin-bottom:16px">
+    <h3 style="color:var(--primary);margin-bottom:12px;font-size:1.05rem">5. Hypotheses de Marche</h3>
+    <div class="table-wrap"><table>
+      <thead><tr><th style="width:30%">Parametre</th><th style="width:15%">Valeur</th><th>Source & Justification</th></tr></thead>
+      <tbody id="hyp-marche"></tbody>
+    </table></div>
+  </div>
+
+  <!-- SCÉNARIOS -->
+  <div class="card" style="margin-bottom:16px">
+    <h3 style="color:var(--primary);margin-bottom:12px;font-size:1.05rem">6. Les 5 Scenarios</h3>
+    <p style="color:var(--text-sec);margin-bottom:10px;font-size:.85rem">Chaque scenario represente un positionnement different sur le marche STR de Maarif, du nouvel entrant sans reputation au professionnel etabli.</p>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Scenario</th><th>Occupation</th><th>ADR Studio</th><th>ADR Loft</th><th>Loyer RDC</th><th>Part OTA</th></tr></thead>
+      <tbody id="hyp-scenarios"></tbody>
+    </table></div>
+  </div>
+
+  <!-- SAISONNALITÉ -->
+  <div class="card" style="margin-bottom:16px">
+    <h3 style="color:var(--primary);margin-bottom:12px;font-size:1.05rem">7. Saisonnalite Mensuelle</h3>
+    <p style="color:var(--text-sec);margin-bottom:10px;font-size:.85rem">Coefficients multiplicateurs de l'occupation annuelle moyenne. Source : ListingOK Casablanca 2025 (taux mensuels reels). Moyenne = 1,00.</p>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Mois</th><th>Coeff.</th><th>Ex. pour 48%</th><th>Contexte</th></tr></thead>
+      <tbody id="hyp-saison"></tbody>
+    </table></div>
+  </div>
+
+  <!-- MÉTHODOLOGIE -->
+  <div class="card" style="margin-bottom:16px">
+    <h3 style="color:var(--primary);margin-bottom:12px;font-size:1.05rem">8. Methodologie de Calcul</h3>
+    <div id="hyp-methodo" style="font-size:.88rem;line-height:1.7;color:var(--text)"></div>
+  </div>
+
+  <!-- LIMITES -->
+  <div class="card" style="margin-bottom:16px">
+    <h3 style="color:var(--primary);margin-bottom:12px;font-size:1.05rem">9. Limites du Modele</h3>
+    <div id="hyp-limites" style="font-size:.88rem;line-height:1.7;color:var(--text)"></div>
+  </div>
+
+  <!-- SOURCES -->
+  <div class="card" style="margin-bottom:16px">
+    <h3 style="color:var(--primary);margin-bottom:12px;font-size:1.05rem">10. Sources</h3>
+    <div id="hyp-sources" style="font-size:.85rem;line-height:1.7;color:var(--text-sec)"></div>
+  </div>
+</div>
+
 <div style="margin-top:24px;padding:12px 16px;font-size:.76rem;color:var(--text-sec);border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
   <span>* Montants nets après déduction de la subvention MDM Invest (10%, plafond 5M MAD). Sous condition d'acceptation du dossier MDM Invest par Tamwilcom.</span>
   <a href="architecture.html" style="color:var(--accent);text-decoration:none;font-weight:500;white-space:nowrap">Architecture technique &rarr;</a>
@@ -2139,11 +2234,11 @@ tr:hover td{background:#f0f4f8}
 </main>
 
 <!-- Scripts — strict order: data → engine → render → charts → app -->
-<script src="js/data.js?v=72"></script>
-<script src="js/engine.js?v=72"></script>
-<script src="js/render.js?v=72"></script>
-<script src="js/charts.js?v=72"></script>
-<script src="js/app.js?v=72"></script>
+<script src="js/data.js?v=73"></script>
+<script src="js/engine.js?v=73"></script>
+<script src="js/render.js?v=73"></script>
+<script src="js/charts.js?v=73"></script>
+<script src="js/app.js?v=73"></script>
 
 </body>
 </html>
