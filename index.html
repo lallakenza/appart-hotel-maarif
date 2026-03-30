@@ -85,6 +85,11 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);lin
 .ctrl-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:16px}
 .ctrl-group{display:flex;flex-direction:column;gap:4px}
 .ctrl-label{font-size:.75rem;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--text-sec)}
+.ctrl-help{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;background:var(--bg);border:1px solid var(--border);color:var(--text-sec);font-size:.65rem;font-weight:700;cursor:help;margin-left:5px;position:relative;vertical-align:middle;line-height:1;flex-shrink:0}
+.ctrl-help:hover{background:var(--primary);color:#fff;border-color:var(--primary)}
+.ctrl-help .ctrl-tip{display:none;position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);background:rgba(15,23,42,0.96);color:#fff;padding:10px 14px;border-radius:8px;font-size:.75rem;font-weight:400;text-transform:none;letter-spacing:0;line-height:1.5;min-width:220px;max-width:300px;white-space:normal;z-index:300;box-shadow:0 8px 24px rgba(0,0,0,.3);pointer-events:none}
+.ctrl-help .ctrl-tip::after{content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);border:6px solid transparent;border-top-color:rgba(15,23,42,0.96)}
+.ctrl-help:hover .ctrl-tip{display:block}
 .ctrl-row{display:flex;align-items:center;gap:10px}
 .ctrl-range{flex:1;height:6px;-webkit-appearance:none;appearance:none;background:#e2e8f0;border-radius:4px;outline:none;cursor:pointer}
 .ctrl-range::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:var(--primary);cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,.2)}
@@ -407,6 +412,8 @@ tr:hover td{background:#f0f4f8}
   .ctrl-range::-webkit-slider-thumb{width:22px;height:22px}
   .ctrl-range::-moz-range-thumb{width:22px;height:22px}
   .ctrl-input-wrap{min-width:80px;padding:6px 8px}
+  .ctrl-help .ctrl-tip{min-width:180px;max-width:250px;font-size:.7rem;left:0;transform:none}
+  .ctrl-help .ctrl-tip::after{left:12px;transform:none}
   .ctrl-input{width:50px;font-size:.82rem}
   .ctrl-unit{font-size:.72rem}
   .ctrl-section-title{font-size:.68rem;margin:14px 0 8px}
@@ -638,84 +645,105 @@ tr:hover td{background:#f0f4f8}
     <div class="ctrl-section-title">Charges d'exploitation</div>
     <div class="ctrl-grid">
       <div class="ctrl-group">
-        <label class="ctrl-label">Taux gestion (% CA)</label>
+        <label class="ctrl-label">Taux gestion (% CA) <span class="ctrl-help">?<span class="ctrl-tip">Part du CA brut hébergement prélevée pour la gestion opérationnelle (admin, coordination, comptabilité courante). Propriétaire-gérant = 15%, société externe = 20-25%.</span></span></label>
         <div class="ctrl-row">
           <input type="range" class="ctrl-range" id="ctrl-gestion" min="10" max="35" step="1" value="15">
           <div class="ctrl-input-wrap"><input type="number" class="ctrl-input" id="ctrl-gestion-val" min="10" max="35" step="1" value="15"><span class="ctrl-unit">%</span></div>
         </div>
       </div>
       <div class="ctrl-group">
-        <label class="ctrl-label">Salaire concierge / mois</label>
+        <label class="ctrl-label">Salaire concierge / mois <span class="ctrl-help">?<span class="ctrl-tip">Salaire brut mensuel du concierge/réceptionniste. Gère check-in/out, accueil, coordination quotidienne. SMIG 2026 = 3 400 MAD.</span></span></label>
         <div class="ctrl-row">
           <input type="range" class="ctrl-range" id="ctrl-salaire" min="3000" max="8000" step="250" value="4500">
           <div class="ctrl-input-wrap"><input type="number" class="ctrl-input" id="ctrl-salaire-val" min="3000" max="8000" step="250" value="4500"><span class="ctrl-unit">MAD</span></div>
         </div>
       </div>
       <div class="ctrl-group">
-        <label class="ctrl-label">Salaire ménage / mois</label>
+        <label class="ctrl-label">Salaire ménage / mois <span class="ctrl-help">?<span class="ctrl-tip">Salaire brut mensuel de l&#39;employé(e) ménage et linge. SMIG 2026 = 3 400 MAD, ici légèrement au-dessus.</span></span></label>
         <div class="ctrl-row">
           <input type="range" class="ctrl-range" id="ctrl-salaireMenage" min="3000" max="6000" step="250" value="3500">
           <div class="ctrl-input-wrap"><input type="number" class="ctrl-input" id="ctrl-salaireMenage-val" min="3000" max="6000" step="250" value="3500"><span class="ctrl-unit">MAD</span></div>
         </div>
       </div>
       <div class="ctrl-group">
-        <label class="ctrl-label">Nombre d'employés</label>
+        <label class="ctrl-label">Nombre d'employés <span class="ctrl-help">?<span class="ctrl-tip">Équipe permanente. 2 = concierge + ménage (standard). 3 = ajout d&#39;un 2e ménage en haute occupation.</span></span></label>
         <div class="ctrl-row">
           <input type="range" class="ctrl-range" id="ctrl-employes" min="1" max="5" step="1" value="2">
           <div class="ctrl-input-wrap"><input type="number" class="ctrl-input" id="ctrl-employes-val" min="1" max="5" step="1" value="2"><span class="ctrl-unit"></span></div>
         </div>
       </div>
       <div class="ctrl-group">
-        <label class="ctrl-label">Utilities fixe / mois</label>
+        <label class="ctrl-label">Utilities fixe / mois <span class="ctrl-help">?<span class="ctrl-tip">Charges fixes mensuelles : parties communes (LED, ascenseur, hall). Indépendant de l&#39;occupation.</span></span></label>
         <div class="ctrl-row">
           <input type="range" class="ctrl-range" id="ctrl-eau" min="1000" max="6000" step="250" value="2500">
           <div class="ctrl-input-wrap"><input type="number" class="ctrl-input" id="ctrl-eau-val" min="1000" max="6000" step="250" value="2500"><span class="ctrl-unit">MAD</span></div>
         </div>
       </div>
       <div class="ctrl-group">
-        <label class="ctrl-label">Utilities var. / unité occupée</label>
+        <label class="ctrl-label">Utilities var. / unité occupée <span class="ctrl-help">?<span class="ctrl-tip">Coût variable par unité occupée/mois : eau, électricité, climatisation. Augmente avec l&#39;occupation.</span></span></label>
         <div class="ctrl-row">
           <input type="range" class="ctrl-range" id="ctrl-eauVar" min="200" max="800" step="50" value="400">
           <div class="ctrl-input-wrap"><input type="number" class="ctrl-input" id="ctrl-eauVar-val" min="200" max="800" step="50" value="400"><span class="ctrl-unit">MAD</span></div>
         </div>
       </div>
       <div class="ctrl-group">
-        <label class="ctrl-label">Internet + TV / mois</label>
+        <label class="ctrl-label">Internet + TV / mois <span class="ctrl-help">?<span class="ctrl-tip">Connexion fibre pro + IPTV pour les 11 unités. Inwi/Maroc Telecom Pro + fournisseur IPTV.</span></span></label>
         <div class="ctrl-row">
           <input type="range" class="ctrl-range" id="ctrl-internet" min="500" max="3000" step="100" value="1200">
           <div class="ctrl-input-wrap"><input type="number" class="ctrl-input" id="ctrl-internet-val" min="500" max="3000" step="100" value="1200"><span class="ctrl-unit">MAD</span></div>
         </div>
       </div>
       <div class="ctrl-group">
-        <label class="ctrl-label">Assurance / an</label>
+        <label class="ctrl-label">Assurance / an <span class="ctrl-help">?<span class="ctrl-tip">Multirisque professionnelle : incendie, RC, bris machines, perte d&#39;exploitation. Obligatoire pour hébergement touristique.</span></span></label>
         <div class="ctrl-row">
           <input type="range" class="ctrl-range" id="ctrl-assurance" min="8000" max="40000" step="1000" value="18000">
           <div class="ctrl-input-wrap"><input type="number" class="ctrl-input" id="ctrl-assurance-val" min="8000" max="40000" step="1000" value="18000"><span class="ctrl-unit">MAD</span></div>
         </div>
       </div>
       <div class="ctrl-group">
-        <label class="ctrl-label">Entretien / an (An 1-5)</label>
+        <label class="ctrl-label">Entretien / an (An 1-5) <span class="ctrl-help">?<span class="ctrl-tip">Budget maintenance années 1-5. Réduit car bâtiment neuf sous garantie décennale constructeur.</span></span></label>
         <div class="ctrl-row">
           <input type="range" class="ctrl-range" id="ctrl-entretien" min="10000" max="60000" step="5000" value="20000">
           <div class="ctrl-input-wrap"><input type="number" class="ctrl-input" id="ctrl-entretien-val" min="10000" max="60000" step="5000" value="20000"><span class="ctrl-unit">MAD</span></div>
         </div>
       </div>
       <div class="ctrl-group">
-        <label class="ctrl-label">Comptable / an</label>
+        <label class="ctrl-label">Entretien mature / an (An 6+) <span class="ctrl-help">?<span class="ctrl-tip">Budget maintenance après 5 ans. Le bâtiment vieillit, plus de réparations (plomberie, peinture, équipements). Benchmark : 1-1.5% valeur construction.</span></span></label>
+        <div class="ctrl-row">
+          <input type="range" class="ctrl-range" id="ctrl-entretienMature" min="20000" max="100000" step="5000" value="40000">
+          <div class="ctrl-input-wrap"><input type="number" class="ctrl-input" id="ctrl-entretienMature-val" min="20000" max="100000" step="5000" value="40000"><span class="ctrl-unit">MAD</span></div>
+        </div>
+      </div>
+      <div class="ctrl-group">
+        <label class="ctrl-label">Taxe professionnelle / an (An 6+) <span class="ctrl-help">?<span class="ctrl-tip">Taxe locale sur l&#39;activité, exonérée 5 ans pour nouvelle construction (CGI Art. 6-I-A). Base = valeur locative × taux.</span></span></label>
+        <div class="ctrl-row">
+          <input type="range" class="ctrl-range" id="ctrl-taxesPro" min="0" max="60000" step="5000" value="25000">
+          <div class="ctrl-input-wrap"><input type="number" class="ctrl-input" id="ctrl-taxesPro-val" min="0" max="60000" step="5000" value="25000"><span class="ctrl-unit">MAD</span></div>
+        </div>
+      </div>
+      <div class="ctrl-group">
+        <label class="ctrl-label">Charges sociales CNSS <span class="ctrl-help">?<span class="ctrl-tip">Cotisations patronales CNSS : allocations familiales 6.4% + prestations sociales 8.6% + AMO 4.1% + formation 1.6% = 20.71%.</span></span></label>
+        <div class="ctrl-row">
+          <input type="range" class="ctrl-range" id="ctrl-chargesSociales" min="15" max="30" step="0.5" value="20.7">
+          <div class="ctrl-input-wrap"><input type="number" class="ctrl-input" id="ctrl-chargesSociales-val" min="15" max="30" step="0.5" value="20.7"><span class="ctrl-unit">%</span></div>
+        </div>
+      </div>
+      <div class="ctrl-group">
+        <label class="ctrl-label">Comptable / an <span class="ctrl-help">?<span class="ctrl-tip">Forfait annuel expert-comptable : tenue comptable, déclarations fiscales, bilan annuel. TPE Casa = 24-36K MAD/an.</span></span></label>
         <div class="ctrl-row">
           <input type="range" class="ctrl-range" id="ctrl-comptable" min="12000" max="60000" step="3000" value="30000">
           <div class="ctrl-input-wrap"><input type="number" class="ctrl-input" id="ctrl-comptable-val" min="12000" max="60000" step="3000" value="30000"><span class="ctrl-unit">MAD</span></div>
         </div>
       </div>
       <div class="ctrl-group">
-        <label class="ctrl-label">Consommables / nuitée</label>
+        <label class="ctrl-label">Consommables / nuitée <span class="ctrl-help">?<span class="ctrl-tip">Coût par nuitée occupée : linge (~15 MAD), amenities (~7 MAD), produits ménagers (~5 MAD), divers (~3 MAD).</span></span></label>
         <div class="ctrl-row">
           <input type="range" class="ctrl-range" id="ctrl-consommables" min="20" max="100" step="5" value="50">
           <div class="ctrl-input-wrap"><input type="number" class="ctrl-input" id="ctrl-consommables-val" min="20" max="100" step="5" value="50"><span class="ctrl-unit">MAD</span></div>
         </div>
       </div>
       <div class="ctrl-group">
-        <label class="ctrl-label">Divers / an</label>
+        <label class="ctrl-label">Divers / an <span class="ctrl-help">?<span class="ctrl-tip">Frais imprévus et récurrents : banque, fournitures bureau, licences PMS, déplacements, petits achats.</span></span></label>
         <div class="ctrl-row">
           <input type="range" class="ctrl-range" id="ctrl-divers" min="5000" max="40000" step="5000" value="15000">
           <div class="ctrl-input-wrap"><input type="number" class="ctrl-input" id="ctrl-divers-val" min="5000" max="40000" step="5000" value="15000"><span class="ctrl-unit">MAD</span></div>
@@ -727,31 +755,45 @@ tr:hover td{background:#f0f4f8}
     <div class="ctrl-section-title">Revenus</div>
     <div class="ctrl-grid">
       <div class="ctrl-group">
-        <label class="ctrl-label">Commission OTA (Booking/Airbnb)</label>
+        <label class="ctrl-label">Commission OTA (Booking/Airbnb) <span class="ctrl-help">?<span class="ctrl-tip">Commission prélevée par les plateformes de réservation sur chaque nuitée. Booking 15-18%, Airbnb ~15%. Moyenne pondérée.</span></span></label>
         <div class="ctrl-row">
           <input type="range" class="ctrl-range" id="ctrl-commissionOTA" min="5" max="25" step="1" value="15">
           <div class="ctrl-input-wrap"><input type="number" class="ctrl-input" id="ctrl-commissionOTA-val" min="5" max="25" step="1" value="15"><span class="ctrl-unit">%</span></div>
         </div>
       </div>
       <div class="ctrl-group">
-        <label class="ctrl-label">Part OTA (% nuitées)</label>
+        <label class="ctrl-label">Part OTA (% nuitées) <span class="ctrl-help">?<span class="ctrl-tip">Part des nuitées passant par les plateformes (Booking, Airbnb). Diminue avec la maturité et la réputation directe.</span></span></label>
         <div class="ctrl-row">
           <input type="range" class="ctrl-range" id="ctrl-partOTA" min="20" max="90" step="5" value="55">
           <div class="ctrl-input-wrap"><input type="number" class="ctrl-input" id="ctrl-partOTA-val" min="20" max="90" step="5" value="55"><span class="ctrl-unit">%</span></div>
         </div>
       </div>
       <div class="ctrl-group">
-        <label class="ctrl-label">Part informelle (% nuitées)</label>
+        <label class="ctrl-label">Part informelle (% nuitées) <span class="ctrl-help">?<span class="ctrl-tip">Réservations non déclarées (cash, WhatsApp informel). Réalité du marché STR marocain. Exclue du revenu fiscal.</span></span></label>
         <div class="ctrl-row">
           <input type="range" class="ctrl-range" id="ctrl-partInformel" min="0" max="40" step="5" value="20">
           <div class="ctrl-input-wrap"><input type="number" class="ctrl-input" id="ctrl-partInformel-val" min="0" max="40" step="5" value="20"><span class="ctrl-unit">%</span></div>
         </div>
       </div>
       <div class="ctrl-group">
-        <label class="ctrl-label">Croissance tarifs / an</label>
+        <label class="ctrl-label">Croissance tarifs / an <span class="ctrl-help">?<span class="ctrl-tip">Augmentation annuelle du prix/nuit. Reflète l&#39;inflation + montée en gamme + effet réputation. 3% = conservateur Maroc.</span></span></label>
         <div class="ctrl-row">
           <input type="range" class="ctrl-range" id="ctrl-croissance" min="0" max="8" step="0.5" value="3">
           <div class="ctrl-input-wrap"><input type="number" class="ctrl-input" id="ctrl-croissance-val" min="0" max="8" step="0.5" value="3"><span class="ctrl-unit">%</span></div>
+        </div>
+      </div>
+      <div class="ctrl-group">
+        <label class="ctrl-label">Inflation charges / an <span class="ctrl-help">?<span class="ctrl-tip">Taux d&#39;augmentation annuelle des charges fixes (salaires, utilities, assurance, etc.). IPC Maroc tendance ~2%/an.</span></span></label>
+        <div class="ctrl-row">
+          <input type="range" class="ctrl-range" id="ctrl-inflation" min="0" max="6" step="0.5" value="2">
+          <div class="ctrl-input-wrap"><input type="number" class="ctrl-input" id="ctrl-inflation-val" min="0" max="6" step="0.5" value="2"><span class="ctrl-unit">%</span></div>
+        </div>
+      </div>
+      <div class="ctrl-group">
+        <label class="ctrl-label">Indexation loyer commercial / an <span class="ctrl-help">?<span class="ctrl-tip">Révision annuelle du loyer du local commercial (RDC). Pratique standard baux commerciaux marocains, indexée sur l&#39;IPC.</span></span></label>
+        <div class="ctrl-row">
+          <input type="range" class="ctrl-range" id="ctrl-indexLoyer" min="0" max="5" step="0.5" value="2">
+          <div class="ctrl-input-wrap"><input type="number" class="ctrl-input" id="ctrl-indexLoyer-val" min="0" max="5" step="0.5" value="2"><span class="ctrl-unit">%</span></div>
         </div>
       </div>
     </div>
@@ -760,7 +802,7 @@ tr:hover td{background:#f0f4f8}
     <div class="ctrl-section-title">Budget Projet</div>
     <div class="ctrl-grid">
       <div class="ctrl-group">
-        <label class="ctrl-label">Budget total (hors ameublement)</label>
+        <label class="ctrl-label">Budget total (hors ameublement) <span class="ctrl-help">?<span class="ctrl-tip">Coût total du projet : terrain + frais acquisition + construction. L&#39;ameublement (40K/unité × 11) s&#39;ajoute en plus.</span></span></label>
         <div class="ctrl-row">
           <input type="range" class="ctrl-range" id="ctrl-budget" min="5" max="10" step="0.1" value="7">
           <div class="ctrl-input-wrap"><input type="number" class="ctrl-input" id="ctrl-budget-val" min="5" max="10" step="0.1" value="7"><span class="ctrl-unit">M MAD</span></div>
@@ -772,28 +814,35 @@ tr:hover td{background:#f0f4f8}
     <div class="ctrl-section-title">Hypothèses marché (analyse qualitative)</div>
     <div class="ctrl-grid">
       <div class="ctrl-group">
-        <label class="ctrl-label">Appréciation bien / an</label>
+        <label class="ctrl-label">Appréciation bien / an <span class="ctrl-help">?<span class="ctrl-tip">Croissance annuelle de la valeur du bien immobilier. Historique Casa (BKAM) : 1-1.5%. Avec effet Mondial 2030 : 2%.</span></span></label>
         <div class="ctrl-row">
           <input type="range" class="ctrl-range" id="ctrl-appreciation" min="0" max="5" step="0.5" value="2">
           <div class="ctrl-input-wrap"><input type="number" class="ctrl-input" id="ctrl-appreciation-val" min="0" max="5" step="0.5" value="2"><span class="ctrl-unit">%</span></div>
         </div>
       </div>
       <div class="ctrl-group">
-        <label class="ctrl-label">Ramp-up occupation An 1</label>
+        <label class="ctrl-label">Taux actualisation VAN <span class="ctrl-help">?<span class="ctrl-tip">Taux de rendement exigé pour le calcul de la Valeur Actuelle Nette. Plus il est élevé, plus le projet doit être rentable pour être attractif.</span></span></label>
+        <div class="ctrl-row">
+          <input type="range" class="ctrl-range" id="ctrl-tauxActu" min="4" max="15" step="0.5" value="8">
+          <div class="ctrl-input-wrap"><input type="number" class="ctrl-input" id="ctrl-tauxActu-val" min="4" max="15" step="0.5" value="8"><span class="ctrl-unit">%</span></div>
+        </div>
+      </div>
+      <div class="ctrl-group">
+        <label class="ctrl-label">Ramp-up occupation An 1 <span class="ctrl-help">?<span class="ctrl-tip">Pénalité sur l&#39;occupation la 1ère année : nouvel entrant sans avis, pas de clientèle fidèle. 65% = occupation à 65% du taux cible.</span></span></label>
         <div class="ctrl-row">
           <input type="range" class="ctrl-range" id="ctrl-rampOcc" min="40" max="100" step="5" value="65">
           <div class="ctrl-input-wrap"><input type="number" class="ctrl-input" id="ctrl-rampOcc-val" min="40" max="100" step="5" value="65"><span class="ctrl-unit">%</span></div>
         </div>
       </div>
       <div class="ctrl-group">
-        <label class="ctrl-label">Ramp-up ADR An 1</label>
+        <label class="ctrl-label">Ramp-up ADR An 1 <span class="ctrl-help">?<span class="ctrl-tip">Pénalité sur le prix/nuit la 1ère année : promotions de lancement pour générer des avis. 85% = prix à 85% du tarif cible.</span></span></label>
         <div class="ctrl-row">
           <input type="range" class="ctrl-range" id="ctrl-rampADR" min="60" max="100" step="5" value="85">
           <div class="ctrl-input-wrap"><input type="number" class="ctrl-input" id="ctrl-rampADR-val" min="60" max="100" step="5" value="85"><span class="ctrl-unit">%</span></div>
         </div>
       </div>
       <div class="ctrl-group">
-        <label class="ctrl-label">Durée ramp-up</label>
+        <label class="ctrl-label">Durée ramp-up <span class="ctrl-help">?<span class="ctrl-tip">Nombre d&#39;années de montée en puissance. 1 an = standard pour un nouvel entrant STR avec bonne stratégie.</span></span></label>
         <div class="ctrl-row">
           <input type="range" class="ctrl-range" id="ctrl-rampDuree" min="0" max="3" step="1" value="1">
           <div class="ctrl-input-wrap"><input type="number" class="ctrl-input" id="ctrl-rampDuree-val" min="0" max="3" step="1" value="1"><span class="ctrl-unit">an(s)</span></div>
@@ -826,21 +875,21 @@ tr:hover td{background:#f0f4f8}
         </div>
       </div>
       <div class="ctrl-group">
-        <label class="ctrl-label">Marketing lancement (An 1)</label>
+        <label class="ctrl-label">Marketing lancement (An 1) <span class="ctrl-help">?<span class="ctrl-tip">Budget one-shot 1ère année : photos pro, configuration listings Booking/Airbnb, promotions Genius, Google Ads local.</span></span></label>
         <div class="ctrl-row">
           <input type="range" class="ctrl-range" id="ctrl-marketing" min="0" max="200000" step="10000" value="20000">
           <div class="ctrl-input-wrap"><input type="number" class="ctrl-input" id="ctrl-marketing-val" min="0" max="200000" step="10000" value="20000"><span class="ctrl-unit">MAD</span></div>
         </div>
       </div>
       <div class="ctrl-group">
-        <label class="ctrl-label">Renouvellement mobilier (cycle)</label>
+        <label class="ctrl-label">Renouvellement mobilier (cycle) <span class="ctrl-help">?<span class="ctrl-tip">Fréquence de remplacement du mobilier des unités. 7 ans = durée de vie standard mobilier STR (usure locative intensive).</span></span></label>
         <div class="ctrl-row">
           <input type="range" class="ctrl-range" id="ctrl-renouv" min="5" max="15" step="1" value="7">
           <div class="ctrl-input-wrap"><input type="number" class="ctrl-input" id="ctrl-renouv-val" min="5" max="15" step="1" value="7"><span class="ctrl-unit">ans</span></div>
         </div>
       </div>
       <div class="ctrl-group">
-        <label class="ctrl-label">Taxe habitation / an (An 6+)</label>
+        <label class="ctrl-label">Taxe habitation / an (An 6+) <span class="ctrl-help">?<span class="ctrl-tip">Taxe d&#39;habitation + services communaux. Exonérée 5 ans (nouvelle construction). Fourchette 10-15K pour petit R+5.</span></span></label>
         <div class="ctrl-row">
           <input type="range" class="ctrl-range" id="ctrl-taxeHab" min="0" max="30000" step="2000" value="12000">
           <div class="ctrl-input-wrap"><input type="number" class="ctrl-input" id="ctrl-taxeHab-val" min="0" max="30000" step="2000" value="12000"><span class="ctrl-unit">MAD</span></div>
@@ -867,7 +916,7 @@ tr:hover td{background:#f0f4f8}
         </div>
       </div>
       <div class="ctrl-group eco-field" style="display:none">
-        <label class="ctrl-label">Investissement écologique</label>
+        <label class="ctrl-label">Investissement écologique <span class="ctrl-help">?<span class="ctrl-tip">Montant investi en équipements éco : chauffe-eau solaire, LED, isolation, robinetterie éco. Subventionné à 40% par Go Siyaha.</span></span></label>
         <div class="ctrl-row">
           <input type="range" class="ctrl-range" id="ctrl-ecoInvest" min="100000" max="600000" step="10000" value="300000">
           <div class="ctrl-input-wrap"><input type="number" class="ctrl-input" id="ctrl-ecoInvest-val" min="100000" max="600000" step="10000" value="300000"><span class="ctrl-unit">MAD</span></div>
@@ -879,35 +928,35 @@ tr:hover td{background:#f0f4f8}
     <div class="ctrl-section-title">Financement</div>
     <div class="ctrl-grid">
       <div class="ctrl-group">
-        <label class="ctrl-label">Durée crédit banque</label>
+        <label class="ctrl-label">Durée crédit banque <span class="ctrl-help">?<span class="ctrl-tip">Durée du prêt bancaire classique en années. Plus long = mensualités plus faibles mais plus d&#39;intérêts cumulés.</span></span></label>
         <div class="ctrl-row">
           <input type="range" class="ctrl-range" id="ctrl-dureeBQ" min="7" max="25" step="1" value="20">
           <div class="ctrl-input-wrap"><input type="number" class="ctrl-input" id="ctrl-dureeBQ-val" min="7" max="25" step="1" value="20"><span class="ctrl-unit">ans</span></div>
         </div>
       </div>
       <div class="ctrl-group">
-        <label class="ctrl-label">Différé capital banque</label>
+        <label class="ctrl-label">Différé capital banque <span class="ctrl-help">?<span class="ctrl-tip">Période pendant laquelle seuls les intérêts sont payés (pas de remboursement du capital). Utile pendant la construction.</span></span></label>
         <div class="ctrl-row">
           <input type="range" class="ctrl-range" id="ctrl-differeBQ" min="0" max="3" step="1" value="1">
           <div class="ctrl-input-wrap"><input type="number" class="ctrl-input" id="ctrl-differeBQ-val" min="0" max="3" step="1" value="1"><span class="ctrl-unit">ans</span></div>
         </div>
       </div>
       <div class="ctrl-group">
-        <label class="ctrl-label">Taux Tamwilkom</label>
+        <label class="ctrl-label">Taux Tamwilkom <span class="ctrl-help">?<span class="ctrl-tip">Taux annuel du prêt Tamwilkom (programme étatique). Très avantageux : 2-3% vs 5% banque classique.</span></span></label>
         <div class="ctrl-row">
           <input type="range" class="ctrl-range" id="ctrl-tauxTK" min="1" max="5" step="0.1" value="2.5">
           <div class="ctrl-input-wrap"><input type="number" class="ctrl-input" id="ctrl-tauxTK-val" min="1" max="5" step="0.1" value="2.5"><span class="ctrl-unit">%</span></div>
         </div>
       </div>
       <div class="ctrl-group">
-        <label class="ctrl-label">Durée Tamwilkom</label>
+        <label class="ctrl-label">Durée Tamwilkom <span class="ctrl-help">?<span class="ctrl-tip">Durée du prêt Tamwilkom. Plus courte que la banque classique (7 ans standard).</span></span></label>
         <div class="ctrl-row">
           <input type="range" class="ctrl-range" id="ctrl-dureeTK" min="5" max="12" step="1" value="7">
           <div class="ctrl-input-wrap"><input type="number" class="ctrl-input" id="ctrl-dureeTK-val" min="5" max="12" step="1" value="7"><span class="ctrl-unit">ans</span></div>
         </div>
       </div>
       <div class="ctrl-group">
-        <label class="ctrl-label">Différé Tamwilkom</label>
+        <label class="ctrl-label">Différé Tamwilkom <span class="ctrl-help">?<span class="ctrl-tip">Période de grâce Tamwilkom (intérêts seulement). Généralement 2 ans pour accompagner le démarrage.</span></span></label>
         <div class="ctrl-row">
           <input type="range" class="ctrl-range" id="ctrl-differeTK" min="0" max="3" step="1" value="2">
           <div class="ctrl-input-wrap"><input type="number" class="ctrl-input" id="ctrl-differeTK-val" min="0" max="3" step="1" value="2"><span class="ctrl-unit">ans</span></div>
@@ -2090,11 +2139,11 @@ tr:hover td{background:#f0f4f8}
 </main>
 
 <!-- Scripts — strict order: data → engine → render → charts → app -->
-<script src="js/data.js?v=69"></script>
-<script src="js/engine.js?v=69"></script>
-<script src="js/render.js?v=69"></script>
-<script src="js/charts.js?v=69"></script>
-<script src="js/app.js?v=69"></script>
+<script src="js/data.js?v=70"></script>
+<script src="js/engine.js?v=70"></script>
+<script src="js/render.js?v=70"></script>
+<script src="js/charts.js?v=70"></script>
+<script src="js/app.js?v=70"></script>
 
 </body>
 </html>

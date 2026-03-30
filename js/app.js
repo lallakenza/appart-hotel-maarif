@@ -37,6 +37,9 @@ const ADV_FIELDS = [
   { id: "internet",     target: "CHARGES",              key: "internetTv",               div: 1 },
   { id: "assurance",    target: "CHARGES",              key: "assurance",                div: 1 },
   { id: "entretien",    target: "CHARGES",              key: "entretienBase",            div: 1 },
+  { id: "entretienMature", target: "CHARGES",           key: "entretienMature",          div: 1 },
+  { id: "taxesPro",    target: "CHARGES",              key: "taxesPro",                 div: 1 },
+  { id: "chargesSociales", target: "CHARGES",           key: "chargesSociales",          div: 100 },
   { id: "comptable",    target: "CHARGES",              key: "comptableAnnuel",          div: 1 },
   { id: "consommables", target: "CHARGES",              key: "consommablesParNuitee",    div: 1 },
   { id: "divers",       target: "CHARGES",              key: "divers",                   div: 1 },
@@ -45,6 +48,8 @@ const ADV_FIELDS = [
   { id: "partOTA",      target: "REVENUE_ASSUMPTIONS",  key: "partOTA",                  div: 100 },
   { id: "partInformel", target: "REVENUE_ASSUMPTIONS",  key: "partInformel",             div: 100 },
   { id: "croissance",   target: "REVENUE_ASSUMPTIONS",  key: "croissanceTarifs",         div: 100 },
+  { id: "inflation",   target: "REVENUE_ASSUMPTIONS",  key: "inflationCharges",         div: 100 },
+  { id: "indexLoyer",  target: "REVENUE_ASSUMPTIONS",  key: "indexationLoyer",          div: 100 },
   // Financement
   { id: "dureeBQ",      target: "BANQUE_CLASSIQUE",     key: "dureeAns",                 div: 1 },
   { id: "differeBQ",   target: "BANQUE_CLASSIQUE",     key: "differeAns",               div: 1 },
@@ -53,6 +58,7 @@ const ADV_FIELDS = [
   { id: "differeTK",    target: "TAMWILKOM",            key: "differeAns",               div: 1 },
   // Hypothèses marché (analyse qualitative)
   { id: "appreciation", target: "REVENUE_ASSUMPTIONS",  key: "tauxAppreciation",         div: 100 },
+  { id: "tauxActu",    target: "REVENUE_ASSUMPTIONS",  key: "tauxActualisation",        div: 100 },
   { id: "marketing",    target: "CHARGES",              key: "budgetMarketingLancement",  div: 1 },
   { id: "renouv",       target: "CHARGES",              key: "renouvellementMobilierCycle", div: 1 },
   { id: "taxeHab",      target: "CHARGES",              key: "taxeHabitation",           div: 1 },

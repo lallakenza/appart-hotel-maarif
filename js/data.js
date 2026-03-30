@@ -135,6 +135,11 @@ const REVENUE_ASSUMPTIONS = {
   // Source : pratique bail commercial marocain, dahir n° 1-16-99
   indexationLoyer: 0.02,       // 2%/an — indexation du loyer commercial
 
+  // --- Taux d'actualisation pour la VAN ---
+  // Le taux reflète le coût d'opportunité du capital investi
+  // 8% = standard immobilier commercial, entre obligataire (~5%) et equity (~12%)
+  tauxActualisation: 0.08,     // 8% — taux d'actualisation pour le calcul de la VAN
+
   // --- Appréciation du bien immobilier ---
   // DISTINCT de la croissance tarifs : historique Casablanca 1-1,5%/an (BKAM 2015-2025)
   // Avec effet Mondial 2030, hypothèse ajustée à 2%/an

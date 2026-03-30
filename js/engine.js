@@ -456,8 +456,8 @@ function compute(scenario) {
   const triRaw = computeIRR(irrFlows, 0.10);
   const tri = (isFinite(triRaw) && triRaw > -1 && triRaw < 10) ? triRaw : null;
 
-  // VAN (NPV) — Valeur Actuelle Nette au taux d'actualisation 8%, avec valeur résiduelle
-  const tauxActualisation = 0.08;
+  // VAN (NPV) — Valeur Actuelle Nette, avec valeur résiduelle
+  const tauxActualisation = REVENUE_ASSUMPTIONS.tauxActualisation ?? 0.08;
   let van = -apportNet;
   for (let t = 0; t < projections.length; t++) {
     const flux = t === projections.length - 1
