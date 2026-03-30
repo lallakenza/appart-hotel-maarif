@@ -1130,18 +1130,21 @@ function updateWealthYearExplorer(year) {
   const cfEl = document.getElementById("wlth-yr-cf");
   if (cfEl) cfEl.style.color = w.cfNetMensuel >= 0 ? "#059669" : "#dc2626";
 
-  // Stacked bar proportions
+  // Stacked bar proportions — negative CF shown in red
   const bar = document.getElementById("wlth-yr-bar");
   if (bar) {
-    const abs = Math.abs(w.cfNetMensuel) + w.equityMensuel + w.appreciationMensuel;
+    const absCf = Math.abs(w.cfNetMensuel);
+    const abs = absCf + w.equityMensuel + w.appreciationMensuel;
     if (abs > 0) {
-      const pCf = Math.max(0, w.cfNetMensuel) / abs * 100;
+      const pCf = absCf / abs * 100;
       const pEq = w.equityMensuel / abs * 100;
       const pAp = w.appreciationMensuel / abs * 100;
+      const cfColor = w.cfNetMensuel >= 0 ? "#059669" : "#dc2626";
+      const cfLabel = w.cfNetMensuel < 0 ? "-" + Math.round(pCf) + "%" : Math.round(pCf) + "%";
       bar.innerHTML =
-        (pCf > 0 ? `<div style="width:${pCf.toFixed(1)}%;background:#059669;display:flex;align-items:center;justify-content:center">${pCf >= 15 ? Math.round(pCf) + '%' : ''}</div>` : '') +
-        `<div style="width:${pEq.toFixed(1)}%;background:#2563eb;display:flex;align-items:center;justify-content:center">${pEq >= 15 ? Math.round(pEq) + '%' : ''}</div>` +
-        `<div style="width:${pAp.toFixed(1)}%;background:#7c3aed;display:flex;align-items:center;justify-content:center">${pAp >= 15 ? Math.round(pAp) + '%' : ''}</div>`;
+        `<div style="width:${pCf.toFixed(1)}%;background:${cfColor};display:flex;align-items:center;justify-content:center">${pCf >= 12 ? cfLabel : ''}</div>` +
+        `<div style="width:${pEq.toFixed(1)}%;background:#2563eb;display:flex;align-items:center;justify-content:center">${pEq >= 12 ? Math.round(pEq) + '%' : ''}</div>` +
+        `<div style="width:${pAp.toFixed(1)}%;background:#7c3aed;display:flex;align-items:center;justify-content:center">${pAp >= 12 ? Math.round(pAp) + '%' : ''}</div>`;
     }
   }
 
