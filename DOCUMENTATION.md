@@ -1,6 +1,6 @@
 # Documentation Tableau de Bord Financier — Appart'Hôtel Maarif
 
-**Version:** 2.1 (v68)
+**Version:** 2.2 (v69)
 **Date:** 30 Mars 2026
 **Langue:** Français
 **Public Cible:** Analystes financiers, investisseurs, auditeurs
@@ -997,6 +997,23 @@ Bump version cache de v=66 à v=67 pour forcer le CDN GitHub Pages à servir le 
 
 Renommage de l'onglet navigation "Cash-Flow" en **"Rentabilité"** : la section contient bien plus que le cash-flow (KPIs de rendement, TRI, VAN, wealth building, comparaisons d'investissement, projections 20 ans). Le `data-view="cashflow"` interne est conservé pour ne pas casser la navigation.
 
+### v69 — Inflation charges, indexation loyer, appréciation composée
+**Date:** 30/03/2026
+**Fichiers modifiés:** `data.js`, `engine.js`, `index.html`
+
+**Anomalies corrigées (audit financier approfondi) :**
+
+1. **Inflation sur charges fixes** — Ajout du paramètre `inflationCharges: 0.02` (2%/an). Toutes les charges fixes (salaires, utilities, comptable, assurance, entretien, consommables, taxes, divers, provision renouvellement, syndic) croissent désormais avec l'inflation via `inflGrowth = (1 + inflationCharges)^y`. Avant : les charges étaient constantes sur 20 ans, faisant gonfler les marges artificiellement de ~31% à ~64%. Après : marges An1=30.7% → An20=54.9% (écart naturel de 1%/an entre croissance tarifs 3% et inflation charges 2%).
+
+2. **Indexation loyer commercial** — Ajout du paramètre `indexationLoyer: 0.02` (2%/an). Le loyer commercial était fixe sur 20 ans ; désormais indexé via `loyerCommercial × 12 × (1 + indexationLoyer)^y`, conformément à la pratique des baux commerciaux marocains (révision IPC).
+
+3. **Appréciation composée dans Wealth Building** — L'appréciation annuelle du bien était linéarisée (constante = totalProjet × taux, soit ~152K/an). Désormais composée : `appreciation(y) = totalProjet × [(1+taux)^(y+1) - (1+taux)^y]`, passant de 152,800 MAD (An 1) à 222,601 MAD (An 20). Cohérent avec la valeur résiduelle qui était déjà composée.
+
+**Impact sur KPIs (scénario moyen) :**
+- TRI : ~17.1% (légère baisse vs avant, charges + réalistes)
+- Marges : stabilisées autour de 52-55% en régime mature (vs 60-64% avant)
+- Wealth building /mois : progression composée au lieu de linéaire
+
 ---
 
 ## 3.6 Audit Détaillé v68 — Fonctionnel, Métier et Technique (30/03/2026)
@@ -1203,7 +1220,7 @@ Scripts chargés avec `?v=N` dans index.html (actuellement v=68). Incrémenté �
 ## CONTACT ET SUPPORT
 
 - **Développeur:** Appart'Hôtel Maarif Dev Team
-- **Dernière mise à jour:** 30 Mars 2026 (v68)
+- **Dernière mise à jour:** 30 Mars 2026 (v69)
 - **Déploiement:** GitHub Pages (gh-pages branch)
 - **Repository:** `lallakenza/appart-hotel-maarif`
 
