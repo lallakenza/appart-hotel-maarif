@@ -1154,7 +1154,7 @@ function updateWealthYearExplorer(year) {
     const debtFree = window.__wbDebtFree;
     let insight = "";
     if (w.cfNetMensuel < 0)
-      insight = "💡 CF négatif mais " + fmtMAD(w.equityMensuel + w.appreciationMensuel) + "/mois de richesse invisible (equity + appréciation)";
+      insight = "💡 CF négatif de " + fmtMAD(Math.abs(w.cfNetMensuel)) + "/mois — mais richesse nette créée : " + fmtMAD(w.totalMensuel) + "/mois (equity + appréciation − CF)";
     else if (debtFree && year >= debtFree)
       insight = "🔓 Dette remboursée — 100% du cash-flow est pour vous";
     else if (year <= 2)
