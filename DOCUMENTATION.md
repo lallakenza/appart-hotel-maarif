@@ -1,7 +1,7 @@
 # Documentation Tableau de Bord Financier — Appart'Hôtel Maarif
 
-**Version:** 2.0
-**Date:** Mars 2026
+**Version:** 2.1 (v68)
+**Date:** 30 Mars 2026
 **Langue:** Français
 **Public Cible:** Analystes financiers, investisseurs, auditeurs
 **Format:** Optimisé pour lecture par IA (Claude, GPT-4)
@@ -13,6 +13,8 @@
 1. [PARTIE 1 — HYPOTHÈSES DU MODÈLE](#partie-1--hypothèses-du-modèle)
 2. [PARTIE 2 — ARCHITECTURE ET FONCTIONNALITÉS](#partie-2--architecture-et-fonctionnalités)
 3. [PARTIE 3 — CORRECTIONS ET AUDITS](#partie-3--corrections-et-audits)
+4. [PARTIE 4 — FORMULES MÉTIER](#partie-4--formules-métier)
+5. [PARTIE 5 — ARCHITECTURE TECHNIQUE DÉTAILLÉE](#partie-5--architecture-technique-détaillée)
 
 ---
 
@@ -952,17 +954,261 @@ Remplacement des sous-titres statiques des 8 KPI cards Cash-Flow par des **insig
 
 Seuils de comparaison utilisés: S&P 500 (10%), MASI Maroc (8%), livret épargne UAE (6.25%), immobilier locatif Casa (5.5%).
 
+### v65 — Wealth Building Year Explorer + Stacked Chart
+**Date:** 30/03/2026
+**Fichiers modifiés:** `render.js`, `charts.js`, `index.html`
+
+Ajout d'un explorateur interactif par année dans la section Wealth Building:
+
+**Year Explorer (slider An 1→20):**
+- Slider HTML range pour naviguer entre les 20 années de projection
+- 4 cartes breakdown : Cash-Flow, Equity Prêt, Appréciation, Total (/mois)
+- Barre de proportion horizontale (stacked %) avec couleur dynamique par composante
+- Insight contextuel adaptatif (5 cas : CF négatif, ramp-up, dette remboursée, richesse élevée, défaut)
+- Données passées via `window.__wbData` et `window.__wbDebtFree`
+
+**Stacked Bar Chart (Évolution du Wealth Building 20 ans):**
+- Chart.js stacked bar : CF net (vert/rouge), Equity paydown (bleu), Appréciation (violet)
+- Dual Y-axis : gauche = annuel (MAD), droite = mensuel (MAD/mois) via dataset line
+- Légende en bas, tooltips avec footer total annuel
+- CF négatif affiché en rouge (`rgba(220,38,38,0.5)`) dans les barres
+
+**Fonction ajoutée:** `chartWealthBuilding(S)` dans charts.js (~ligne 1483), appelée dans `renderAllCharts()`.
+
+### v66 — Fix barre proportionnelle CF négatif
+**Date:** 30/03/2026
+**Fichiers modifiés:** `render.js`
+
+Correction de la barre de proportion dans le Year Explorer quand le cash-flow est négatif:
+- Avant : `Math.max(0, w.cfNetMensuel)` excluait les CF négatifs de la barre
+- Après : `Math.abs(w.cfNetMensuel)` avec couleur dynamique `cfColor = w.cfNetMensuel >= 0 ? "#059669" : "#dc2626"`
+- Le label affiche désormais "-9%" pour les CF négatifs
+- Insight corrigé : affiche la **richesse nette créée** (total incluant le CF négatif) au lieu de "richesse invisible (equity + appréciation)"
+
+### v67 — Cache bust pour propagation CDN
+**Date:** 30/03/2026
+**Fichiers modifiés:** `index.html`
+
+Bump version cache de v=66 à v=67 pour forcer le CDN GitHub Pages à servir le render.js corrigé (v66 avait été caché avant le push du fix).
+
+### v68 — Renommage onglet Cash-Flow → Rentabilité
+**Date:** 30/03/2026
+**Fichiers modifiés:** `index.html`
+
+Renommage de l'onglet navigation "Cash-Flow" en **"Rentabilité"** : la section contient bien plus que le cash-flow (KPIs de rendement, TRI, VAN, wealth building, comparaisons d'investissement, projections 20 ans). Le `data-view="cashflow"` interne est conservé pour ne pas casser la navigation.
+
+---
+
+## 3.6 Audit Détaillé v68 — Fonctionnel, Métier et Technique (30/03/2026)
+
+### Périmètre
+14 vues, 105 KPIs, 19 graphiques, 42 tables. 5 scénarios testés. Desktop 1440px + Mobile 375px.
+
+### Résultats Globaux
+
+| Métrique | Résultat |
+|----------|----------|
+| NaN / undefined | **0** sur 14 vues |
+| KPIs remplis | **104/105** (1 "–" attendu : CF Moyen Post-Dette quand dette ≠ remboursée) |
+| Charts avec données | **19/19** |
+| Tables vides | **0/42** |
+| Console JS errors | **0** (erreurs Chrome extensions ignorées) |
+| Overflow texte | **0** |
+| TRI croissant 5 scénarios | ✅ 7.4% → 12.1% → 17.9% → 26.4% → 34.2% |
+
+### Vérifications Mathématiques
+
+| Vérification | Résultat |
+|-------------|----------|
+| Revenu Net + Loyer = Revenu Total | 589 512 + 96 000 = 685 512 ✅ |
+| Revenu Brut - Commissions = Revenu Net | 660 332 - 70 821 ≈ 589 511 ✅ |
+| EBITDA = Revenus - Charges | 685 512 - 475 307 ≈ 210 204 ✅ |
+| Apport + À Financer = Total Projet | 2 449 500 + 5 190 500 = 7 640 000 ✅ |
+| Aucun NaN après switch rapide scénarios | ✅ |
+
+### Audit Métier — Points Relevés
+
+**✅ Points forts du moteur:**
+- Saisonnalité 12 coefficients mensuels réalistes (source ListingOK Casa, moyenne = 1.000)
+- Ramp-up An 1 (occ ×0.65, ADR ×0.85) réaliste pour nouvel entrant
+- Commissions OTA appliquées uniquement sur part OTA (55%), pas sur informel/direct
+- Formule PMT standard pour mensualités, gère taux = 0%
+- IS taux unique 20% (réforme PLF 2023, correct pour 2026+)
+- Exonération devises 5 ans (Art. 6-I-B-3° CGI) bien appliquée
+- TRI Newton-Raphson convergent incluant valeur résiduelle An 20
+- Edge cases gérés (occ=0%, prix=0, taux=0%) sans crash
+
+**⚠️ Points d'attention:**
+- Appréciation immobilière linéarisée (2% × montant initial constant) au lieu de composée année par année. Impact estimé : sous-estimation de ~150-250K sur 20 ans (1-2% de la VAN). Conservateur.
+- Provision entretien maturité (40K/an après An 5) : en-dessous du benchmark 1-1.5% de la construction (~45-67K/an). Optimiste mais pas critique.
+- Taux d'actualisation VAN hardcodé à 8% (pas de sensibilité). 8% est raisonnable pour immobilier résidentiel touristique Maroc (WACC 7-9%).
+- Appréciation 2%/an légèrement optimiste vs historique Casa BKAM (1-1.5%/an), compensé par l'effet Mondial 2030.
+
+---
+
+# PARTIE 4 — FORMULES MÉTIER
+
+## 4.1 Calcul des Revenus
+
+```
+RevenuBrutHôtel = Σ(mois=1→12) [ nuiteesStudiosMois × ADR_studio + nuiteesLoftsMois × ADR_loft ]
+
+nuiteesStudiosMois = nbStudios × 30.44 × tauxOcc × coefSaisonnier[mois] × coefRampUp
+nuiteesLoftsMois   = nbLofts   × 30.44 × tauxOcc × coefSaisonnier[mois] × coefRampUp
+
+coefRampUp (An 1)  = 0.65 (occupation) et 0.85 (ADR)
+coefRampUp (An 2+) = 1.0
+
+CommissionsOTA = RevenuBrutHôtel × partOTA × tauxCommission
+  → partOTA décroît Y1(55%) → Y5(40%) via canauxEvolution
+  → tauxCommission = 15% (moyenne pondérée Booking 15% + Airbnb 3%)
+
+RevenuNetHôtel = RevenuBrutHôtel - CommissionsOTA
+RevenuTotal = RevenuNetHôtel + LoyerCommercial (96K/an fixe)
+```
+
+## 4.2 Calcul du Cash-Flow
+
+```
+EBITDA = RevenuTotal - ChargesTotal
+ChargesTotal = Σ(gestion, salaires, utilities, consommables, assurance, entretien, syndic, taxesPro, marketing, divers)
+
+ServiceDette = mensualitéTK × 12 + mensualitéBQ × 12
+  → Années différé TK (An 1-2) : intérêts seuls = montantTK × 2.5%
+  → Années différé BQ (An 1)   : intérêts seuls = montantBQ × 5.2%
+
+CashFlowAvantIS = EBITDA - ServiceDette
+RésultatFiscal = EBITDAdéclaré - ServiceDette - DotationAmortissement
+BénéficeImposable = max(0, RésultatFiscal)
+IS = BénéficeImposable × (1 - partExonérée) × 20%
+  → partExonérée = 40% pendant 5 ans (part devises, Art. 6-I-B-3° CGI)
+  → partExonérée = 0% après An 5
+
+CashFlowNet = CashFlowAvantIS - IS
+```
+
+## 4.3 TRI (Taux de Rendement Interne)
+
+```
+Méthode : Newton-Raphson (100 itérations, tolérance 1e-7)
+
+Flux = [-ApportNet, CF₁, CF₂, ..., CF₁₉, CF₂₀ + ValeurRésiduelle]
+  → ApportNet = ApportTerrain - SubventionMDM
+  → ValeurRésiduelle = TotalProjet × (1 + 2%)^20
+
+TRI = taux r tel que Σ(t=0→20) Flux_t / (1+r)^t = 0
+```
+
+## 4.4 VAN (Valeur Actuelle Nette)
+
+```
+VAN = -ApportNet + Σ(t=1→20) CF_t / (1 + 8%)^t
+  → Taux d'actualisation = 8% (WACC immobilier Maroc)
+  → CF₂₀ inclut la valeur résiduelle
+```
+
+## 4.5 Wealth Building (Création de Richesse)
+
+```
+WealthAnnuel_t = CashFlowNet_t + EquityPaydown_t + Appréciation_t
+
+EquityPaydown_t = CapitalRemboursé_TK_t + CapitalRemboursé_BQ_t
+  → = Mensualité × 12 - Intérêts_t (la part principal du service dette)
+
+Appréciation_t = TotalProjet × tauxAppréciation (2%/an, linéarisé)
+  Note : simplification linéaire vs composée — conservateur.
+
+WealthMensuel_t = WealthAnnuel_t / 12
+WealthTotal_20ans = Σ(t=1→20) WealthAnnuel_t
+```
+
+## 4.6 Indicateurs Complémentaires
+
+```
+DSCR = EBITDA / ServiceDetteTotal
+  → Seuil acceptation banque : ≥ 1.25
+
+Payback = première année t où CumulCF_t ≥ ApportNet
+
+BreakEvenOccupancy = taux d'occupation minimum pour CF ≥ 0
+  → Calculé par itération binaire dans engine.js
+
+RendementStabilisé = moyenne(RendementNetApport) sur An 15-20
+  → Période post ramp-up et post différé = rendement "croisière"
+
+CashOnCash = CashFlowNetAn1 / ApportNet
+MargeCF = CashFlowNetAn1 / RevenuTotalAn1
+```
+
+## 4.7 Verdict Go/No-Go (Scoring 7 points)
+
+| Critère | Points | Seuil |
+|---------|--------|-------|
+| Multiple capital ×5+ en 20 ans | 2 | wealthTotal / apportNet ≥ 5 |
+| Bat épargne UAE 6.25% | 1 | TRI > 6.25% |
+| Bat bourse MASI 8% | 1 | TRI > 8% |
+| TRI > 12% | 1 | TRI > 12% |
+| Wealth building > 20K MAD/mois | 1 | wbAvg20 × 12 > 240K |
+| DSCR + marge sécurité | 1 | DSCR ≥ 1.05 ET breakEvenOcc < tauxOcc - 5pts |
+
+**Verdicts:** 5-7 = "Machine à Richesse — Go" | 3-4 = "Go avec réserves" | 0-2 = "No-Go"
+
+---
+
+# PARTIE 5 — ARCHITECTURE TECHNIQUE DÉTAILLÉE
+
+## 5.1 Flux de Données
+
+```
+data.js (constantes, hypothèses, marché)
+    ↓
+engine.js (calculs: projections 20 ans, KPIs, scenarii)
+    ↓ retourne objet `state` = { kpi, projections, financement, ... }
+    ↓
+render.js (DOM: setText(), KPI cards, insights, tables, verdict)
+    ↓
+charts.js (Chart.js: 19 graphiques, destroyChart pattern)
+    ↓
+app.js (orchestration: init, event listeners, scenarios, sliders)
+```
+
+## 5.2 Cycle de Rendu
+
+```
+1. app.js → scenarioBtn.click() ou slider.oninput()
+2. → computeScenario(scenarioData, overrides) [engine.js]
+3. → retourne state = { kpi, projections, financement, ... }
+4. → renderAll(state) [render.js] → met à jour ~105 éléments DOM
+5. → renderAllCharts(state) [charts.js] → détruit et recrée 19 charts
+6. Total : ~5ms par rebuild (vanilla JS, pas de framework)
+```
+
+## 5.3 Gestion des Charts
+
+Pattern `destroyChart()` pour éviter les fuites mémoire Chart.js:
+```javascript
+const _charts = {};
+function destroyChart(name) {
+  if (_charts[name]) { _charts[name].destroy(); delete _charts[name]; }
+}
+// Usage: destroyChart("cashflow"); _charts.cashflow = new Chart(...);
+```
+
+## 5.4 Cache Busting
+
+Scripts chargés avec `?v=N` dans index.html (actuellement v=68). Incrémenté à chaque déploiement pour forcer le CDN GitHub Pages à servir les fichiers mis à jour.
+
 ---
 
 ## CONTACT ET SUPPORT
 
 - **Développeur:** Appart'Hôtel Maarif Dev Team
-- **Dernière mise à jour:** Mars 2026
+- **Dernière mise à jour:** 30 Mars 2026 (v68)
 - **Déploiement:** GitHub Pages (gh-pages branch)
-- **Source:** `/sessions/clever-loving-wozniak/appart-hotel-v2/`
+- **Repository:** `lallakenza/appart-hotel-maarif`
 
 ---
 
 **FIN DE DOCUMENTATION**
 
-*Ce document est optimisé pour ingestion par systèmes d'IA (Claude, GPT-4, LLaMA). Format Markdown, structure logique, références intégrées. Toutes valeurs, formules et hypothèses sont vérifiables en consultants les fichiers source.*
+*Ce document est optimisé pour ingestion par systèmes d'IA (Claude, GPT-4, LLaMA). Format Markdown, structure logique, références intégrées. Toutes valeurs, formules et hypothèses sont vérifiables en consultant les fichiers source.*
