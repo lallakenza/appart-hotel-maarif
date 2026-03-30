@@ -141,8 +141,13 @@ function compute(scenario) {
   const rampUp = REVENUE_ASSUMPTIONS.rampUp;
   const canauxEvo = REVENUE_ASSUMPTIONS.canauxEvolution;
 
+  // --- Inflation des charges et indexation loyer ---
+  const inflationCharges = REVENUE_ASSUMPTIONS.inflationCharges ?? 0;
+  const indexationLoyer = REVENUE_ASSUMPTIONS.indexationLoyer ?? 0;
+
   for (let y = 0; y < PROJECTION_YEARS; y++) {
     const growth = Math.pow(1 + REVENUE_ASSUMPTIONS.croissanceTarifs, y);
+    const inflGrowth = Math.pow(1 + inflationCharges, y); // inflation cumulée pour charges fixes
 
     // ═══ RAMP-UP : An 1 pénalité sur ADR ═══
     const isRampUp = y < rampUp.dureeAns;
@@ -191,7 +196,7 @@ function compute(scenario) {
     // Revenu fiscal déclaré = revBrutHotel - revInformel (pour l'IS)
     const revDeclareHotel = revBrutHotel - revInformel;
 
-    const revCommercial = sc.loyerCommercial * 12;
+    const revCommercial = sc.loyerCommercial * 12 * Math.pow(1 + indexationLoyer, y);
     const revTotal = revNetHotel + revCommercial;
 
     // ═══ CHARGES ═══
@@ -200,22 +205,22 @@ function compute(scenario) {
 
     // Consommables : variable selon nuitées réelles (linge, amenities, produits ménage)
     const nuiteesAn = nuiteesStudios + nuiteesLofts; // saisonnalité + ramp-up intégrés
-    let consommables = nuiteesAn * consommablesPN;
+    let consommables = nuiteesAn * consommablesPN * inflGrowth;
     const economieConsommablesEco = ecoEnabled ? consommables * GO_SIYAHA_ECO.reductionConsommables : 0;
     consommables -= economieConsommablesEco;
 
-    // Comptable : forfait ANNUEL (corrigé de mensuel → annuel)
-    const comptable = CHARGES.comptableAnnuel;
+    // Comptable : forfait ANNUEL (corrigé de mensuel → annuel) — indexé inflation
+    const comptable = CHARGES.comptableAnnuel * inflGrowth;
 
-    // Utilities : partie fixe + partie variable (proportionnelle à l'occupation effective)
+    // Utilities : partie fixe + partie variable (proportionnelle à l'occupation effective) — indexés inflation
     const nbUnitesOccupees = nbUnites * occMoyEffective; // avec saisonnalité + ramp-up
-    const utilitiesMensuel = CHARGES.utilitiesFixe + (nbUnitesOccupees * CHARGES.utilitiesVarParUnite);
-    let utilities = (utilitiesMensuel + CHARGES.internetTv) * 12;
+    const utilitiesMensuel = (CHARGES.utilitiesFixe + (nbUnitesOccupees * CHARGES.utilitiesVarParUnite)) * inflGrowth;
+    let utilities = (utilitiesMensuel + CHARGES.internetTv * inflGrowth) * 12;
     // Go Siyaha Éco : réduction des utilities si équipements installés
     const economieUtilitiesEco = ecoEnabled ? utilities * GO_SIYAHA_ECO.reductionUtilities : 0;
     utilities -= economieUtilitiesEco;
 
-    // Salaires : concierge + ménage (+ éventuel 3e employé en optimiste)
+    // Salaires : concierge + ménage (+ éventuel 3e employé en optimiste) — indexés inflation
     let masseSalariale;
     if (nbEmployesSc >= 3) {
       // 3 employés : 1 concierge + 2 ménage/linge
@@ -224,25 +229,25 @@ function compute(scenario) {
       // 2 employés : 1 concierge + 1 ménage/linge
       masseSalariale = (CHARGES.salaireConcierge + CHARGES.salaireMenage) * 12;
     }
-    const salaires = masseSalariale * (1 + CHARGES.chargesSociales);
+    const salaires = masseSalariale * (1 + CHARGES.chargesSociales) * inflGrowth;
 
-    // Entretien : réduit les 5 premières années (bâtiment neuf), puis augmente
-    const entretien = y < 5 ? CHARGES.entretienBase : CHARGES.entretienMature;
+    // Entretien : réduit les 5 premières années (bâtiment neuf), puis augmente — indexé inflation
+    const entretien = (y < 5 ? CHARGES.entretienBase : CHARGES.entretienMature) * inflGrowth;
 
-    // Taxe pro : exonérée les 5 premières années (nouvelle construction)
-    const taxesPro = y < FISCALITE.exoTaxeProAns ? 0 : CHARGES.taxesPro;
+    // Taxe pro : exonérée les 5 premières années (nouvelle construction) — indexée inflation
+    const taxesPro = y < FISCALITE.exoTaxeProAns ? 0 : CHARGES.taxesPro * inflGrowth;
 
     // --- Coûts additionnels identifiés (rapport qualitative mars 2026) ---
     // Renouvellement mobilier : cycle 7 ans, 40K/unité
     const cycleRenouv = CHARGES.renouvellementMobilierCycle || 7;
     const renouvMobilier = (y > 0 && (y + 1) % cycleRenouv === 0)
-      ? CHARGES.renouvellementMobilierParUnite * nbUnites
+      ? CHARGES.renouvellementMobilierParUnite * nbUnites * inflGrowth
       : 0;
-    // Provisionné annuellement pour lisser l'impact dans les KPIs
-    const provisionRenouv = (CHARGES.renouvellementMobilierParUnite * nbUnites) / cycleRenouv;
+    // Provisionné annuellement pour lisser l'impact dans les KPIs — indexé inflation
+    const provisionRenouv = (CHARGES.renouvellementMobilierParUnite * nbUnites) / cycleRenouv * inflGrowth;
 
-    // Taxe d'habitation + services communaux (exo 5 ans nouvelle construction)
-    const taxeHabitation = y < 5 ? 0 : (CHARGES.taxeHabitation || 0);
+    // Taxe d'habitation + services communaux (exo 5 ans nouvelle construction) — indexée inflation
+    const taxeHabitation = y < 5 ? 0 : (CHARGES.taxeHabitation || 0) * inflGrowth;
 
     // Budget marketing de lancement (An 1 uniquement)
     const marketingLancement = y === 0 ? (CHARGES.budgetMarketingLancement || 0) : 0;
@@ -253,22 +258,28 @@ function compute(scenario) {
     // Syndic / charges copropriété (annuel)
     const syndic = CHARGES.syndic || 0;
 
+    // Assurance et divers : indexés inflation
+    const assurance = CHARGES.assurance * inflGrowth;
+    const divers = CHARGES.divers * inflGrowth;
+    // Syndic : indexé inflation (même si 0 actuellement — prêt si changement)
+    const syndicInflated = syndic * inflGrowth;
+
     const chargesTotal = gestion + consommables + comptable + utilities +
-      CHARGES.assurance + entretien + salaires + taxesPro + CHARGES.divers +
-      provisionRenouv + taxeHabitation + marketingLancement + fraisCreation + syndic;
+      assurance + entretien + salaires + taxesPro + divers +
+      provisionRenouv + taxeHabitation + marketingLancement + fraisCreation + syndicInflated;
 
     const chargesDetail = {
       gestion, consommables, comptable, utilities, salaires,
-      assurance: CHARGES.assurance,
-      entretien: entretien,
-      taxesPro: taxesPro,
-      divers: CHARGES.divers,
+      assurance,
+      entretien,
+      taxesPro,
+      divers,
       economieEco: economieUtilitiesEco + economieConsommablesEco,
       provisionRenouv,
       taxeHabitation,
       marketingLancement,
       fraisCreation,
-      syndic,
+      syndic: syndicInflated,
       renouvMobilier,  // dépense réelle (0 sauf année de remplacement)
     };
 
@@ -530,11 +541,13 @@ function compute(scenario) {
 
   // ═══ WEALTH BUILDING PER MONTH — Le vrai KPI ═══
   // Décomposition : cash-flow net + remboursement capital (equity) + appréciation du bien
-  const appreciationAnnuelle = totalProjet * tauxAppreciation; // 2%/an sur valeur initiale (conservateur)
+  // Appréciation composée : valeur(n) - valeur(n-1) = totalProjet × [(1+taux)^n - (1+taux)^(n-1)]
   const wealthBuildingByYear = projections.map((p, i) => {
     const cfNet = p.cashFlowNet;
     const equityPaydown = p.capitalTK + p.capitalBQ; // principal remboursé = equity construite
-    const appreciation = appreciationAnnuelle; // linéarisé pour lisibilité
+    const valeurFinAnnee = totalProjet * Math.pow(1 + tauxAppreciation, i + 1);
+    const valeurDebutAnnee = totalProjet * Math.pow(1 + tauxAppreciation, i);
+    const appreciation = valeurFinAnnee - valeurDebutAnnee; // appréciation composée de l'année
     const totalAnnuel = cfNet + equityPaydown + appreciation;
     return {
       year: i + 1,

@@ -123,6 +123,18 @@ const REVENUE_ASSUMPTIONS = {
   commissionOTA: 0.15,        // Booking 15-18%, Airbnb 15.5%, moyenne pondérée ~15%
   croissanceTarifs: 0.03,     // annuelle — croissance prix/nuit (≈ inflation)
 
+  // --- Inflation des charges ---
+  // Les charges fixes (salaires, utilities, comptable, assurance, entretien, divers, etc.)
+  // augmentent avec l'inflation générale. Au Maroc : IPC 2023 = 6.1%, 2024 = 1.3%, tendance ~2%
+  // Source : HCP (Haut-Commissariat au Plan), Bank Al-Maghrib
+  inflationCharges: 0.02,     // 2%/an — inflation charges fixes (conservateur)
+
+  // --- Indexation loyer commercial ---
+  // Les baux commerciaux au Maroc sont typiquement indexés à l'IPC ou à un taux fixe
+  // Pratique courante : révision triennale ou annuelle de 2-3%
+  // Source : pratique bail commercial marocain, dahir n° 1-16-99
+  indexationLoyer: 0.02,       // 2%/an — indexation du loyer commercial
+
   // --- Appréciation du bien immobilier ---
   // DISTINCT de la croissance tarifs : historique Casablanca 1-1,5%/an (BKAM 2015-2025)
   // Avec effet Mondial 2030, hypothèse ajustée à 2%/an
