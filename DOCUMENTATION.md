@@ -1,6 +1,6 @@
 # Documentation Tableau de Bord Financier — Appart'Hôtel Maarif
 
-**Version:** 2.2 (v69)
+**Version:** 2.3 (v72)
 **Date:** 30 Mars 2026
 **Langue:** Français
 **Public Cible:** Analystes financiers, investisseurs, auditeurs
@@ -1014,6 +1014,113 @@ Renommage de l'onglet navigation "Cash-Flow" en **"Rentabilité"** : la section 
 - Marges : stabilisées autour de 52-55% en régime mature (vs 60-64% avant)
 - Wealth building /mois : progression composée au lieu de linéaire
 
+### v70-v71 — Paramètres avancés complets + tooltips
+**Date:** 30/03/2026
+**Fichiers modifiés:** `data.js`, `engine.js`, `app.js`, `index.html`
+
+- 6 nouveaux paramètres UI : inflation charges, indexation loyer, taux actualisation VAN (configurable, était hardcodé 8%), entretien mature (An 6+), taxe professionnelle (An 6+), charges sociales CNSS
+- `tauxActualisation` extrait du hardcode engine.js → paramètre dans `REVENUE_ASSUMPTIONS`
+- 36 tooltips `(?)` sur tous les paramètres avancés avec explications contextuelles
+- CSS responsive tooltips mobile
+
+### v72 — Audit approfondi : corrections critiques et modérées
+**Date:** 30/03/2026
+**Fichiers modifiés:** `engine.js`, `render.js`, `charts.js`, `index.html`
+
+**Corrections CRITIQUES :**
+
+1. **`capitalInvesti` hardcodé à 2,500,000 MAD** → Désormais dynamique = `apportNet` (terrain - MDM cashback). Avant : les comparaisons d'investissement (épargne, SCPI, bourse, S&P 500) utilisaient un montant fixe au lieu de l'apport réel de l'investisseur (~1,685K MAD). Impact : les courbes de comparaison dans le graphique "Trajectoire Patrimoine" étaient surévaluées de ~48%.
+
+2. **`findIndex` sans garde -1** (render.js) — Quand le cash-flow ne devient jamais positif, le texte affichait "positif dès An 0" au lieu d'un message clair. Corrigé : affiche "reste négatif sur 20 ans".
+
+3. **Division par zéro** (charts.js) — Le calcul `commissions × revStudios / revBrutHotel` dans le graphique revenue breakdown et son tooltip n'avait pas de garde si `revBrutHotel = 0`. Ajout de `p.revBrutHotel > 0 ? ... : 0`.
+
+4. **Division par zéro** (render.js) — `K.van / S.financement.apportNet` sans garde. Ajout `apportNet > 0 ? ... : 0`.
+
+**Corrections MODÉRÉES :**
+
+5. **`partDirect` non recalculée** — Quand l'évolution canaux augmentait la part OTA, `partDirect` restait constante → OTA + Direct + Informel ≠ 100%. Corrigé : `partDirect = max(0, 1 - partOTA - partInformel)`.
+
+6. **`revpar` sans garde `nbUnites > 0`** — Division par zéro si aucune unité. Ajout de la garde.
+
+7. **`cfGrowthY20` sans null check** — Pouvait afficher "NaN%" au lieu de "–". Aligné sur le pattern de `cfGrowthY10`.
+
+8. **Label Tamwilkom hardcodé "2,5%"** — Le label du graphique dette utilisait un taux statique. Désormais dynamique via `TAMWILKOM.tauxAnnuel`.
+
+---
+
+## 3.7 Audit Approfondi v72 — Moteur Financier, Affichage, Données (30/03/2026)
+
+### Périmètre
+Audit exhaustif des 5 fichiers (engine.js, render.js, charts.js, app.js, data.js). Vérification : formules fiscales, amortissement, TVA, dette, edge cases, cohérence données/affichage, binding UI.
+
+### Résultats par fichier
+
+**engine.js — 3 CRITICAL corrigés, 11 MODERATE (3 corrigés, 8 acceptés), 31 MINOR**
+
+| Catégorie | Trouvé | Corrigé | Accepté (par design) |
+|-----------|--------|---------|---------------------|
+| capitalInvesti hardcodé | CRITICAL | ✅ Corrigé v72 | |
+| Go Siyaha non déduit du financement | CRITICAL | ⚠ Par design — MDM = fonds de roulement | |
+| Floating-point dette finale ≠ 0 | CRITICAL | ⚠ Tolérable (<1 MAD) | |
+| partDirect non recalculée | MODERATE | ✅ Corrigé v72 | |
+| RevPAR div/0 | MODERATE | ✅ Corrigé v72 | |
+| Break-even sans saisonnalité | MODERATE | | ✅ Simplification Y1 acceptée |
+| Sensitivity sans inflation | MODERATE | | ✅ Snapshot Y1 par design |
+| IS 20% flat (pas progressif) | MODERATE | | ✅ Taux unique PLF 2023 |
+| DSCR pré-impôt | MODERATE | | ✅ Convention standard |
+| Leap years ignorés | MINOR | | ✅ Impact <0.3% |
+
+**render.js — 2 CRITICAL corrigés, 5 MODERATE (2 corrigés), 6 MINOR**
+
+| Catégorie | Trouvé | Corrigé | Accepté |
+|-----------|--------|---------|---------|
+| findIndex -1 → "An 0" | CRITICAL | ✅ Corrigé v72 | |
+| apportNet div/0 VAN | CRITICAL | ✅ Corrigé v72 | |
+| cfGrowthY20 null check | MODERATE | ✅ Corrigé v72 | |
+| Hardcoded benchmark rates | MODERATE | | ✅ Info-only, rarement modifiés |
+| Hardcoded ">20a" | MODERATE | | ✅ Déjà dynamique ligne 787 |
+
+**charts.js — 2 CRITICAL corrigés, 2 MODERATE (1 corrigé), 3 MINOR**
+
+| Catégorie | Trouvé | Corrigé | Accepté |
+|-----------|--------|---------|---------|
+| revBrutHotel div/0 (données) | CRITICAL | ✅ Corrigé v72 | |
+| revBrutHotel div/0 (tooltip) | CRITICAL | ✅ Corrigé v72 | |
+| Tamwilkom taux hardcodé | MODERATE | ✅ Corrigé v72 | |
+
+**app.js — 0 CRITICAL, 1 LOW**
+
+| Catégorie | Trouvé | Status |
+|-----------|--------|--------|
+| Reset function incomplète | LOW | ⚠ Non bloquant — syncAdvancedPanel compense |
+| Wiring 31 ADV_FIELDS | OK | ✅ Tous matchés avec HTML |
+
+**data.js — 0 CRITICAL, 0 MODERATE**
+
+| Catégorie | Status |
+|-----------|--------|
+| 5 scénarios monotoniques | ✅ Tous croissants pessimiste→optimiste |
+| Canaux OTA+Direct+Informel=100% | ✅ Par scénario |
+| Taux fiscaux CGI 2023-2026 | ✅ Conformes |
+| Paramètres orphelins | ✅ Aucun |
+| Cross-file integrity | ✅ 0 paramètre manquant |
+
+### Éléments validés comme corrects
+- PMT : formule standard, correcte
+- TRI Newton-Raphson : 100 itérations, tolérance 1e-7, converge
+- VAN : flux actualisés + valeur résiduelle, correct
+- Saisonnalité : 12 coefficients, moyenne = 1.000, cap à 100%
+- Ramp-up : pénalité ADR (-15%) + occupation (-35%) An 1
+- Évolution canaux OTA : décroissance Y1→Y5, correct
+- Fiscalité : IS 20%, exo devises 5 ans, TVA 10%, amortissement 20/7 ans
+- DSCR, break-even, cash-on-cash : formules correctes
+- Amortissement fiscal : construction HT 20 ans + mobilier 7 ans
+- Différé bancaire : intérêts-only pendant grâce, correct
+- Go Siyaha Éco : subvention 40%, réduction utilities/consommables
+- Graphiques : pas de NaN sur 5 scénarios
+- Mobile responsive : aucun débordement
+
 ---
 
 ## 3.6 Audit Détaillé v68 — Fonctionnel, Métier et Technique (30/03/2026)
@@ -1220,7 +1327,7 @@ Scripts chargés avec `?v=N` dans index.html (actuellement v=68). Incrémenté �
 ## CONTACT ET SUPPORT
 
 - **Développeur:** Appart'Hôtel Maarif Dev Team
-- **Dernière mise à jour:** 30 Mars 2026 (v69)
+- **Dernière mise à jour:** 30 Mars 2026 (v72)
 - **Déploiement:** GitHub Pages (gh-pages branch)
 - **Repository:** `lallakenza/appart-hotel-maarif`
 

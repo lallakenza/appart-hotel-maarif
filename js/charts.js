@@ -258,8 +258,8 @@ function chartRevenusVsCharges(S) {
   if (_revChBreakdown) {
     datasets = [
       // Revenue stack
-      { label: "Studios", data: S.projections.map(p => p.revStudios - (p.commissions * p.revStudios / p.revBrutHotel)), backgroundColor: "#1e3a5f", stack: "rev" },
-      { label: "Lofts", data: S.projections.map(p => p.revLofts - (p.commissions * p.revLofts / p.revBrutHotel)), backgroundColor: "#3b6b9a", stack: "rev" },
+      { label: "Studios", data: S.projections.map(p => p.revBrutHotel > 0 ? p.revStudios - (p.commissions * p.revStudios / p.revBrutHotel) : 0), backgroundColor: "#1e3a5f", stack: "rev" },
+      { label: "Lofts", data: S.projections.map(p => p.revBrutHotel > 0 ? p.revLofts - (p.commissions * p.revLofts / p.revBrutHotel) : 0), backgroundColor: "#3b6b9a", stack: "rev" },
       { label: "Local commercial", data: S.projections.map(p => p.revCommercial), backgroundColor: "#6b9fd4", stack: "rev" },
       // Charges stack
       { label: `Gestion (${Math.round(CHARGES.tauxGestion*100)}%)`, data: S.projections.map(p => p.chargesDetail.gestion), backgroundColor: "#dc2626", stack: "ch" },
@@ -296,8 +296,8 @@ function chartRevenusVsCharges(S) {
           external: (ctx) => externalTooltip(ctx, (idx) => {
             const p = S.projections[idx];
             const ch = p.chargesDetail;
-            const revStudiosNet = p.revStudios - (p.commissions * p.revStudios / p.revBrutHotel);
-            const revLoftsNet = p.revLofts - (p.commissions * p.revLofts / p.revBrutHotel);
+            const revStudiosNet = p.revBrutHotel > 0 ? p.revStudios - (p.commissions * p.revStudios / p.revBrutHotel) : 0;
+            const revLoftsNet = p.revBrutHotel > 0 ? p.revLofts - (p.commissions * p.revLofts / p.revBrutHotel) : 0;
             const autres = ch.consommables + ch.comptable + ch.assurance + ch.entretien + ch.taxesPro + ch.divers;
             return `<div class="ctt-title">An ${p.year} — Compte de résultat</div>
               <div class="ctt-row" style="color:#1e3a5f"><span>Studios (net commissions)</span><span class="ctt-val">${fmtMAD(revStudiosNet)}</span></div>
@@ -356,7 +356,7 @@ function chartDebtService(S) {
     ];
   } else {
     datasets = [
-      { label: "Tamwilkom (2,5%)", data: dp.map(p => p.debtTK / div), backgroundColor: CHART_COLORS.gold, stack: "debt" },
+      { label: "Tamwilkom (" + (TAMWILKOM.tauxAnnuel * 100).toFixed(1).replace('.', ',') + "%)", data: dp.map(p => p.debtTK / div), backgroundColor: CHART_COLORS.gold, stack: "debt" },
       { label: "Banque (" + (BANQUE_CLASSIQUE.tauxAnnuel * 100).toFixed(2) + "%)", data: dp.map(p => p.debtBQ / div), backgroundColor: CHART_COLORS.primaryLight, stack: "debt" },
       { label: "EBITDA", data: dp.map(p => p.ebitda / div), type: "line", borderColor: CHART_COLORS.green, backgroundColor: "transparent", tension: 0.3, pointRadius: 3, borderDash: [5, 3], order: -1 },
     ];

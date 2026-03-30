@@ -172,13 +172,15 @@ function compute(scenario) {
 
     // ═══ ÉVOLUTION DES CANAUX PAR ANNÉE ═══
     let partOTA = basePartOTA;
+    let partDirect = basePartDirect;
     let partInformel = basePartInformel;
     if (canauxEvo.enabled) {
       const multIdx = Math.min(y, canauxEvo.otaMultiplier.length - 1);
       const otaMult = canauxEvo.otaMultiplier[multIdx];
       partOTA = Math.min(basePartOTA * otaMult, 0.90); // cap 90%
       // L'excédent OTA est pris sur la part directe (pas sur informel)
-      // partDirect diminue, partInformel reste stable
+      // Recalcul partDirect pour que OTA + Direct + Informel = 100%
+      partDirect = Math.max(0, 1 - partOTA - partInformel);
     }
 
     // ═══ REVENUS ═══
@@ -415,7 +417,7 @@ function compute(scenario) {
   const rendementBrut = (y1.revBrutHotel + y1.revCommercial) / totalProjet;
   const rendementNet = y1.cashFlowNet / totalProjet;
   const rendementNetApport = y1.cashFlowNet / apportNet; // apport net = terrain - MDM cashback
-  const revpar = y1.revBrutHotel / (nbUnites * 365);
+  const revpar = nbUnites > 0 ? y1.revBrutHotel / (nbUnites * 365) : 0;
   const coutParNuitee = y1.chargesTotal / (y1.nuiteesAn || nuiteesParAn);
 
   // Payback (cumul CF vs apport net après MDM cashback)
@@ -493,8 +495,8 @@ function compute(scenario) {
   };
 
   // ═══ WEALTH MILESTONES — Y5, Y10, Y15, Y20 ═══
-  // Capital investi total de l'utilisateur (apport en devises)
-  const capitalInvesti = 2_500_000; // 2.5 MDH en devises étrangères
+  // Capital investi = apport net de l'investisseur (terrain - MDM cashback)
+  const capitalInvesti = apportNet;
 
   // Equity build-up: property value + cumul CF - remaining debt
   const wealthMilestones = [5, 10, 15, 20].map(year => {

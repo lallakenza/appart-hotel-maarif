@@ -761,7 +761,7 @@ function renderCashFlow(S) {
   const cfInsight = fmtMAD(K.cfMensuelAn1) + "/mois"
     + (cfY10 != null && y1.cashFlowNet > 0
        ? " · ×" + (cfY10 / y1.cashFlowNet).toFixed(1) + " en An 10"
-       : y1.cashFlowNet <= 0 ? " · positif dès An " + (S.projections.findIndex(p => p.cashFlowNet > 0) + 1) : "");
+       : y1.cashFlowNet <= 0 ? (() => { const idx = S.projections.findIndex(p => p.cashFlowNet > 0); return idx >= 0 ? " · positif dès An " + (idx + 1) : " · reste négatif sur 20 ans"; })() : "");
   setText("cf-net-mensuel", cfInsight);
 
   setText("cf-tri",         isFinite(K.tri) ? fmtPct(K.tri, 1) : "N/A");
@@ -778,7 +778,7 @@ function renderCashFlow(S) {
 
   setText("cf-van",         fmtMAD(K.van));
   // Insight VAN: express as multiple of apport + verdict
-  const vanMultiple = K.van / S.financement.apportNet;
+  const vanMultiple = S.financement.apportNet > 0 ? K.van / S.financement.apportNet : 0;
   const vanInsight = K.van >= 0
     ? "+" + vanMultiple.toFixed(1) + "× l'apport à " + fmtPct(K.tauxActualisation, 0)
     : "Projet détruit " + fmtPct(Math.abs(vanMultiple), 0) + " de l'apport";
@@ -852,7 +852,7 @@ function renderCashFlow(S) {
 
   // Croissance & fiscalité
   setText("cf-growth-10",   K.cfGrowthY10 != null ? (K.cfGrowthY10 >= 0 ? "+" : "") + fmtPct(K.cfGrowthY10, 0) : "–");
-  setText("cf-growth-20",   (K.cfGrowthY20 >= 0 ? "+" : "") + fmtPct(K.cfGrowthY20, 0));
+  setText("cf-growth-20",   K.cfGrowthY20 != null ? (K.cfGrowthY20 >= 0 ? "+" : "") + fmtPct(K.cfGrowthY20, 0) : "–");
   setText("cf-is-cumule",   fmtMAD(K.isCumule));
   setText("cf-ratio-is",    fmtPct(K.ratioIS, 1) + " du cash-flow brut");
   setText("cf-dscr",        K.dscr === Infinity ? "∞" : K.dscr.toFixed(2) + "x");
