@@ -222,13 +222,16 @@ function compute(scenario) {
     const economieUtilitiesEco = ecoEnabled ? utilities * GO_SIYAHA_ECO.reductionUtilities : 0;
     utilities -= economieUtilitiesEco;
 
-    // Salaires : concierge + ménage (+ éventuel 3e employé en optimiste) — indexés inflation
+    // Salaires : dépend du mode de gestion
+    // nbEmployes = 0 → conciergerie gère tout (ménage, draps, accueil) → pas de salaires
+    // nbEmployes = 2 → in-house : 1 accueil + 1 ménage au SMIG
+    // nbEmployes >= 3 → in-house renforcé : 1 accueil + 2 ménage
     let masseSalariale;
-    if (nbEmployesSc >= 3) {
-      // 3 employés : 1 concierge + 2 ménage/linge
+    if (nbEmployesSc === 0) {
+      masseSalariale = 0; // conciergerie gère tout
+    } else if (nbEmployesSc >= 3) {
       masseSalariale = (CHARGES.salaireConcierge + CHARGES.salaireMenage * 2) * 12;
     } else {
-      // 2 employés : 1 concierge + 1 ménage/linge
       masseSalariale = (CHARGES.salaireConcierge + CHARGES.salaireMenage) * 12;
     }
     const salaires = masseSalariale * (1 + CHARGES.chargesSociales) * inflGrowth;
@@ -874,24 +877,23 @@ function computeGestionComparison(scenario) {
   const divers = CHARGES.divers;
   const chargesCommunes = utilities + consommables + assurance + entretien + divers;
 
-  // === OPTION A : Société de gestion ===
-  // Commission 20% CA brut + 2 employés (concierge + ménage)
-  const gestionSociete = revBrut * CHARGES.tauxGestion;
+  // === OPTION A : Conciergerie (outsourcing) ===
+  // Commission 20% CA brut — la conciergerie gère TOUT (ménage, draps, accueil)
+  // 0 employés directs
+  const gestionSociete = revBrut * 0.20;
   const comptableSociete = CHARGES.comptableAnnuel;
-  const salairesSociete = (CHARGES.salaireConcierge + CHARGES.salaireMenage) * 12 * (1 + CHARGES.chargesSociales);
+  const salairesSociete = 0; // conciergerie inclut tout
   const chargesSociete = gestionSociete + comptableSociete + salairesSociete + chargesCommunes;
   const ebitdaSociete = revTotal - chargesSociete;
   const margeSociete = revTotal > 0 ? ebitdaSociete / revTotal : 0;
 
-  // === OPTION B : Gestion propre ===
-  // Pas de commission société (0%), mais :
-  // - 3 employés au lieu de 2 (ajout réceptionniste/manager)
-  // - Salaire manager plus élevé (5,500 MAD)
-  // - Comptable identique
-  // - Logiciel gestion : ~500 MAD/mois (Lodgify, Guesty, etc.)
-  // - Temps personnel investisseur : non chiffré (coût d'opportunité)
-  const nbEmployesPropre = 3;
-  const salairesPropre = (CHARGES.salaireConcierge + CHARGES.salaireMenage + 5_500) * 12 * (1 + CHARGES.chargesSociales);
+  // === OPTION B : In-house (gestion propre) ===
+  // Pas de commission conciergerie (0%)
+  // 2 employés au SMIG (3,400 MAD), non déclarés CNSS
+  // Logiciel gestion : ~500 MAD/mois (Lodgify, Guesty, etc.)
+  // Temps personnel investisseur : non chiffré (coût d'opportunité)
+  const nbEmployesPropre = 2;
+  const salairesPropre = (3_400 + 3_400) * 12; // SMIG × 2, pas de CNSS
   const comptablePropre = CHARGES.comptableAnnuel;
   const logicielGestion = 500 * 12; // PMS + channel manager
   const chargesPropre = salairesPropre + comptablePropre + logicielGestion + chargesCommunes;
@@ -905,19 +907,19 @@ function computeGestionComparison(scenario) {
     revBrut, revNet, revCommercial, revTotal,
     chargesCommunes,
     societe: {
-      label: "Société de gestion",
+      label: "Conciergerie (outsourcing)",
       gestion: gestionSociete,
       salaires: salairesSociete,
       comptable: comptableSociete,
-      nbEmployes: 2,
+      nbEmployes: 0,
       chargesTotal: chargesSociete,
       ebitda: ebitdaSociete,
       marge: margeSociete,
       avantages: [
         "Gestion 100% déléguée — idéal résidence UAE",
+        "Ménage, draps, accueil, check-in/out inclus",
         "Expertise pricing dynamique & revenue management",
-        "Réseau et visibilité multi-plateformes",
-        "Remplacement employés géré par la société",
+        "Pas de gestion RH ni de salariés",
         "Moins de stress opérationnel",
       ],
       inconvenients: [
@@ -928,7 +930,7 @@ function computeGestionComparison(scenario) {
       ],
     },
     propre: {
-      label: "Gestion propre",
+      label: "In-house (gestion propre)",
       gestion: 0,
       salaires: salairesPropre,
       comptable: comptablePropre,
@@ -938,22 +940,22 @@ function computeGestionComparison(scenario) {
       ebitda: ebitdaPropre,
       marge: margePropre,
       avantages: [
-        "Économie significative (" + fmt(economiePropre) + " MAD/an)",
+        economiePropre > 0 ? "Économie significative (" + fmt(economiePropre) + " MAD/an)" : "Coût comparable à la conciergerie",
         "Contrôle total sur la qualité et les prix",
         "Relation directe avec les clients",
+        "2 employés au SMIG (3 400 MAD), pas de CNSS",
         "Flexibilité opérationnelle maximale",
-        "Meilleure marge d'exploitation",
       ],
       inconvenients: [
-        "Nécessite un manager sur place (résidence UAE)",
-        "Gestion RH (3 employés à gérer à distance)",
-        "Investissement temps personnel important",
-        "Risque si le manager quitte",
+        "Nécessite coordination à distance (résidence UAE)",
+        "Gestion RH (2 employés à superviser)",
+        "Investissement temps personnel + logiciel PMS",
+        "Risque si un employé quitte",
         "Courbe d'apprentissage pricing/OTAs",
       ],
     },
     economiePropre,
-    recommandation: "Pour un investisseur basé aux UAE, la société de gestion est recommandée en phase de lancement (Y1-Y2). Transition vers gestion propre avec manager de confiance envisageable Y3+ une fois la marque établie.",
+    recommandation: "Pour un investisseur basé aux UAE, la conciergerie (outsourcing) est recommandée en phase de lancement (Y1-Y2). Transition vers gestion in-house envisageable Y3+ une fois la marque établie et un employé de confiance identifié.",
   };
 }
 
@@ -967,7 +969,8 @@ function computeGestionComparison(scenario) {
 // Each mode runs compute() with appropriate charge overrides
 // ============================================================
 function computeGestionDuel(scenario) {
-  const saved = {
+  const sc = SCENARIOS[scenario];
+  const savedCharges = {
     assurance: CHARGES.assurance,
     internetTv: CHARGES.internetTv,
     divers: CHARGES.divers,
@@ -975,30 +978,38 @@ function computeGestionDuel(scenario) {
     nbEmployes: CHARGES.nbEmployes,
     salaireConcierge: CHARGES.salaireConcierge,
     salaireMenage: CHARGES.salaireMenage,
+    chargesSociales: CHARGES.chargesSociales,
   };
+  const savedScNbEmp = sc.nbEmployes;
 
-  // ── MODE A : Gestion personnelle (auto-géré depuis UAE) ──
-  // Pas de commission gestion, charges réduites (négociation directe)
-  // 2 employés (concierge + ménage), pas de manager supplémentaire
-  // L'investisseur gère pricing/OTA/coordination depuis UAE
-  CHARGES.tauxGestion = 0;
-  CHARGES.assurance = 13_000;       // Négociation bâtiment neuf
-  CHARGES.internetTv = 833;         // ~10K/an, IPTV économique
-  CHARGES.divers = 10_000;          // Optimisation divers
-  const autoGere = compute(scenario);
-
-  // ── MODE B : Société de gestion (propriétaire passif) ──
-  // Commission 20% du CA hébergement brut (HouseBooking, local)
-  // Charges standard (pas d'optimisation, la société gère les contrats)
-  // 2 employés (fournis/supervisés par la société)
-  CHARGES.tauxGestion = 0.20;       // Standard société de gestion Maroc
-  CHARGES.assurance = saved.assurance;
-  CHARGES.internetTv = saved.internetTv;
-  CHARGES.divers = saved.divers;
+  // ── MODE A : Conciergerie (outsourcing) ──
+  // Commission 20% du CA — la conciergerie gère TOUT :
+  // ménage, draps, accueil, check-in/out, listings, pricing
+  // Pas d'employés directs (0 salaires)
+  CHARGES.tauxGestion = 0.20;
+  CHARGES.nbEmployes = 0;
+  CHARGES.chargesSociales = 0;
+  sc.nbEmployes = 0;
   const societeGestion = compute(scenario);
 
+  // ── MODE B : In-house (gestion propre) ──
+  // Pas de commission conciergerie (0%)
+  // 2 employés au SMIG (3,400 MAD), non déclarés CNSS
+  // Investisseur gère pricing/OTA depuis UAE + logiciel PMS
+  CHARGES.tauxGestion = 0;
+  CHARGES.nbEmployes = 2;
+  CHARGES.salaireConcierge = 3_400;
+  CHARGES.salaireMenage = 3_400;
+  CHARGES.chargesSociales = 0;       // Non déclarés CNSS
+  CHARGES.assurance = 13_000;        // Négociation bâtiment neuf
+  CHARGES.internetTv = 833;          // ~10K/an, IPTV économique
+  CHARGES.divers = 10_000;           // Optimisation divers
+  sc.nbEmployes = 2;                 // Override scenario (nullish coalescing needs non-0)
+  const autoGere = compute(scenario);
+
   // Restore original values
-  Object.assign(CHARGES, saved);
+  Object.assign(CHARGES, savedCharges);
+  sc.nbEmployes = savedScNbEmp;
 
   return { autoGere, societeGestion };
 }

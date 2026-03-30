@@ -2204,11 +2204,10 @@ function renderHypotheses() {
   const ch = CHARGES;
   const el2 = document.getElementById('hyp-charges');
   if (el2) el2.innerHTML = [
-    row('Gestion (commission)', fmtPct(ch.tauxGestion) + ' du CA', 'Auto-gestion depuis UAE — concierge + ménage sur place'),
-    row('Salaire concierge', fmtMAD(ch.salaireConcierge) + '/mois', 'SMIG 2026 : 3 400 MAD + 15-30% (langues, responsabilité) — Décret SMIG jan 2026'),
-    row('Salaire ménage', fmtMAD(ch.salaireMenage) + '/mois', 'SMIG + prime — ménage + linge internalisé'),
-    row('Nb employés (défaut)', ch.nbEmployes, 'Minimum : 1 concierge + 1 ménage. 3 en scénario optimiste'),
-    row('Charges sociales CNSS', fmtPct(ch.chargesSociales), 'AF 6.40% + PS 8.60% + AMO 4.11% + Formation 1.60% — espace-paie.ma 2025'),
+    row('Conciergerie (outsourcing)', fmtPct(ch.tauxGestion) + ' du CA', 'Conciergerie externe tout inclus : ménage, draps, accueil, check-in/out, listings, pricing'),
+    row('Mode par défaut', ch.nbEmployes === 0 ? 'Outsourcing' : 'In-house (' + ch.nbEmployes + ' emp.)', ch.nbEmployes === 0 ? 'Conciergerie gère tout → 0 employés directs' : 'Employés au SMIG, non déclarés CNSS'),
+    row('Salaire SMIG (si in-house)', fmtMAD(ch.salaireConcierge) + '/mois', 'SMIG 2026 : 3 400 MAD/mois — utilisé uniquement en mode in-house'),
+    row('CNSS', ch.chargesSociales > 0 ? fmtPct(ch.chargesSociales) : '0%', 'Employés non déclarés — taux légal si déclaration : 20.71%'),
     row('Utilities fixe', fmtMAD(ch.utilitiesFixe) + '/mois', 'Parties communes LED + ascenseur — bâtiment neuf R+5'),
     row('Utilities variable', fmtMAD(ch.utilitiesVarParUnite) + '/unité/mois', 'Eau + élec + clim par unité occupée — tarif commercial Lydec Casa'),
     row('Internet + TV', fmtMAD(ch.internetTv) + '/mois', 'Fibre pro Inwi/MT 100Mbps + IPTV 11 unités — Inwi Pro 2025'),

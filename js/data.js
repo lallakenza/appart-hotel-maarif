@@ -235,8 +235,7 @@ const SCENARIOS = {
     partOTA: 0.70,             // Nouvel entrant : 70% OTA (pas encore de clientèle directe)
     partDirect: 0.20,          // 20% direct (walk-in, quelques contacts)
     partInformel: 0.10,        // 10% informel (peu de réseau, peu de cash)
-    nbEmployes: 2,             // Minimum : 1 concierge + 1 ménage
-    // consommablesParNuitee supprimé — utilise CHARGES.consommablesParNuitee (30 MAD) pour tous les scénarios
+    nbEmployes: 0,             // Conciergerie gère tout (ménage, draps, accueil)
     source: "Nouvel entrant — forte dépendance OTA, pricing d'entrée, occupation basse Y1",
   },
   prudent_moyen: {
@@ -249,7 +248,7 @@ const SCENARIOS = {
     partOTA: 0.65,
     partDirect: 0.22,
     partInformel: 0.13,
-    nbEmployes: 2,
+    nbEmployes: 0,             // Conciergerie gère tout
     source: "Montée en puissance — début de clientèle directe, pricing progressif",
   },
   moyen: {
@@ -262,7 +261,7 @@ const SCENARIOS = {
     partOTA: 0.55,             // Équilibre OTA/direct comme la moyenne du marché
     partDirect: 0.25,
     partInformel: 0.20,        // Bouche-à-oreille, WhatsApp, repeat guests cash
-    nbEmployes: 2,
+    nbEmployes: 0,             // Conciergerie gère tout
     source: "Médiane marché — mix canaux équilibré, pricing aligné opérateurs pro Maarif",
   },
   moyen_optimiste: {
@@ -275,7 +274,7 @@ const SCENARIOS = {
     partOTA: 0.48,             // Bonne réputation → plus de direct
     partDirect: 0.27,
     partInformel: 0.25,        // Réseau établi, corporate en cash, repeat guests
-    nbEmployes: 2,
+    nbEmployes: 0,             // Conciergerie gère tout
     source: "Établi — clientèle fidèle, bonne note Booking, forte part directe",
   },
   optimiste: {
@@ -288,8 +287,8 @@ const SCENARIOS = {
     partOTA: 0.42,             // Forte notoriété → moins de dépendance OTA
     partDirect: 0.28,
     partInformel: 0.30,        // Maximum informel : réseau, corporate, long séjour cash
-    nbEmployes: 3,             // Volume justifie un 3e employé (réception renforcée)
-    source: "Top 25% — leader segment, RevPAR élevé, 3 employés nécessaires",
+    nbEmployes: 0,             // Conciergerie gère tout (même en optimiste)
+    source: "Top 25% — leader segment, RevPAR élevé, forte marge grâce à l'occupation",
   },
 };
 
@@ -300,10 +299,11 @@ const CHARGES = {
   // ONEE, benchmark opérateurs STR Maroc, cabinets comptables Casa
   // ═══════════════════════════════════════════════════════════════
 
-  // --- Gestion — 15% du CA hébergement brut ---
-  // Propriétaire gère lui-même (depuis UAE) avec concierge + ménage sur place
-  // Pas de société de gestion externe (HouseBooking ~20% → non retenu)
-  tauxGestion: 0.15,
+  // --- Gestion — 20% du CA hébergement brut ---
+  // Via conciergerie externe (standard Maroc : 20% du CA)
+  // La conciergerie gère listings, pricing, coordination, check-in/out
+  // L'investisseur conserve 1-2 employés sur place (accueil + ménage) au SMIG, non déclarés
+  tauxGestion: 0.20,
 
   // --- Utilities : EAU + ÉLECTRICITÉ ---
   // Tarif commercial Lydec Casablanca : ~1.07 MAD/kWh (vs 1.17 résidentiel)
@@ -334,17 +334,19 @@ const CHARGES = {
   // --- Salaires ---
   // SMIG 2026 : 3,400 MAD/mois brut (17.92 MAD/h × 191h)
   // Source : Décret SMIG janvier 2026, neoexpertise.net
-  // Concierge/réceptionniste petit appart-hôtel : SMIG + 15-30% (responsabilité, langues)
-  // Femme de ménage / lingère : SMIG ou légèrement au-dessus
-  salaireConcierge: 4_500,    // MAD / mois brut — réception + gestion quotidienne
-  salaireMenage: 3_500,       // MAD / mois brut — ménage + linge (SMIG + prime)
-  nbEmployes: 2,              // 1 concierge + 1 ménage/linge
+  // Employés au SMIG, non déclarés CNSS (pratique courante petit hébergement Maroc)
+  // Salaires (utilisés uniquement en mode in-house, pas en mode conciergerie)
+  salaireConcierge: 3_400,    // MAD / mois — SMIG, accueil/réception
+  salaireMenage: 3_400,       // MAD / mois — SMIG, ménage + linge
+  nbEmployes: 0,              // 0 = conciergerie gère tout (défaut) | 2 = in-house
+  // ⚠ NOTE : nbEmployes = 0 car le mode par défaut est conciergerie (20% CA, tout inclus)
+  // En mode in-house (gestionDuel), les employés sont ajoutés au SMIG sans CNSS
 
-  // --- Charges sociales patronales CNSS 2025 ---
-  // Allocations familiales : 6.40% | Prestations sociales : 8.60% | AMO : 4.11% | Formation : 1.60%
-  // Total patronal : 20.71% (plafonné à 8,000 MAD pour certaines cotisations)
-  // Source : espace-paie.ma, comptable-tanger.com 2025
-  chargesSociales: 0.2071,    // CNSS + AMO patronal réel (corrigé de 26% → 20.71%)
+  // --- Charges sociales patronales ---
+  // Employés non déclarés CNSS → pas de charges sociales patronales
+  // ⚠ Risque juridique : en cas de contrôle CNSS, redressement possible
+  // Taux légal si déclaration : AF 6.40% + PS 8.60% + AMO 4.11% + Formation 1.60% = 20.71%
+  chargesSociales: 0,         // 0% — employés non déclarés (réalité terrain)
 
   // --- Comptable / Expert-comptable ---
   // TPE/PME Casablanca : forfait annuel 24,000-36,000 MAD pour tenue + déclarations
