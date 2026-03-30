@@ -62,7 +62,8 @@ const ADV_FIELDS = [
   { id: "marketing",    target: "CHARGES",              key: "budgetMarketingLancement",  div: 1 },
   { id: "renouv",       target: "CHARGES",              key: "renouvellementMobilierCycle", div: 1 },
   { id: "taxeHab",      target: "CHARGES",              key: "taxeHabitation",           div: 1 },
-  // syndic retiré — immeuble indivisible, monopropriété
+  // Transition conciergerie → in-house
+  { id: "switchInHouse", target: "REVENUE_ASSUMPTIONS", key: "switchInHouseAn",          div: 1 },
 ];
 
 // Store originals for advanced fields
@@ -279,6 +280,13 @@ function onAdvancedChange(fromRange, id) {
     if (obj) {
       obj[field.key] = parseFloat(input.value) / field.div;
     }
+  }
+
+  // Special label for switchInHouse slider
+  if (id === "switchInHouse") {
+    const label = document.getElementById("ctrl-switchInHouse-label");
+    const v = parseInt(input.value);
+    if (label) label.textContent = v >= 21 ? "jamais" : v === 0 ? "dès An 1" : "An " + (v + 1);
   }
 
   refresh();

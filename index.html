@@ -852,6 +852,13 @@ tr:hover td{background:#f0f4f8}
           <div class="ctrl-input-wrap"><input type="number" class="ctrl-input" id="ctrl-rampDuree-val" min="0" max="3" step="1" value="1"><span class="ctrl-unit">an(s)</span></div>
         </div>
       </div>
+      <div class="ctrl-group">
+        <label class="ctrl-label">Passage in-house (an) <span class="ctrl-help">?<span class="ctrl-tip">Année de transition conciergerie → in-house. 0 = in-house dès le début (2 emp. SMIG, 0% gestion). 21 = jamais (conciergerie 20% permanente). Ex: 3 = conciergerie les 3 premières années puis in-house.</span></span></label>
+        <div class="ctrl-row">
+          <input type="range" class="ctrl-range" id="ctrl-switchInHouse" min="0" max="21" step="1" value="21">
+          <div class="ctrl-input-wrap"><input type="number" class="ctrl-input" id="ctrl-switchInHouse-val" min="0" max="21" step="1" value="21"><span class="ctrl-unit" id="ctrl-switchInHouse-label">jamais</span></div>
+        </div>
+      </div>
       <div class="ctrl-group" style="grid-column:1/-1">
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
           <label class="eco-toggle-wrap">
@@ -2234,11 +2241,11 @@ tr:hover td{background:#f0f4f8}
 </main>
 
 <!-- Scripts — strict order: data → engine → render → charts → app -->
-<script src="js/data.js?v=74"></script>
-<script src="js/engine.js?v=74"></script>
-<script src="js/render.js?v=74"></script>
-<script src="js/charts.js?v=74"></script>
-<script src="js/app.js?v=74"></script>
+<script src="js/data.js?v=75"></script>
+<script src="js/engine.js?v=75"></script>
+<script src="js/render.js?v=75"></script>
+<script src="js/charts.js?v=75"></script>
+<script src="js/app.js?v=75"></script>
 
 </body>
 </html>

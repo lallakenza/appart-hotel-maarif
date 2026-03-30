@@ -135,6 +135,12 @@ const REVENUE_ASSUMPTIONS = {
   // Source : pratique bail commercial marocain, dahir n° 1-16-99
   indexationLoyer: 0.02,       // 2%/an — indexation du loyer commercial
 
+  // --- Transition conciergerie → in-house ---
+  // Année à partir de laquelle on passe de conciergerie (20% CA) à gestion in-house (2 emp. SMIG)
+  // 0 = in-house dès le début | 3 = conciergerie Y1-Y3, in-house à partir Y4
+  // 21 = jamais (toujours conciergerie)
+  switchInHouseAn: 21,          // 21 = jamais → conciergerie permanente (défaut)
+
   // --- Taux d'actualisation pour la VAN ---
   // Le taux reflète le coût d'opportunité du capital investi
   // 8% = standard immobilier commercial, entre obligataire (~5%) et equity (~12%)

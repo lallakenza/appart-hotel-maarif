@@ -145,9 +145,15 @@ function compute(scenario) {
   const inflationCharges = REVENUE_ASSUMPTIONS.inflationCharges ?? 0;
   const indexationLoyer = REVENUE_ASSUMPTIONS.indexationLoyer ?? 0;
 
+  // --- Transition conciergerie → in-house ---
+  const switchInHouseAn = REVENUE_ASSUMPTIONS.switchInHouseAn ?? 21; // 21 = jamais
+
   for (let y = 0; y < PROJECTION_YEARS; y++) {
     const growth = Math.pow(1 + REVENUE_ASSUMPTIONS.croissanceTarifs, y);
     const inflGrowth = Math.pow(1 + inflationCharges, y); // inflation cumulée pour charges fixes
+
+    // Mode gestion pour cette année : conciergerie ou in-house ?
+    const isInHouse = y >= switchInHouseAn;
 
     // ═══ RAMP-UP : An 1 pénalité sur ADR ═══
     const isRampUp = y < rampUp.dureeAns;
@@ -202,8 +208,8 @@ function compute(scenario) {
     const revTotal = revNetHotel + revCommercial;
 
     // ═══ CHARGES ═══
-    // Gestion société : 20% du CA brut hébergement (sur tout le CA, pas seulement OTA)
-    const gestion = revBrutHotel * CHARGES.tauxGestion;
+    // Gestion : conciergerie (20% CA) si pas encore passé en in-house, sinon 0%
+    const gestion = isInHouse ? 0 : revBrutHotel * CHARGES.tauxGestion;
 
     // Consommables : variable selon nuitées réelles (linge, amenities, produits ménage)
     const nuiteesAn = nuiteesStudios + nuiteesLofts; // saisonnalité + ramp-up intégrés
@@ -222,14 +228,14 @@ function compute(scenario) {
     const economieUtilitiesEco = ecoEnabled ? utilities * GO_SIYAHA_ECO.reductionUtilities : 0;
     utilities -= economieUtilitiesEco;
 
-    // Salaires : dépend du mode de gestion
-    // nbEmployes = 0 → conciergerie gère tout (ménage, draps, accueil) → pas de salaires
-    // nbEmployes = 2 → in-house : 1 accueil + 1 ménage au SMIG
-    // nbEmployes >= 3 → in-house renforcé : 1 accueil + 2 ménage
+    // Salaires : dépend du mode de gestion pour cette année
+    // En mode conciergerie : 0 salaires (la conciergerie gère tout)
+    // En mode in-house : 2 employés au SMIG (ou nbEmployesSc si > 0)
     let masseSalariale;
-    if (nbEmployesSc === 0) {
+    const effectiveEmployees = isInHouse ? Math.max(nbEmployesSc, 2) : nbEmployesSc;
+    if (effectiveEmployees === 0) {
       masseSalariale = 0; // conciergerie gère tout
-    } else if (nbEmployesSc >= 3) {
+    } else if (effectiveEmployees >= 3) {
       masseSalariale = (CHARGES.salaireConcierge + CHARGES.salaireMenage * 2) * 12;
     } else {
       masseSalariale = (CHARGES.salaireConcierge + CHARGES.salaireMenage) * 12;

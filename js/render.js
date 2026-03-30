@@ -2198,6 +2198,7 @@ function renderHypotheses() {
     row('Ramp-up occupation', fmtPct(ra.rampUp.coefOccupation) + ' du cible', 'Coefficient réducteur An 1 — retour opérateurs Maarif'),
     row('Ramp-up ADR', fmtPct(ra.rampUp.coefADR) + ' du cible', 'Discount lancement An 1 pour accumuler des avis'),
     row('Évolution canaux', ra.canauxEvolution.enabled ? 'Activée' : 'Désactivée', 'OTA multiplier décroissant Y1→Y5 : ' + ra.canauxEvolution.otaMultiplier.map(m => '×' + m.toFixed(2)).join(', ')),
+    row('Passage in-house', (ra.switchInHouseAn ?? 21) >= 21 ? 'Jamais (conciergerie permanente)' : (ra.switchInHouseAn === 0 ? 'Dès An 1' : 'À partir An ' + ((ra.switchInHouseAn ?? 21) + 1)), 'Transition conciergerie (20% CA) → in-house (2 emp. SMIG, 0% gestion). Configurable 0-21 ans.'),
   ].join('');
 
   // ── 2. CHARGES ──
