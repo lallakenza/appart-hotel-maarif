@@ -1,6 +1,6 @@
 # Documentation Tableau de Bord Financier — Appart'Hôtel Maarif
 
-**Version:** 2.10 (v80)
+**Version:** 2.11 (v81)
 **Date:** 31 Mars 2026
 **Langue:** Français
 **Public Cible:** Analystes financiers, investisseurs, auditeurs
@@ -1022,6 +1022,22 @@ Renommage de l'onglet navigation "Cash-Flow" en **"Rentabilité"** : la section 
 - `tauxActualisation` extrait du hardcode engine.js → paramètre dans `REVENUE_ASSUMPTIONS`
 - 36 tooltips `(?)` sur tous les paramètres avancés avec explications contextuelles
 - CSS responsive tooltips mobile
+
+### v81 — Audit v5 : 5 agents parallèles (engine, render, charts, fiscal, data consistency)
+**Date:** 31/03/2026
+**Fichiers modifiés:** `charts.js`, `render.js`, `index.html`
+
+Audit par 5 agents spécialisés en parallèle :
+- **Agent 1 (Engine.js)** : Formules PMT/IRR/NPV vérifiées, off-by-one checké, inflation OK, IS correct. 0 bugs.
+- **Agent 2 (Render.js DOM)** : Tous les IDs vérifié, tous les champs state accessibles, formatters OK. 1 division par zéro edge case corrigée.
+- **Agent 3 (Charts.js + App.js)** : 2 bugs corrigés (chartTVA mode + tooltip state ref). Tous les canvas IDs OK, destroyChart pattern OK, toggles OK.
+- **Agent 4 (Fiscal marocain)** : Score compliance 92/100. TVA utilities 14% confirmé correct (eau/élec Art. 99-2° CGI). CNSS 0% = choix assumé (risque documenté). Tous taux IS, exonérations, amortissements vérifiés conformes.
+- **Agent 5 (Data consistency)** : Faux positif sur `partDirect` (existe bien dans data.js l.121). Aucune incohérence cross-fichiers.
+
+**Bugs corrigés :**
+1. **chartTVA mode perdu au refresh** — `rebuildCharts()` appelait `chartTVA(state)` sans passer `_tvaChartMode`. Le toggle TVA (flux/crédit) se réinitialisait à chaque changement de scénario.
+2. **Tooltip revenue: référence fragile** — `SCENARIOS[_currentState.scenario]` → `SCENARIOS[S.scenario]`. Utilise le paramètre closure au lieu du global.
+3. **Division par zéro renderStressTests** — Guard ajouté sur `pessY1CFMensuel === 0` pour éviter Infinity dans l'affichage des mois de réserve.
 
 ### v80 — Stress Tests : cliff calendar, rate sensitivity, cash reserve
 **Date:** 31/03/2026
