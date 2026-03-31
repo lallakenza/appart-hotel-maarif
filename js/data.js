@@ -562,6 +562,10 @@ const FISCALITE = {
   amortissementMobilierAns: 7, // mobilier/ameublement amorti sur 7 ans (14.3%/an)
   exoEquipementsMois: 36,    // exonération TVA équipements (Art. 92-I-6° CGI)
   exoTaxeProAns: 5,          // exonération taxe pro nouvelles constructions
+  // ═══ COTISATION MINIMALE — Art. 144 CGI Maroc ═══
+  cotisationMinTaux: 0.0025, // 0.25% du CA déclaré
+  cotisationMinPlancher: 3_000, // plancher 3 000 MAD
+  cotisationMinExoAns: 3,    // exonérée 36 mois (3 premiers exercices)
   residenceFiscale: "UAE",   // pas d'impôt sur le revenu aux UAE
 };
 

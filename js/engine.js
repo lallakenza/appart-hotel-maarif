@@ -399,7 +399,18 @@ function compute(scenario) {
     const exoDevisesAns = FISCALITE.exoDevisesAns || 5;
     const pctExonere = y < exoDevisesAns ? FISCALITE.caDevisesPct : 0;
     const partLocale = beneficeImposable * (1 - pctExonere);
-    const is = partLocale * FISCALITE.isTaux;
+    let is = partLocale * FISCALITE.isTaux;
+
+    // ═══ COTISATION MINIMALE — Art. 144 CGI Maroc ═══
+    // Min 0.25% du CA (plancher 3 000 MAD), exonérée 36 mois (3 premiers exercices)
+    const cmTaux = (FISCALITE.cotisationMinTaux || 0.0025);
+    const cmPlancher = (FISCALITE.cotisationMinPlancher || 3_000);
+    const cmExoAns = (FISCALITE.cotisationMinExoAns || 3);
+    if (y >= cmExoAns) {
+      const cotisationMin = Math.max(revDeclare * cmTaux, cmPlancher);
+      if (is < cotisationMin) is = cotisationMin;
+    }
+
     const economieIS = dotationAmort * (1 - pctExonere) * FISCALITE.isTaux;
 
     // Cash-flow net réel (inclut la part informelle en trésorerie)
@@ -832,7 +843,7 @@ function compute(scenario) {
 
   return {
     terrain: { coutTerrain, fraisTerrain, budgetConstruction, coutM2Terrain, constructionHTForAmort },
-    amortissement: { annuel: amortissementAnnuel, duree: FISCALITE.amortissementAns, total: constructionHTForAmort },
+    amortissement: { annuel: amortissementAnnuel, mobilier: amortissementMobilier, dotationAnnuelleConstruction: amortissementAnnuel, dotationAnnuelleMobilier: amortissementMobilier, duree: FISCALITE.amortissementAns, dureeMobilier: amortMobilierAns, total: constructionHTForAmort, totalMobilier: ameubleHTForAmort },
     units: { nbStudios, nbLofts, nbUnites, surfaceLocative, surfaceCommerciale, surfaceTerrasseTotale, surfaceInterieureTotale, surfaceUtile },
     budget: { ameublement, totalProjet, investissementNet, investissementEco, subventionEco, coutNetEco, ecoEnabled },
     financement: {

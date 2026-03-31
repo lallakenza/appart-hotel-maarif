@@ -88,6 +88,7 @@ function refresh() {
   }
   currentState = compute(currentScenario);
   currentState.gestionDuel = computeGestionDuel(currentScenario);
+  currentState.gestion = computeGestionComparison(currentScenario);
   render(currentState);
   rebuildCharts(currentState);
 }

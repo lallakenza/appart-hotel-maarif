@@ -578,6 +578,10 @@ tr:hover td{background:#f0f4f8}
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
       <span class="nav-label">Analyse</span>
     </div>
+    <div class="nav-item" data-nav="dossier-banque">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18"/><path d="M3 10h18"/><path d="M5 6l7-3 7 3"/><path d="M4 10v11"/><path d="M20 10v11"/><line x1="8" y1="14" x2="8" y2="17"/><line x1="12" y1="14" x2="12" y2="17"/><line x1="16" y1="14" x2="16" y2="17"/></svg>
+      <span class="nav-label">Dossier Banque</span>
+    </div>
     <div class="nav-item" data-nav="hypotheses">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
       <span class="nav-label">Hypotheses</span>
@@ -1262,6 +1266,7 @@ tr:hover td{background:#f0f4f8}
           <div style="font-size:0.72rem;color:#9ca3af;margin-top:6px">*Appréciation <span id="wb-taux">3%</span>/an — bien entretenu, Maarif Casablanca</div>
         </div>
       </div>
+      <div class="kpi-card"><div class="kpi-label">Libération Dette</div><div class="kpi-value kpi-green" id="cf-debt-free">–</div><div class="kpi-sub">Année zéro dette</div></div>
       <div class="kpi-card"><div class="kpi-label">CF Moyen Post-Dette</div><div class="kpi-value kpi-green" id="cf-post-debt">–</div><div class="kpi-sub" id="cf-post-debt-mensuel">–</div></div>
       <div class="kpi-card"><div class="kpi-label">Rendement Stabilisé</div><div class="kpi-value kpi-green" id="cf-rdt-stab">–</div><div class="kpi-sub">Moyenne Y15-Y20 / apport</div></div>
     </div>
@@ -1436,6 +1441,25 @@ tr:hover td{background:#f0f4f8}
   </div>
 
   <!-- KPI Summary (always visible) -->
+  <div class="kpi-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:0">
+    <div class="kpi-card">
+      <div class="kpi-label">Revenus Totaux</div>
+      <div class="kpi-value" id="gest-rev-total">–</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">EBITDA Conciergerie</div>
+      <div class="kpi-value kpi-amber" id="gest-ebitda-societe">–</div>
+      <div class="kpi-sub" id="gest-marge-societe">–</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">EBITDA In-house</div>
+      <div class="kpi-value kpi-green" id="gest-ebitda-propre">–</div>
+      <div class="kpi-sub" id="gest-marge-propre">–</div>
+    </div>
+  </div>
+  <div class="info-box" style="margin-bottom:16px;text-align:center;font-weight:600;font-size:.9rem">
+    <span id="gest-economie">–</span> d'économie annuelle en gestion propre
+  </div>
   <div class="kpi-grid" id="gd-kpi-grid" style="grid-template-columns:repeat(4,1fr)"></div>
 
   <!-- TAB: Comparatif -->
@@ -2233,6 +2257,200 @@ tr:hover td{background:#f0f4f8}
   </div>
 </div>
 
+<!-- ==================== DOSSIER BANQUE ==================== -->
+<div data-view="dossier-banque" class="hidden">
+
+  <!-- En-tête -->
+  <div class="card" style="background:linear-gradient(135deg,#1e3a5f 0%,#2563eb 100%);color:#fff;border:none">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M3 21h18"/><path d="M3 10h18"/><path d="M5 6l7-3 7 3"/><path d="M4 10v11"/><path d="M20 10v11"/><line x1="8" y1="14" x2="8" y2="17"/><line x1="12" y1="14" x2="12" y2="17"/><line x1="16" y1="14" x2="16" y2="17"/></svg>
+      <div>
+        <h2 style="margin:0;font-size:1.3rem;font-weight:700">Dossier de Financement Bancaire</h2>
+        <p style="margin:2px 0 0;opacity:.85;font-size:.85rem">Appart-Hôtel Maarif — Casablanca</p>
+      </div>
+    </div>
+    <p style="margin:0;font-size:.8rem;opacity:.7;line-height:1.5">
+      Ce dossier synthétise tous les éléments financiers, juridiques et opérationnels à présenter aux établissements bancaires
+      (Tamwilkom, banques classiques) dans le cadre d'une demande de crédit immobilier professionnel.
+    </p>
+  </div>
+
+  <!-- 1. Résumé Exécutif -->
+  <div class="card">
+    <div class="card-title">1. Résumé Exécutif du Projet</div>
+    <div class="table-wrap">
+      <table>
+        <tbody id="db-resume-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 2. Porteur de Projet -->
+  <div class="card">
+    <div class="card-title">2. Porteur du Projet</div>
+    <div class="table-wrap">
+      <table>
+        <tbody id="db-porteur-tbody"></tbody>
+      </table>
+    </div>
+    <div class="info-box" style="margin-top:12px;font-size:.82rem">
+      <strong>Pièces justificatives à fournir :</strong> CIN + passeport, attestation de résidence UAE, relevés bancaires (6 mois),
+      attestation d'apport personnel (terrain + fonds propres), justificatif de revenus UAE, casier judiciaire vierge,
+      business plan détaillé (ce document).
+    </div>
+  </div>
+
+  <!-- 3. Plan de Financement -->
+  <div class="card">
+    <div class="card-title">3. Plan de Financement</div>
+    <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:16px">
+      <div class="kpi-card"><div class="kpi-label">Coût Total TTC</div><div class="kpi-value" id="db-cout-total">–</div></div>
+      <div class="kpi-card"><div class="kpi-label">Apport Personnel</div><div class="kpi-value kpi-green" id="db-apport">–</div><div class="kpi-sub" id="db-apport-pct">–</div></div>
+      <div class="kpi-card"><div class="kpi-label">Financement Demandé</div><div class="kpi-value kpi-amber" id="db-financement">–</div><div class="kpi-sub" id="db-financement-pct">–</div></div>
+      <div class="kpi-card"><div class="kpi-label">Subvention MDM</div><div class="kpi-value kpi-green" id="db-mdm">–</div><div class="kpi-sub">Tamwilcom (si éligible)</div></div>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Source</th><th>Montant</th><th>%</th><th>Conditions</th></tr></thead>
+        <tbody id="db-plan-financement-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 4. Structure de la Dette -->
+  <div class="card">
+    <div class="card-title">4. Structure de la Dette</div>
+    <div class="grid-2">
+      <div>
+        <h4 style="color:var(--primary);margin:0 0 8px;font-size:.9rem">Tamwilkom (MDM Invest)</h4>
+        <div class="table-wrap">
+          <table><tbody id="db-tamwilkom-tbody"></tbody></table>
+        </div>
+      </div>
+      <div>
+        <h4 style="color:var(--accent);margin:0 0 8px;font-size:.9rem">Banque Classique</h4>
+        <div class="table-wrap">
+          <table><tbody id="db-banque-tbody"></tbody></table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. Capacité de Remboursement -->
+  <div class="card">
+    <div class="card-title">5. Capacité de Remboursement</div>
+    <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:16px">
+      <div class="kpi-card"><div class="kpi-label">DSCR An 1</div><div class="kpi-value" id="db-dscr" style="font-size:1.6rem">–</div><div class="kpi-sub">Min. bancaire : 1.20×</div></div>
+      <div class="kpi-card"><div class="kpi-label">Service Dette An 1</div><div class="kpi-value kpi-amber" id="db-debt-service">–</div><div class="kpi-sub" id="db-debt-service-mensuel">–</div></div>
+      <div class="kpi-card"><div class="kpi-label">Cash-Flow Net An 1</div><div class="kpi-value" id="db-cf-an1">–</div><div class="kpi-sub" id="db-cf-an1-mensuel">–</div></div>
+      <div class="kpi-card"><div class="kpi-label">Seuil Occupation</div><div class="kpi-value" id="db-break-even">–</div><div class="kpi-sub">Pour CF ≥ 0</div></div>
+    </div>
+    <div class="chart-box"><canvas id="chart-db-dscr"></canvas></div>
+    <div class="info-box" style="margin-top:12px;font-size:.82rem" id="db-dscr-commentary"></div>
+  </div>
+
+  <!-- 6. Compte d'Exploitation Prévisionnel -->
+  <div class="card">
+    <div class="card-title">6. Compte d'Exploitation Prévisionnel (5 ans)</div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th></th><th>An 1</th><th>An 2</th><th>An 3</th><th>An 4</th><th>An 5</th></tr></thead>
+        <tbody id="db-exploitation-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 7. Projection Cash-Flow 20 ans -->
+  <div class="card">
+    <div class="card-title">7. Projection de Cash-Flow sur 20 ans</div>
+    <div class="chart-box"><canvas id="chart-db-cashflow"></canvas></div>
+    <div class="table-wrap" style="margin-top:16px">
+      <table>
+        <thead><tr><th>Année</th><th>Revenus</th><th>Charges</th><th>EBITDA</th><th>Service Dette</th><th>IS</th><th>CF Net</th><th>CF Cumulé</th></tr></thead>
+        <tbody id="db-projection-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 8. Garanties -->
+  <div class="card">
+    <div class="card-title">8. Garanties Proposées</div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Garantie</th><th>Nature</th><th>Valeur Estimée</th><th>Observations</th></tr></thead>
+        <tbody id="db-garanties-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 9. Analyse de Risques -->
+  <div class="card">
+    <div class="card-title">9. Analyse de Risques & Mitigations</div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Risque</th><th>Impact</th><th>Probabilité</th><th>Mitigation</th></tr></thead>
+        <tbody id="db-risques-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 10. Sensibilité -->
+  <div class="card">
+    <div class="card-title">10. Analyse de Sensibilité — Impact sur la Capacité de Remboursement</div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Occupation</th><th>Revenus</th><th>EBITDA</th><th>CF Net</th><th>DSCR</th><th>Statut</th></tr></thead>
+        <tbody id="db-sensibilite-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 11. Fiscalité Avantageuse -->
+  <div class="card">
+    <div class="card-title">11. Avantages Fiscaux</div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Dispositif</th><th>Durée</th><th>Économie Estimée</th><th>Base Légale</th></tr></thead>
+        <tbody id="db-fiscalite-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 12. KPIs Investissement -->
+  <div class="card">
+    <div class="card-title">12. Indicateurs de Performance</div>
+    <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr)">
+      <div class="kpi-card"><div class="kpi-label">TRI (20 ans)</div><div class="kpi-value kpi-green" id="db-tri">–</div></div>
+      <div class="kpi-card"><div class="kpi-label">VAN (8%)</div><div class="kpi-value kpi-green" id="db-van">–</div></div>
+      <div class="kpi-card"><div class="kpi-label">Payback</div><div class="kpi-value" id="db-payback">–</div></div>
+      <div class="kpi-card"><div class="kpi-label">Multiple Apport</div><div class="kpi-value kpi-green" id="db-multiple">–</div><div class="kpi-sub">sur 20 ans</div></div>
+    </div>
+    <div class="kpi-grid" style="grid-template-columns:repeat(3,1fr);margin-top:0">
+      <div class="kpi-card"><div class="kpi-label">Rendement Brut</div><div class="kpi-value" id="db-rdt-brut">–</div></div>
+      <div class="kpi-card"><div class="kpi-label">Rendement Net</div><div class="kpi-value" id="db-rdt-net">–</div></div>
+      <div class="kpi-card"><div class="kpi-label">Richesse Créée (20 ans)</div><div class="kpi-value kpi-green" id="db-wealth">–</div></div>
+    </div>
+  </div>
+
+  <!-- 13. Calendrier -->
+  <div class="card">
+    <div class="card-title">13. Calendrier Prévisionnel</div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Phase</th><th>Durée</th><th>Période</th><th>Détails</th></tr></thead>
+        <tbody id="db-calendrier-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Checklist documents -->
+  <div class="card" style="border-left:4px solid var(--primary)">
+    <div class="card-title">Checklist — Pièces du Dossier Bancaire</div>
+    <div id="db-checklist" style="font-size:.85rem;line-height:1.8"></div>
+  </div>
+
+</div>
+
 <div style="margin-top:24px;padding:12px 16px;font-size:.76rem;color:var(--text-sec);border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
   <span>* Montants nets après déduction de la subvention MDM Invest (10%, plafond 5M MAD). Sous condition d'acceptation du dossier MDM Invest par Tamwilcom.</span>
   <a href="architecture.html" style="color:var(--accent);text-decoration:none;font-weight:500;white-space:nowrap">Architecture technique &rarr;</a>
@@ -2241,11 +2459,11 @@ tr:hover td{background:#f0f4f8}
 </main>
 
 <!-- Scripts — strict order: data → engine → render → charts → app -->
-<script src="js/data.js?v=77"></script>
-<script src="js/engine.js?v=77"></script>
-<script src="js/render.js?v=77"></script>
-<script src="js/charts.js?v=77"></script>
-<script src="js/app.js?v=77"></script>
+<script src="js/data.js?v=78"></script>
+<script src="js/engine.js?v=78"></script>
+<script src="js/render.js?v=78"></script>
+<script src="js/charts.js?v=78"></script>
+<script src="js/app.js?v=78"></script>
 
 </body>
 </html>

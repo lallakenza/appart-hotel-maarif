@@ -47,6 +47,8 @@ function rebuildCharts(state) {
   chartGestionDuel(state);
   chartWealthTrajectory(state);
   chartWealthBuilding(state);
+  chartDossierBanqueDSCR(state);
+  chartDossierBanqueCF(state);
 }
 
 // ======================== RICH TOOLTIP SYSTEM ========================
@@ -181,12 +183,13 @@ function chartRevenueEvolution(S) {
             const p = S.projections[idx];
             const sc = SCENARIOS[_currentState.scenario];
             const growth = Math.pow(1 + REVENUE_ASSUMPTIONS.croissanceTarifs, idx);
-            const pxS = Math.round(sc.prixNuitStudio * Math.pow(1.03, idx));
-            const pxL = Math.round(sc.prixNuitLoft * Math.pow(1.03, idx));
+            const pxS = Math.round(sc.prixNuitStudio * growth);
+            const pxL = Math.round(sc.prixNuitLoft * growth);
+            const commPct = (REVENUE_ASSUMPTIONS.commissionOTA * 100).toFixed(0);
             return `<div class="ctt-title">An ${p.year} — Revenus</div>
               <div class="ctt-row"><span>🏠 Studios (${S.units.nbStudios} × ${pxS} MAD/n)</span><span class="ctt-val">${fmtK(p.revStudios)}</span></div>
               <div class="ctt-row"><span>🏢 Lofts (${S.units.nbLofts} × ${pxL} MAD/n)</span><span class="ctt-val">${fmtK(p.revLofts)}</span></div>
-              <div class="ctt-row ctt-sub"><span>Commissions plateformes (15%)</span><span class="ctt-val ctt-neg">-${fmtK(p.commissions)}</span></div>
+              <div class="ctt-row ctt-sub"><span>Commissions plateformes (${commPct}%)</span><span class="ctt-val ctt-neg">-${fmtK(p.commissions)}</span></div>
               <div class="ctt-row"><span>🏪 Local commercial</span><span class="ctt-val">${fmtK(p.revCommercial)}</span></div>
               <div class="ctt-divider"></div>
               <div class="ctt-row ctt-total"><span>Revenu Total Net</span><span class="ctt-val">${fmtMAD(p.revTotal)}</span></div>
@@ -1574,6 +1577,118 @@ function chartWealthBuilding(S) {
             }
           }
         }
+      }
+    }
+  });
+}
+
+// ============================================================
+// DOSSIER BANQUE CHARTS
+// ============================================================
+function chartDossierBanqueDSCR(S) {
+  destroyChart("db-dscr");
+  const ctx = document.getElementById("chart-db-dscr");
+  if (!ctx || !S.projections) return;
+
+  const p = S.projections;
+  const labels = p.map(y => "An " + y.year);
+  const dscrData = p.map(y => y.debtServiceTotal > 0 ? y.ebitda / y.debtServiceTotal : null);
+  const threshold = Array(p.length).fill(1.2);
+
+  _charts["db-dscr"] = new Chart(ctx, {
+    type: "bar",
+    data: {
+      labels,
+      datasets: [
+        {
+          label: "DSCR",
+          data: dscrData,
+          backgroundColor: dscrData.map(d => d >= 1.2 ? "rgba(16,185,129,.7)" : d >= 1.0 ? "rgba(245,158,11,.7)" : "rgba(239,68,68,.7)"),
+          borderRadius: 4
+        },
+        {
+          label: "Seuil bancaire (1.20×)",
+          data: threshold,
+          type: "line",
+          borderColor: "#ef4444",
+          borderDash: [6, 4],
+          borderWidth: 2,
+          pointRadius: 0,
+          fill: false
+        }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: { callback: v => v.toFixed(1) + "×" }
+        }
+      },
+      plugins: {
+        legend: { display: true, position: "bottom", labels: { boxWidth: 12 } },
+        tooltip: {
+          callbacks: {
+            label: (ctx) => {
+              if (ctx.datasetIndex === 0) return "DSCR: " + (ctx.raw ? ctx.raw.toFixed(2) + "×" : "N/A");
+              return "Seuil: 1.20×";
+            }
+          }
+        }
+      }
+    }
+  });
+}
+
+function chartDossierBanqueCF(S) {
+  destroyChart("db-cashflow");
+  const ctx = document.getElementById("chart-db-cashflow");
+  if (!ctx || !S.projections) return;
+
+  const p = S.projections;
+  const labels = p.map(y => "An " + y.year);
+
+  _charts["db-cashflow"] = new Chart(ctx, {
+    type: "bar",
+    data: {
+      labels,
+      datasets: [
+        {
+          label: "CF Net annuel",
+          data: p.map(y => y.cashFlowNet),
+          backgroundColor: p.map(y => y.cashFlowNet >= 0 ? "rgba(16,185,129,.6)" : "rgba(239,68,68,.6)"),
+          borderRadius: 4
+        },
+        {
+          label: "CF Cumulé",
+          data: p.map(y => y.cumulCashFlow),
+          type: "line",
+          borderColor: "#2563eb",
+          backgroundColor: "rgba(37,99,235,.1)",
+          fill: true,
+          tension: 0.3,
+          pointRadius: 3
+        },
+        {
+          label: "Service dette",
+          data: p.map(y => -y.debtServiceTotal),
+          type: "line",
+          borderColor: "#ef4444",
+          borderDash: [4, 4],
+          borderWidth: 1.5,
+          pointRadius: 0,
+          fill: false
+        }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      scales: {
+        y: { ticks: { callback: v => fmtK(v) } }
+      },
+      plugins: {
+        legend: { display: true, position: "bottom", labels: { boxWidth: 12 } }
       }
     }
   });

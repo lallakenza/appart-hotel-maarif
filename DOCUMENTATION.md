@@ -1,7 +1,7 @@
 # Documentation Tableau de Bord Financier — Appart'Hôtel Maarif
 
-**Version:** 2.4 (v73)
-**Date:** 30 Mars 2026
+**Version:** 2.8 (v78)
+**Date:** 31 Mars 2026
 **Langue:** Français
 **Public Cible:** Analystes financiers, investisseurs, auditeurs
 **Format:** Optimisé pour lecture par IA (Claude, GPT-4)
@@ -1022,6 +1022,67 @@ Renommage de l'onglet navigation "Cash-Flow" en **"Rentabilité"** : la section 
 - `tauxActualisation` extrait du hardcode engine.js → paramètre dans `REVENUE_ASSUMPTIONS`
 - 36 tooltips `(?)` sur tous les paramètres avancés avec explications contextuelles
 - CSS responsive tooltips mobile
+
+### v78 — Audit ultra-poussé v3 + Dossier Banque
+**Date:** 31/03/2026
+**Fichiers modifiés:** `data.js`, `engine.js`, `render.js`, `charts.js`, `app.js`, `index.html`
+
+**Bugs corrigés (6 agents d'audit parallèles) :**
+
+1. **computeGestionComparison() jamais appelé** — `renderGestion()` dans render.js attendait `state.gestion` mais `app.js` ne l'assignait pas. Ajouté `currentState.gestion = computeGestionComparison(currentScenario)` dans `refresh()`.
+
+2. **7 IDs HTML manquants** — `cf-debt-free`, `gest-ebitda-societe`, `gest-marge-societe`, `gest-ebitda-propre`, `gest-marge-propre`, `gest-economie`, `gest-rev-total` n'existaient pas dans index.html. Ajoutés dans les sections cashflow et gestion.
+
+3. **Tooltip chart hardcodé** — `Math.pow(1.03, idx)` remplacé par `Math.pow(1 + REVENUE_ASSUMPTIONS.croissanceTarifs, idx)`. Label "Commissions (15%)" dynamique via `REVENUE_ASSUMPTIONS.commissionOTA`.
+
+4. **Cotisation minimale IS** — Art. 144 CGI : min 0.25% CA ou 3,000 MAD, exonérée 3 premiers exercices. Paramètres ajoutés dans FISCALITE (`cotisationMinTaux`, `cotisationMinPlancher`, `cotisationMinExoAns`). Implémentée dans engine.js après le calcul IS standard.
+
+5. **Amortissement mobilier exposé** — `amortissement` object enrichi avec `dotationAnnuelleConstruction`, `dotationAnnuelleMobilier`, `totalMobilier`, `dureeMobilier`.
+
+**Nouvelle page : Dossier de Financement Bancaire**
+13 sections complètes pour présentation aux banques (Tamwilkom, banques classiques) :
+1. Résumé exécutif du projet
+2. Porteur du projet (profil MRE UAE, pièces justificatives)
+3. Plan de financement (sources, montants, pourcentages, conditions)
+4. Structure de la dette (Tamwilkom vs banque classique, mensualités, différés)
+5. Capacité de remboursement (DSCR, service dette, CF net, break-even) + graphique DSCR 20 ans
+6. Compte d'exploitation prévisionnel 5 ans
+7. Projection cash-flow 20 ans + graphique CF annuel/cumulé
+8. Garanties proposées (hypothèque, nantissement, Tamwilcom, caution)
+9. Analyse de risques & mitigations (7 risques évalués)
+10. Sensibilité — impact occupation sur DSCR
+11. Avantages fiscaux (exonérations, TVA, amortissement)
+12. Indicateurs de performance (TRI, VAN, payback, multiple, rendements)
+13. Calendrier prévisionnel + checklist complète des pièces du dossier
+
+### v77 — Audit approfondi v2 : break-even + label chart
+**Date:** 31/03/2026
+**Fichiers modifiés:** `engine.js`, `charts.js`, `index.html`
+
+1. **Break-even & sensibilité** — Amortissement mobilier manquant dans le calcul IS du seuil d'occupation et de la table de sensibilité. Ajouté `amortissementAnnuel + amortissementMobilier`.
+2. **Label chart dynamique** — "Appréciation bien (2%/an)" hardcodé → dynamique via `REVENUE_ASSUMPTIONS.tauxAppreciation`.
+
+### v76 — Audit métier : taxe de séjour + break-even conciergerie
+**Date:** 31/03/2026
+**Fichiers modifiés:** `data.js`, `engine.js`, `render.js`, `index.html`
+
+1. **Taxe de séjour** ajoutée : 2 MAD/nuitée (Dahir n° 1-19-40). Paramètre `CHARGES.taxeSejour`, inclus dans chargesTotal et chargesDetail.
+2. **Break-even corrigé** pour mode conciergerie : `_chargesForOcc` utilisait toujours les paramètres in-house. Ajout de `beIsInHouse`, `beEffectiveEmp`, `testGestionRate` pour respecter le mode actif.
+
+### v75 — Transition conciergerie → in-house (slider)
+**Date:** 31/03/2026
+**Fichiers modifiés:** `data.js`, `engine.js`, `app.js`, `index.html`
+
+Paramètre `switchInHouseAn` (0-21) : contrôle quand basculer de conciergerie (20% CA) à gestion in-house (2 employés SMIG). 0 = in-house dès An 1, 21 = conciergerie permanente. Slider dans les paramètres avancés avec label dynamique.
+
+### v74 — Restructuration gestion : conciergerie vs in-house
+**Date:** 31/03/2026
+**Fichiers modifiés:** `data.js`, `engine.js`, `app.js`, `index.html`
+
+Correction fondamentale du modèle de gestion : le modèle cumulait commission conciergerie (15%) + salaires (8K+4K), ce qui double-comptait les charges. Restructuré :
+- **Conciergerie** (défaut) : 20% CA, 0 employés (tout inclus : ménage, draps, accueil)
+- **In-house** : 0% gestion, 2 employés SMIG (3,400 MAD), pas de CNSS
+- `computeGestionDuel()` compare les deux modes sur 20 ans
 
 ### v73 — Page Hypothèses & Méthodologie complète
 **Date:** 30/03/2026

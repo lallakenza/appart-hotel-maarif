@@ -77,6 +77,7 @@ function render(state) {
   renderGoSiyaha(state);
   renderMontages(state);
   renderCapexOpex(state);
+  renderDossierBanque(state);
 }
 
 // --- Header badge (dynamic total projet) ---
@@ -2394,6 +2395,268 @@ function renderHypotheses() {
 
     <p style="margin-top:14px;font-style:italic;color:var(--text-sec)">Analyse réalisée les 27-30 mars 2026. Données vérifiées par recoupement multi-sources. Ne constitue pas un conseil en investissement.</p>
   `;
+}
+
+// ============================================================
+// DOSSIER BANQUE — Synthèse complète pour financement
+// ============================================================
+function renderDossierBanque(S) {
+  const K = S.kpi;
+  const B = S.budget;
+  const F = S.financement;
+  const p = S.projections;
+  if (!K || !p || !p.length) return;
+
+  const y1 = p[0];
+  const totalProjet = B.totalProjet;
+  const apportNet = F.apportNet;
+  const montantTK = F.montantTamwilkom;
+  const montantBQ = F.montantBanque;
+  const montantTotal = montantTK + montantBQ;
+  const subvMDM = F.subventionMDM || 0;
+
+  // --- 1. Résumé Exécutif ---
+  const resumeTb = document.getElementById("db-resume-tbody");
+  if (resumeTb) resumeTb.innerHTML = [
+    ["Nature du projet", "Construction et exploitation d'un appart-hôtel meublé de tourisme"],
+    ["Localisation", "Quartier Maarif, Casablanca — zone touristique et d'affaires"],
+    ["Surface terrain", TERRAIN.surface + " m²"],
+    ["Surface construite", BUDGET.surfacePlancher + " m² (R+4)"],
+    ["Nombre d'unités", S.units.nbStudios + " studios + " + S.units.nbLofts + " lofts + 1 local commercial"],
+    ["Surface locative", Math.round(S.units.surfaceLocative) + " m²"],
+    ["Investissement total TTC", fmtMAD(totalProjet)],
+    ["Financement demandé", fmtMAD(montantTotal) + " (" + fmtPct(montantTotal / totalProjet) + " du coût total)"],
+    ["Apport personnel", fmtMAD(apportNet) + " (terrain + fonds propres)"],
+    ["Revenus prévisionnels An 1", fmtMAD(y1.revTotal)],
+    ["EBITDA prévisionnel An 1", fmtMAD(y1.ebitda) + " (marge " + fmtPct(y1.margeExploitation) + ")"],
+    ["DSCR An 1", K.dscr.toFixed(2) + "× (min. bancaire : 1.20×)"],
+    ["TRI sur 20 ans", fmtPct(K.tri)],
+  ].map(r => `<tr><td style="font-weight:500;width:40%">${r[0]}</td><td>${r[1]}</td></tr>`).join("");
+
+  // --- 2. Porteur de Projet ---
+  const porteurTb = document.getElementById("db-porteur-tbody");
+  if (porteurTb) porteurTb.innerHTML = [
+    ["Statut juridique", "SCI / SARL (à constituer) ou nom propre"],
+    ["Résidence fiscale", "Émirats Arabes Unis (UAE)"],
+    ["Statut MRE", "Marocain Résidant à l'Étranger — éligible MDM Invest"],
+    ["Apport", "Terrain (valeur " + fmtMAD(TERRAIN.prix) + ") + fonds propres"],
+    ["Revenus", "Salaire professionnel UAE (justificatifs joints)"],
+    ["Expérience investissement", "À documenter (projets précédents, portefeuille immobilier)"],
+  ].map(r => `<tr><td style="font-weight:500;width:40%">${r[0]}</td><td>${r[1]}</td></tr>`).join("");
+
+  // --- 3. Plan de Financement KPIs ---
+  setText("db-cout-total", fmtMAD(totalProjet));
+  setText("db-apport", fmtMAD(apportNet));
+  setText("db-apport-pct", fmtPct(apportNet / totalProjet) + " du total");
+  setText("db-financement", fmtMAD(montantTotal));
+  setText("db-financement-pct", fmtPct(montantTotal / totalProjet) + " du total");
+  setText("db-mdm", fmtMAD(subvMDM));
+
+  const planTb = document.getElementById("db-plan-financement-tbody");
+  if (planTb) {
+    const rows = [
+      ["Apport terrain", fmtMAD(TERRAIN.prix + TERRAIN.prix * TERRAIN.fraisAcquisition), fmtPct((TERRAIN.prix + TERRAIN.prix * TERRAIN.fraisAcquisition) / totalProjet), "Terrain acquis, acte notarié"],
+      ["Tamwilkom (MDM Invest)", fmtMAD(montantTK), fmtPct(montantTK / totalProjet), TAMWILKOM.tauxAnnuel * 100 + "% sur " + TAMWILKOM.dureeAns + " ans, différé " + TAMWILKOM.differeAns + " ans"],
+      ["Banque classique", fmtMAD(montantBQ), fmtPct(montantBQ / totalProjet), BANQUE_CLASSIQUE.tauxAnnuel * 100 + "% sur " + BANQUE_CLASSIQUE.dureeAns + " ans, différé " + BANQUE_CLASSIQUE.differeAns + " an"],
+      ["Subvention MDM Invest", fmtMAD(subvMDM), fmtPct(subvMDM / totalProjet), "10% du coût, plafond 5M MAD — Tamwilcom"],
+    ];
+    rows.push(["<strong>TOTAL</strong>", "<strong>" + fmtMAD(totalProjet) + "</strong>", "<strong>100%</strong>", ""]);
+    planTb.innerHTML = rows.map(r => `<tr><td>${r[0]}</td><td class="num">${r[1]}</td><td class="num">${r[2]}</td><td style="font-size:.8rem">${r[3]}</td></tr>`).join("");
+  }
+
+  // --- 4. Structure de la Dette ---
+  const tkTb = document.getElementById("db-tamwilkom-tbody");
+  if (tkTb) tkTb.innerHTML = [
+    ["Montant", fmtMAD(montantTK)],
+    ["Taux annuel", (TAMWILKOM.tauxAnnuel * 100).toFixed(2) + "%"],
+    ["Durée", TAMWILKOM.dureeAns + " ans"],
+    ["Différé", TAMWILKOM.differeAns + " ans (intérêts seuls)"],
+    ["Mensualité différé", fmtMAD(F.mensualiteDiffereTK || montantTK * TAMWILKOM.tauxAnnuel / 12)],
+    ["Mensualité amortissement", fmtMAD(F.mensualiteTK)],
+    ["Garantie", "Garantie Tamwilcom + hypothèque"],
+  ].map(r => `<tr><td style="font-weight:500">${r[0]}</td><td class="num">${r[1]}</td></tr>`).join("");
+
+  const bqTb = document.getElementById("db-banque-tbody");
+  if (bqTb) bqTb.innerHTML = [
+    ["Montant", fmtMAD(montantBQ)],
+    ["Taux annuel", (BANQUE_CLASSIQUE.tauxAnnuel * 100).toFixed(2) + "%"],
+    ["Durée", BANQUE_CLASSIQUE.dureeAns + " ans"],
+    ["Différé", BANQUE_CLASSIQUE.differeAns + " an (intérêts seuls)"],
+    ["Mensualité différé", fmtMAD(F.mensualiteDiffereBQ || montantBQ * BANQUE_CLASSIQUE.tauxAnnuel / 12)],
+    ["Mensualité amortissement", fmtMAD(F.mensualiteBQ)],
+    ["Garantie", "Hypothèque 1er rang sur le bien"],
+  ].map(r => `<tr><td style="font-weight:500">${r[0]}</td><td class="num">${r[1]}</td></tr>`).join("");
+
+  // --- 5. Capacité de Remboursement ---
+  const dscrVal = K.dscr;
+  setText("db-dscr", dscrVal.toFixed(2) + "×");
+  const dscrEl = document.getElementById("db-dscr");
+  if (dscrEl) dscrEl.style.color = dscrVal >= 1.2 ? "var(--green)" : dscrVal >= 1.0 ? "var(--warning)" : "var(--danger)";
+  setText("db-debt-service", fmtMAD(y1.debtServiceTotal));
+  setText("db-debt-service-mensuel", fmtMAD(y1.debtServiceTotal / 12) + " /mois");
+  setText("db-cf-an1", fmtMAD(y1.cashFlowNet));
+  const cfEl = document.getElementById("db-cf-an1");
+  if (cfEl) cfEl.style.color = y1.cashFlowNet >= 0 ? "var(--green)" : "var(--danger)";
+  setText("db-cf-an1-mensuel", fmtMAD(y1.cashFlowNet / 12) + " /mois");
+  setText("db-break-even", fmtPct(K.breakEvenOcc));
+
+  const dscrComm = document.getElementById("db-dscr-commentary");
+  if (dscrComm) {
+    const dscrStatus = dscrVal >= 1.5 ? "excellent" : dscrVal >= 1.2 ? "conforme" : dscrVal >= 1.0 ? "fragile" : "insuffisant";
+    dscrComm.innerHTML = `<strong>DSCR ${dscrVal.toFixed(2)}× — Statut : ${dscrStatus}</strong>. ` +
+      `Le projet génère un EBITDA de ${fmtMAD(y1.ebitda)} pour un service de dette de ${fmtMAD(y1.debtServiceTotal)}, ` +
+      `soit une marge de sécurité de ${fmtPct((dscrVal - 1))} au-dessus du seuil de couverture. ` +
+      `Le seuil d'occupation pour atteindre l'équilibre est de ${fmtPct(K.breakEvenOcc)}, ` +
+      `bien en dessous du taux modélisé (${fmtPct(S.projections[0].occMoyEffective)}).`;
+  }
+
+  // --- 6. Compte d'Exploitation Prévisionnel (5 ans) ---
+  const exploitTb = document.getElementById("db-exploitation-tbody");
+  if (exploitTb) {
+    const years5 = p.slice(0, 5);
+    const rows = [
+      { label: "Revenus bruts hébergement", key: "revBrutHotel", bold: false },
+      { label: "(-) Commissions OTA", key: "commissions", neg: true },
+      { label: "Revenus nets hébergement", key: "revNetHotel", bold: true },
+      { label: "(+) Loyer commercial", key: "revCommercial" },
+      { label: "= Revenus totaux", key: "revTotal", bold: true },
+      { label: "(-) Charges d'exploitation", key: "chargesTotal", neg: true },
+      { label: "= EBITDA", key: "ebitda", bold: true, green: true },
+      { label: "(-) Service dette", key: "debtServiceTotal", neg: true },
+      { label: "(-) IS", key: "is", neg: true },
+      { label: "= Cash-Flow Net", key: "cashFlowNet", bold: true, green: true },
+      { label: "Marge exploitation", key: "margeExploitation", pct: true },
+    ];
+    exploitTb.innerHTML = rows.map(r => {
+      const tds = years5.map(yr => {
+        let v = yr[r.key];
+        if (r.pct) return `<td class="num">${fmtPct(v)}</td>`;
+        const style = r.green && v > 0 ? 'color:var(--green)' : r.neg ? 'color:var(--danger)' : '';
+        return `<td class="num" style="${style};${r.bold ? 'font-weight:600' : ''}">${r.neg ? '-' : ''}${fmtMAD(Math.abs(v))}</td>`;
+      }).join("");
+      return `<tr><td style="${r.bold ? 'font-weight:600' : ''}">${r.label}</td>${tds}</tr>`;
+    }).join("");
+  }
+
+  // --- 7. Projection 20 ans ---
+  const projTb = document.getElementById("db-projection-tbody");
+  if (projTb) {
+    projTb.innerHTML = p.map((yr, i) => {
+      const clr = yr.cashFlowNet >= 0 ? 'var(--green)' : 'var(--danger)';
+      return `<tr>
+        <td class="num">${yr.year}</td>
+        <td class="num">${fmtMAD(yr.revTotal)}</td>
+        <td class="num" style="color:var(--danger)">${fmtMAD(yr.chargesTotal)}</td>
+        <td class="num">${fmtMAD(yr.ebitda)}</td>
+        <td class="num">${fmtMAD(yr.debtServiceTotal)}</td>
+        <td class="num">${yr.is > 0 ? fmtMAD(yr.is) : '–'}</td>
+        <td class="num" style="color:${clr};font-weight:600">${fmtMAD(yr.cashFlowNet)}</td>
+        <td class="num" style="color:${yr.cumulCashFlow >= 0 ? 'var(--green)' : 'var(--danger)'};font-weight:600">${fmtMAD(yr.cumulCashFlow)}</td>
+      </tr>`;
+    }).join("");
+  }
+
+  // --- 8. Garanties ---
+  const garTb = document.getElementById("db-garanties-tbody");
+  if (garTb) {
+    const valeurBien = totalProjet;
+    garTb.innerHTML = [
+      ["Hypothèque 1er rang", "Bien immobilier construit", fmtMAD(valeurBien), "Immeuble R+4 — Maarif, Casablanca"],
+      ["Nantissement fonds de commerce", "Fonds de commerce hôtelier", "–", "Si exploitation en nom propre ou SCI"],
+      ["Garantie Tamwilcom", "Garantie institutionnelle", fmtMAD(montantTK * 0.70), "Couvre ~70% du prêt Tamwilkom"],
+      ["Domiciliation revenus", "Compte professionnel", "–", "Revenus locatifs domiciliés à la banque prêteuse"],
+      ["Assurance décès/invalidité", "Assurance emprunteur", fmtMAD(montantTotal), "Couvre la totalité du crédit"],
+      ["Caution personnelle", "Engagement personnel", "–", "Caution solidaire du porteur de projet"],
+    ].map(r => `<tr><td style="font-weight:500">${r[0]}</td><td>${r[1]}</td><td class="num">${r[2]}</td><td style="font-size:.8rem">${r[3]}</td></tr>`).join("");
+  }
+
+  // --- 9. Analyse de Risques ---
+  const risqTb = document.getElementById("db-risques-tbody");
+  if (risqTb) risqTb.innerHTML = [
+    ["Sous-occupation", "Élevé", "Modérée", "Seuil break-even bas (" + fmtPct(K.breakEvenOcc) + "), pricing dynamique, diversification canaux"],
+    ["Retard construction", "Moyen", "Modérée", "Suivi AMOA, pénalités contractuelles, marge planning"],
+    ["Hausse taux d'intérêt", "Moyen", "Faible", "Taux fixe Tamwilkom, capacité de renégociation BQ"],
+    ["Concurrence Airbnb", "Moyen", "Élevée", "Positionnement premium, qualité service, avis clients"],
+    ["Réglementation STR", "Faible", "Faible", "Cadre légal 80-14, conformité urbanisme assurée"],
+    ["Change MAD/AED", "Faible", "Modérée", "Revenus en MAD, pas d'exposition directe"],
+    ["Vacance prolongée", "Élevé", "Faible", "Diversification long/court séjour, clientèle corporate"],
+  ].map(r => {
+    const impClr = r[1] === "Élevé" ? "var(--danger)" : r[1] === "Moyen" ? "var(--warning)" : "var(--green)";
+    const probClr = r[2] === "Élevée" ? "var(--danger)" : r[2] === "Modérée" ? "var(--warning)" : "var(--green)";
+    return `<tr><td style="font-weight:500">${r[0]}</td><td style="color:${impClr};font-weight:600">${r[1]}</td><td style="color:${probClr}">${r[2]}</td><td style="font-size:.82rem">${r[3]}</td></tr>`;
+  }).join("");
+
+  // --- 10. Sensibilité ---
+  const sensTb = document.getElementById("db-sensibilite-tbody");
+  if (sensTb && S.sensitivity) {
+    sensTb.innerHTML = S.sensitivity.map(s => {
+      const dscr = s.ebitda && y1.debtServiceTotal > 0 ? s.ebitda / y1.debtServiceTotal : 0;
+      const dscrStr = dscr.toFixed(2) + "×";
+      const status = dscr >= 1.5 ? "✅ Excellent" : dscr >= 1.2 ? "✅ Conforme" : dscr >= 1.0 ? "⚠️ Fragile" : "❌ Insuffisant";
+      const clr = dscr >= 1.2 ? "var(--green)" : dscr >= 1.0 ? "var(--warning)" : "var(--danger)";
+      return `<tr>
+        <td class="num" style="font-weight:600">${fmtPct(s.occ)}</td>
+        <td class="num">${fmtMAD(s.revenu)}</td>
+        <td class="num">${fmtMAD(s.ebitda)}</td>
+        <td class="num" style="color:${s.cashFlow >= 0 ? 'var(--green)' : 'var(--danger)'}">${fmtMAD(s.cashFlow)}</td>
+        <td class="num" style="color:${clr};font-weight:600">${dscrStr}</td>
+        <td style="font-size:.82rem">${status}</td>
+      </tr>`;
+    }).join("");
+  }
+
+  // --- 11. Fiscalité ---
+  const fiscTb = document.getElementById("db-fiscalite-tbody");
+  if (fiscTb) {
+    const ecoDevises = K.isCumule ? K.isCumule * FISCALITE.caDevisesPct : 0;
+    fiscTb.innerHTML = [
+      ["Exonération IS devises (40% CA)", "5 ans", fmtMAD(ecoDevises), "Art. 6-I-B-3° CGI"],
+      ["Exonération taxe professionnelle", "5 ans", fmtMAD(CHARGES.taxesPro * 5), "Art. 6-I-A CGI — nouvelle construction"],
+      ["Exonération taxe d'habitation", "5 ans", fmtMAD((CHARGES.taxeHabitation || 0) * 5), "Nouvelle construction"],
+      ["Récupération TVA construction", "Immédiat", fmtMAD(S.tva ? S.tva.tvaTotaleRecuperable : 0), "TVA 20% sur construction + mobilier"],
+      ["Amortissement bâtiment", "20 ans", fmtMAD(S.amortissement ? S.amortissement.dotationAnnuelleConstruction * 20 : 0), "5% linéaire — bouclier fiscal IS"],
+      ["Amortissement mobilier", "7 ans", fmtMAD(S.amortissement ? S.amortissement.dotationAnnuelleMobilier * 7 : 0), "14.3% linéaire"],
+      ["Cotisation minimale exonérée", "3 ans", fmtMAD(3000 * 3), "Art. 144 CGI — création d'entreprise"],
+    ].map(r => `<tr><td style="font-weight:500">${r[0]}</td><td class="num">${r[1]}</td><td class="num" style="color:var(--green)">${r[2]}</td><td style="font-size:.8rem">${r[3]}</td></tr>`).join("");
+  }
+
+  // --- 12. KPIs ---
+  setText("db-tri", fmtPct(K.tri));
+  setText("db-van", fmtMAD(K.van));
+  setText("db-payback", K.paybackYear ? "An " + K.paybackYear : "> 20 ans");
+  setText("db-multiple", K.multipleApport ? K.multipleApport.toFixed(1) + "×" : "–");
+  setText("db-rdt-brut", fmtPct(K.rendementBrut));
+  setText("db-rdt-net", fmtPct(K.rendementNet));
+  setText("db-wealth", fmtMAD(K.wealthTotal));
+
+  // --- 13. Calendrier ---
+  const calTb = document.getElementById("db-calendrier-tbody");
+  if (calTb) calTb.innerHTML = [
+    ["Acquisition terrain", "Fait", "–", "Terrain acquis, acte notarié établi"],
+    ["Montage dossier bancaire", PLANNING.delaiAutorisations + " mois", "M0 → M" + PLANNING.delaiAutorisations, "Permis de construire + financement"],
+    ["Construction", PLANNING.dureeConstructionMois + " mois", "M" + PLANNING.delaiAutorisations + " → M" + (PLANNING.delaiAutorisations + PLANNING.dureeConstructionMois), "Gros œuvre + second œuvre + finitions"],
+    ["Ameublement & équipement", "2 mois", "M" + (PLANNING.delaiAutorisations + PLANNING.dureeConstructionMois - 2) + " → M" + (PLANNING.delaiAutorisations + PLANNING.dureeConstructionMois), "En parallèle des finitions"],
+    ["Lancement commercial", "1 mois", "M" + (PLANNING.delaiAutorisations + PLANNING.dureeConstructionMois), "Listing OTAs, photos pro, marketing lancement"],
+    ["1ère exploitation", "–", "M" + (PLANNING.delaiAutorisations + PLANNING.dureeConstructionMois + 1), "Début ramp-up (montée en occupation progressive)"],
+  ].map(r => `<tr><td style="font-weight:500">${r[0]}</td><td class="num">${r[1]}</td><td class="num">${r[2]}</td><td style="font-size:.82rem">${r[3]}</td></tr>`).join("");
+
+  // --- Checklist ---
+  const checkEl = document.getElementById("db-checklist");
+  if (checkEl) checkEl.innerHTML = [
+    "Documents identité",
+    ["CIN nationale", "Passeport valide", "Attestation de résidence UAE (consulat)"],
+    "Documents financiers",
+    ["Relevés bancaires UAE (6 derniers mois)", "Attestation de revenus / contrat de travail UAE", "Attestation d'apport personnel (origine des fonds)", "Avis d'imposition UAE (si applicable)"],
+    "Documents projet",
+    ["Titre foncier du terrain", "Permis de construire (ou demande en cours)", "Plans architecturaux approuvés", "Devis détaillé construction (entreprise BTP)", "Business plan financier (ce document)", "Étude de marché STR Casablanca"],
+    "Documents juridiques",
+    ["Statuts de la société (si SCI/SARL)", "Casier judiciaire vierge (< 3 mois)", "Certificat de non-faillite"],
+    "Documents MDM Invest (si Tamwilkom)",
+    ["Formulaire MDM Invest complété", "Attestation de compte en devises", "Engagement de rapatriement de fonds"],
+  ].map(item => {
+    if (typeof item === "string") return `<div style="font-weight:700;margin-top:12px;margin-bottom:4px;color:var(--primary)">${item}</div>`;
+    return item.map(i => `<div style="padding:2px 0 2px 16px">☐ ${i}</div>`).join("");
+  }).join("");
 }
 
 // --- Utility ---
