@@ -326,7 +326,7 @@ function chartRevenusVsCharges(S) {
 function toggleRevChBreakdown(on) {
   _revChBreakdown = on;
   document.querySelectorAll(".revch-toggle-btn").forEach(b => b.classList.toggle("active", (b.dataset.mode === "breakdown") === on));
-  if (currentState) chartRevenusVsCharges(currentState);
+  if (_currentState) chartRevenusVsCharges(_currentState);
 }
 
 // --- Debt service with RICH TOOLTIP + capital/intérêts split + monthly/annual ---
@@ -405,13 +405,13 @@ function chartDebtService(S) {
 function toggleDebtSplit(on) {
   _debtSplit = on;
   document.querySelectorAll(".debt-split-btn").forEach(b => b.classList.toggle("active", (b.dataset.mode === "split") === on));
-  if (currentState) chartDebtService(currentState);
+  if (_currentState) chartDebtService(_currentState);
 }
 
 function toggleDebtPeriod(monthly) {
   _debtMonthly = monthly;
   document.querySelectorAll(".debt-period-btn").forEach(b => b.classList.toggle("active", (b.dataset.mode === "monthly") === monthly));
-  if (currentState) chartDebtService(currentState);
+  if (_currentState) chartDebtService(_currentState);
 }
 
 // --- Cash-flow with RICH TOOLTIP, MONTHLY TOGGLE, FILTER, HORIZON & CUMUL ---

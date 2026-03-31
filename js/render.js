@@ -2454,13 +2454,15 @@ function renderDossierBanque(S) {
 
   const planTb = document.getElementById("db-plan-financement-tbody");
   if (planTb) {
+    const apportTerrain = F.apportTerrain;
     const rows = [
-      ["Apport terrain", fmtMAD(TERRAIN.prix + TERRAIN.prix * TERRAIN.fraisAcquisition), fmtPct((TERRAIN.prix + TERRAIN.prix * TERRAIN.fraisAcquisition) / totalProjet), "Terrain acquis, acte notarié"],
-      ["Tamwilkom (MDM Invest)", fmtMAD(montantTK), fmtPct(montantTK / totalProjet), TAMWILKOM.tauxAnnuel * 100 + "% sur " + TAMWILKOM.dureeAns + " ans, différé " + TAMWILKOM.differeAns + " ans"],
-      ["Banque classique", fmtMAD(montantBQ), fmtPct(montantBQ / totalProjet), BANQUE_CLASSIQUE.tauxAnnuel * 100 + "% sur " + BANQUE_CLASSIQUE.dureeAns + " ans, différé " + BANQUE_CLASSIQUE.differeAns + " an"],
-      ["Subvention MDM Invest", fmtMAD(subvMDM), fmtPct(subvMDM / totalProjet), "10% du coût, plafond 5M MAD — Tamwilcom"],
+      ["Apport personnel (terrain + frais)", fmtMAD(apportTerrain), fmtPct(apportTerrain / totalProjet), "Terrain acquis (" + fmtMAD(TERRAIN.prix) + ") + frais acquisition"],
+      ["(-) Subvention MDM Invest", '<span style="color:var(--green)">-' + fmtMAD(subvMDM) + '</span>', fmtPct(subvMDM / totalProjet), "10% du coût, plafond 5M MAD — Tamwilcom"],
+      ["<strong>= Apport net investisseur</strong>", "<strong>" + fmtMAD(apportNet) + "</strong>", "<strong>" + fmtPct(apportNet / totalProjet) + "</strong>", "Mise de fonds réelle du porteur"],
+      ["Tamwilkom (MDM Invest)", fmtMAD(montantTK), fmtPct(montantTK / totalProjet), (TAMWILKOM.tauxAnnuel * 100).toFixed(2) + "% sur " + TAMWILKOM.dureeAns + " ans, différé " + TAMWILKOM.differeAns + " ans"],
+      ["Banque classique", fmtMAD(montantBQ), fmtPct(montantBQ / totalProjet), (BANQUE_CLASSIQUE.tauxAnnuel * 100).toFixed(2) + "% sur " + BANQUE_CLASSIQUE.dureeAns + " ans, différé " + BANQUE_CLASSIQUE.differeAns + " an"],
     ];
-    rows.push(["<strong>TOTAL</strong>", "<strong>" + fmtMAD(totalProjet) + "</strong>", "<strong>100%</strong>", ""]);
+    rows.push(['<strong>TOTAL PROJET</strong>', '<strong>' + fmtMAD(totalProjet) + '</strong>', '<strong>100%</strong>', '']);
     planTb.innerHTML = rows.map(r => `<tr><td>${r[0]}</td><td class="num">${r[1]}</td><td class="num">${r[2]}</td><td style="font-size:.8rem">${r[3]}</td></tr>`).join("");
   }
 
@@ -2499,6 +2501,24 @@ function renderDossierBanque(S) {
   if (cfEl) cfEl.style.color = y1.cashFlowNet >= 0 ? "var(--green)" : "var(--danger)";
   setText("db-cf-an1-mensuel", fmtMAD(y1.cashFlowNet / 12) + " /mois");
   setText("db-break-even", fmtPct(K.breakEvenOcc));
+
+  // --- Ratios bancaires ---
+  const ltv = montantTotal / totalProjet;
+  setText("db-ltv", fmtPct(ltv));
+  const ltvEl = document.getElementById("db-ltv");
+  if (ltvEl) ltvEl.style.color = ltv <= 0.70 ? "var(--green)" : ltv <= 0.80 ? "var(--warning)" : "var(--danger)";
+
+  setText("db-quotite", fmtPct(montantTotal / totalProjet));
+  const tauxEffort = y1.revTotal > 0 ? y1.debtServiceTotal / y1.revTotal : 0;
+  setText("db-taux-effort", fmtPct(tauxEffort));
+  const teEl = document.getElementById("db-taux-effort");
+  if (teEl) teEl.style.color = tauxEffort <= 0.35 ? "var(--green)" : tauxEffort <= 0.50 ? "var(--warning)" : "var(--danger)";
+
+  const interetsY1 = (y1.interetsTK || F.interetsDiffereTK || 0) + (y1.interetsBQ || F.interetsDiffereBQ || 0);
+  const icr = interetsY1 > 0 ? y1.ebitda / interetsY1 : Infinity;
+  setText("db-icr", isFinite(icr) ? icr.toFixed(2) + "×" : "∞");
+  const icrEl = document.getElementById("db-icr");
+  if (icrEl) icrEl.style.color = icr >= 2.0 ? "var(--green)" : icr >= 1.5 ? "var(--warning)" : "var(--danger)";
 
   const dscrComm = document.getElementById("db-dscr-commentary");
   if (dscrComm) {
@@ -2567,6 +2587,8 @@ function renderDossierBanque(S) {
       ["Domiciliation revenus", "Compte professionnel", "–", "Revenus locatifs domiciliés à la banque prêteuse"],
       ["Assurance décès/invalidité", "Assurance emprunteur", fmtMAD(montantTotal), "Couvre la totalité du crédit"],
       ["Caution personnelle", "Engagement personnel", "–", "Caution solidaire du porteur de projet"],
+      ["Billet à ordre", "Titre exécutoire", fmtMAD(montantTotal), "Garantie complémentaire — exécution directe"],
+      ["Engagement de non-cession", "Clause contractuelle", "–", "Bien non cessible pendant la durée du prêt"],
     ].map(r => `<tr><td style="font-weight:500">${r[0]}</td><td>${r[1]}</td><td class="num">${r[2]}</td><td style="font-size:.8rem">${r[3]}</td></tr>`).join("");
   }
 
@@ -2633,26 +2655,28 @@ function renderDossierBanque(S) {
   const calTb = document.getElementById("db-calendrier-tbody");
   if (calTb) calTb.innerHTML = [
     ["Acquisition terrain", "Fait", "–", "Terrain acquis, acte notarié établi"],
-    ["Montage dossier bancaire", PLANNING.delaiAutorisations + " mois", "M0 → M" + PLANNING.delaiAutorisations, "Permis de construire + financement"],
-    ["Construction", PLANNING.dureeConstructionMois + " mois", "M" + PLANNING.delaiAutorisations + " → M" + (PLANNING.delaiAutorisations + PLANNING.dureeConstructionMois), "Gros œuvre + second œuvre + finitions"],
-    ["Ameublement & équipement", "2 mois", "M" + (PLANNING.delaiAutorisations + PLANNING.dureeConstructionMois - 2) + " → M" + (PLANNING.delaiAutorisations + PLANNING.dureeConstructionMois), "En parallèle des finitions"],
-    ["Lancement commercial", "1 mois", "M" + (PLANNING.delaiAutorisations + PLANNING.dureeConstructionMois), "Listing OTAs, photos pro, marketing lancement"],
-    ["1ère exploitation", "–", "M" + (PLANNING.delaiAutorisations + PLANNING.dureeConstructionMois + 1), "Début ramp-up (montée en occupation progressive)"],
+    ["Montage dossier bancaire", PLANNING.delaiAutorisationsPret + " mois", "M0 → M" + PLANNING.delaiAutorisationsPret, "Permis de construire + financement"],
+    ["Construction", PLANNING.delaiConstruction + " mois", "M" + PLANNING.delaiAutorisationsPret + " → M" + (PLANNING.delaiAutorisationsPret + PLANNING.delaiConstruction), "Gros œuvre + second œuvre + finitions"],
+    ["Ameublement & équipement", "2 mois", "M" + (PLANNING.delaiAutorisationsPret + PLANNING.delaiConstruction - 2) + " → M" + (PLANNING.delaiAutorisationsPret + PLANNING.delaiConstruction), "En parallèle des finitions"],
+    ["Lancement commercial", "1 mois", "M" + (PLANNING.delaiAutorisationsPret + PLANNING.delaiConstruction), "Listing OTAs, photos pro, marketing lancement"],
+    ["1ère exploitation", "–", "M" + (PLANNING.delaiAutorisationsPret + PLANNING.delaiConstruction + 1), "Début ramp-up (montée en occupation progressive)"],
   ].map(r => `<tr><td style="font-weight:500">${r[0]}</td><td class="num">${r[1]}</td><td class="num">${r[2]}</td><td style="font-size:.82rem">${r[3]}</td></tr>`).join("");
 
   // --- Checklist ---
   const checkEl = document.getElementById("db-checklist");
   if (checkEl) checkEl.innerHTML = [
-    "Documents identité",
-    ["CIN nationale", "Passeport valide", "Attestation de résidence UAE (consulat)"],
-    "Documents financiers",
-    ["Relevés bancaires UAE (6 derniers mois)", "Attestation de revenus / contrat de travail UAE", "Attestation d'apport personnel (origine des fonds)", "Avis d'imposition UAE (si applicable)"],
+    "Documents identité & résidence",
+    ["CIN nationale", "Passeport valide", "Attestation de résidence UAE (consulat)", "Attestation consulaire d'immatriculation"],
+    "Documents financiers & solvabilité",
+    ["Relevés bancaires UAE (6 derniers mois)", "Attestation de revenus / contrat de travail UAE", "Attestation d'apport personnel (origine des fonds)", "Attestation de solvabilité bancaire (banque UAE)", "Avis d'imposition UAE (si applicable)", "Bilan patrimonial du porteur de projet"],
     "Documents projet",
-    ["Titre foncier du terrain", "Permis de construire (ou demande en cours)", "Plans architecturaux approuvés", "Devis détaillé construction (entreprise BTP)", "Business plan financier (ce document)", "Étude de marché STR Casablanca"],
+    ["Titre foncier du terrain (certificat de propriété)", "Permis de construire approuvé (ou récépissé de dépôt)", "Plans architecturaux approuvés (Nour Architects)", "Devis détaillé construction signé (entreprise BTP)", "Business plan financier (ce document)", "Étude de marché STR Casablanca", "Rapport d'expertise immobilière (estimation terrain + projet)"],
     "Documents juridiques",
-    ["Statuts de la société (si SCI/SARL)", "Casier judiciaire vierge (< 3 mois)", "Certificat de non-faillite"],
-    "Documents MDM Invest (si Tamwilkom)",
-    ["Formulaire MDM Invest complété", "Attestation de compte en devises", "Engagement de rapatriement de fonds"],
+    ["Statuts de la société (si SCI/SARL)", "Casier judiciaire vierge (< 3 mois)", "Certificat de non-faillite", "Billet à ordre (garantie complémentaire)", "Engagement de non-cession du bien pendant la durée du prêt"],
+    "Assurances",
+    ["Devis assurance emprunteur (décès/invalidité)", "Devis assurance multirisques immeuble", "Devis assurance responsabilité civile professionnelle"],
+    "Documents MDM Invest (Tamwilkom)",
+    ["Formulaire MDM Invest complété", "Attestation de compte en devises (banque marocaine ou UAE)", "Engagement de rapatriement de fonds", "Lettre de pré-accord Tamwilcom (si disponible)", "Justificatif de résidence à l'étranger (> 6 mois)"],
   ].map(item => {
     if (typeof item === "string") return `<div style="font-weight:700;margin-top:12px;margin-bottom:4px;color:var(--primary)">${item}</div>`;
     return item.map(i => `<div style="padding:2px 0 2px 16px">☐ ${i}</div>`).join("");

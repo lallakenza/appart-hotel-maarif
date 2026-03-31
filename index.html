@@ -2345,6 +2345,12 @@ tr:hover td{background:#f0f4f8}
       <div class="kpi-card"><div class="kpi-label">Cash-Flow Net An 1</div><div class="kpi-value" id="db-cf-an1">–</div><div class="kpi-sub" id="db-cf-an1-mensuel">–</div></div>
       <div class="kpi-card"><div class="kpi-label">Seuil Occupation</div><div class="kpi-value" id="db-break-even">–</div><div class="kpi-sub">Pour CF ≥ 0</div></div>
     </div>
+    <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr);margin-top:0;margin-bottom:16px">
+      <div class="kpi-card"><div class="kpi-label">LTV (Loan-to-Value)</div><div class="kpi-value" id="db-ltv">–</div><div class="kpi-sub">Cible bancaire ≤ 70%</div></div>
+      <div class="kpi-card"><div class="kpi-label">Quotité Financement</div><div class="kpi-value" id="db-quotite">–</div><div class="kpi-sub">Part dette / coût total</div></div>
+      <div class="kpi-card"><div class="kpi-label">Taux d'Effort</div><div class="kpi-value" id="db-taux-effort">–</div><div class="kpi-sub">Service dette / revenus</div></div>
+      <div class="kpi-card"><div class="kpi-label">Ratio Couverture Intérêts</div><div class="kpi-value" id="db-icr">–</div><div class="kpi-sub">EBITDA / intérêts seuls</div></div>
+    </div>
     <div class="chart-box"><canvas id="chart-db-dscr"></canvas></div>
     <div class="info-box" style="margin-top:12px;font-size:.82rem" id="db-dscr-commentary"></div>
   </div>
@@ -2459,11 +2465,11 @@ tr:hover td{background:#f0f4f8}
 </main>
 
 <!-- Scripts — strict order: data → engine → render → charts → app -->
-<script src="js/data.js?v=78"></script>
-<script src="js/engine.js?v=78"></script>
-<script src="js/render.js?v=78"></script>
-<script src="js/charts.js?v=78"></script>
-<script src="js/app.js?v=78"></script>
+<script src="js/data.js?v=79"></script>
+<script src="js/engine.js?v=79"></script>
+<script src="js/render.js?v=79"></script>
+<script src="js/charts.js?v=79"></script>
+<script src="js/app.js?v=79"></script>
 
 </body>
 </html>
