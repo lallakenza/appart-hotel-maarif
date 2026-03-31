@@ -1,6 +1,6 @@
 # Documentation Tableau de Bord Financier — Appart'Hôtel Maarif
 
-**Version:** 2.8 (v78)
+**Version:** 2.10 (v80)
 **Date:** 31 Mars 2026
 **Langue:** Français
 **Public Cible:** Analystes financiers, investisseurs, auditeurs
@@ -1022,6 +1022,40 @@ Renommage de l'onglet navigation "Cash-Flow" en **"Rentabilité"** : la section 
 - `tauxActualisation` extrait du hardcode engine.js → paramètre dans `REVENUE_ASSUMPTIONS`
 - 36 tooltips `(?)` sur tous les paramètres avancés avec explications contextuelles
 - CSS responsive tooltips mobile
+
+### v80 — Stress Tests : cliff calendar, rate sensitivity, cash reserve
+**Date:** 31/03/2026
+**Fichiers modifiés:** `engine.js`, `render.js`, `app.js`, `index.html`
+
+Nouvelle section **Stress Tests & Points de Vigilance** dans la page Risques, suite à un audit qui a révélé que 5 des 7 insights de stress test n'étaient pas visibles sur le site.
+
+**1. Calendrier des Cliffs** — `computeStressTests()` dans engine.js :
+- **An 3 — Fin différé Tamwilkom** : service dette bondit de ~174K → ~662K MAD (+×3.8). Sévérité élevée.
+- **An 6 — Triple cliff fiscal** : taxe professionnelle (25K) + taxe habitation (12K) + fin exonération IS devises (~IS supplémentaire). Total ~37K MAD de charges additionnelles.
+- **An 8 — Fin amortissement mobilier** : perte du bouclier fiscal → ~10.5K MAD IS supplémentaire /an.
+
+Timeline visuelle avec barres colorées par sévérité + tableau détaillé.
+
+**2. Sensibilité au taux bancaire BQ** :
+- Test de 10 taux (4% à 8%) avec recalcul complet du modèle pour chaque taux.
+- Affiche mensualité BQ, service dette total, EBITDA, CF Net, DSCR et statut.
+- Détection automatique du seuil critique (DSCR < 1.0×). Résultat : projet robuste (DSCR > 1.0× même à 8%).
+
+**3. Réserve de trésorerie** :
+- Analyse du scénario pessimiste (occ. 35%) : CF An 1 = -120K MAD.
+- Recommandation : réserve de 190K MAD (couvre déficit pessimiste + 50% marge sécurité).
+- Identification de la pire année pour le scénario actuel : An 3 (CF = -32K MAD, lié au cliff dette).
+
+### v79 — Audit v4 : toggles, PLANNING, ratios bancaires
+**Date:** 31/03/2026
+**Fichiers modifiés:** `engine.js`, `render.js`, `charts.js`, `index.html`
+
+1. **3× toggle bugs** — `toggleRevChBreakdown()`, `toggleDebtSplit()`, `toggleDebtPeriod()` référençaient `currentState` (inexistant dans charts.js). Corrigé → `_currentState`.
+2. **PLANNING field names** — `delaiAutorisations` → `delaiAutorisationsPret`, `dureeConstructionMois` → `delaiConstruction`. Aurait affiché "undefined mois" dans le calendrier.
+3. **Ratios bancaires** — Ajouté LTV, quotité financement, taux d'effort et ICR (Interest Coverage Ratio) dans le Dossier Banque avec colorimétrie seuils.
+4. **Plan financement corrigé** — Apport net affiche correctement la déduction MDM.
+5. **Checklist enrichie** — +11 items (solvabilité, expertise, billet à ordre, assurances, pré-accord Tamwilcom).
+6. **Garanties enrichies** — +billet à ordre, +engagement non-cession.
 
 ### v78 — Audit ultra-poussé v3 + Dossier Banque
 **Date:** 31/03/2026
