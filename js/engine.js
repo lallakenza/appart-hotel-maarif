@@ -766,7 +766,8 @@ function compute(scenario) {
     const testEbitda = testRevN - testCh;
     const testDebt = interetsDiffereTK + interetsDiffereBQ;
     const testCFavIS = testEbitda - testDebt;
-    const testResultatFiscal = testCFavIS - amortissementAnnuel;
+    const testAmort = amortissementAnnuel + amortissementMobilier; // construction + mobilier (Y1 snapshot)
+    const testResultatFiscal = testCFavIS - testAmort;
     const testIS = Math.max(0, testResultatFiscal) * (1 - FISCALITE.caDevisesPct) * FISCALITE.isTaux;
     const testCF = testCFavIS - testIS;
     if (testCF >= 0) { breakEvenOcc = testOcc; break; }
@@ -780,7 +781,8 @@ function compute(scenario) {
     const ebit = revN - ch;
     const debtY1 = interetsDiffereTK + interetsDiffereBQ;
     const cfAvIS = ebit - debtY1;
-    const resFiscal = cfAvIS - amortissementAnnuel;
+    const sensAmort = amortissementAnnuel + amortissementMobilier; // Y1 snapshot
+    const resFiscal = cfAvIS - sensAmort;
     const impot = Math.max(0, resFiscal) * (1 - FISCALITE.caDevisesPct) * FISCALITE.isTaux;
     const cf = cfAvIS - impot;
     return { occ: occRate, revenu: revN, ebitda: ebit, cashFlow: cf, rendement: cf / apportNet };

@@ -1514,7 +1514,7 @@ function chartWealthBuilding(S) {
           order: 2,
         },
         {
-          label: "Appréciation bien (2%/an)",
+          label: "Appréciation bien (" + (REVENUE_ASSUMPTIONS.tauxAppreciation * 100).toFixed(0) + "%/an)",
           data: wb.map(w => w.appreciation),
           backgroundColor: "rgba(124,58,237,0.55)",
           borderColor: "#7c3aed",
