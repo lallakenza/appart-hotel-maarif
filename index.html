@@ -1626,6 +1626,31 @@ tr:hover td{background:#f0f4f8}
       <div class="info-box"><strong>Points forts du projet</strong><ul style="padding-left:18px;margin-top:8px;font-size:.85rem"><li>Emplacement premium Maarif, forte demande</li><li>Financement très avantageux (MDM Invest + Tamwil)</li><li>Fiscalité attractive (TVA 10%, exo IS devises)</li><li>Revenus diversifiés (hôtel + local commercial)</li><li>Perspective Coupe du Monde 2030</li></ul></div>
     </div>
   </div>
+
+  <!-- ==================== STRESS TESTS & POINTS DE VIGILANCE ==================== -->
+  <div class="card"><div class="card-title">Calendrier des Cliffs — Points de Vigilance par Année</div>
+    <div class="info-box" style="margin-bottom:12px">Les « cliffs » sont des sauts de charges ou de dette qui peuvent surprendre l'investisseur. Anticiper ces moments critiques est essentiel pour maintenir la trésorerie.</div>
+    <div id="stress-cliff-timeline" style="margin-bottom:16px"></div>
+    <div class="table-wrap"><table><thead><tr><th>Année</th><th>Type</th><th>Sévérité</th><th>Événement</th><th>Impact</th></tr></thead><tbody id="stress-cliff-tbody"></tbody></table></div>
+  </div>
+
+  <div class="card"><div class="card-title">Sensibilité au Taux Bancaire (BQ)</div>
+    <div class="warn-box" id="stress-rate-warning" style="margin-bottom:12px"></div>
+    <div class="table-wrap"><table><thead><tr><th>Taux BQ</th><th>Mensualité BQ</th><th>Service dette total An 1</th><th>EBITDA</th><th>Cash-Flow Net An 1</th><th>DSCR</th><th>Statut</th></tr></thead><tbody id="stress-rate-tbody"></tbody></table></div>
+  </div>
+
+  <div class="card"><div class="card-title">Réserve de Trésorerie Recommandée</div>
+    <div class="grid-2">
+      <div class="warn-box" id="stress-reserve-box">
+        <strong>Scénario pessimiste (occ. 35%)</strong>
+        <div style="margin-top:8px" id="stress-reserve-detail"></div>
+      </div>
+      <div class="info-box" id="stress-reserve-reco">
+        <strong>Recommandation</strong>
+        <div style="margin-top:8px" id="stress-reserve-reco-detail"></div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- ==================== SUBVENTIONS & AIDES ==================== -->
@@ -2465,11 +2490,11 @@ tr:hover td{background:#f0f4f8}
 </main>
 
 <!-- Scripts — strict order: data → engine → render → charts → app -->
-<script src="js/data.js?v=79"></script>
-<script src="js/engine.js?v=79"></script>
-<script src="js/render.js?v=79"></script>
-<script src="js/charts.js?v=79"></script>
-<script src="js/app.js?v=79"></script>
+<script src="js/data.js?v=80"></script>
+<script src="js/engine.js?v=80"></script>
+<script src="js/render.js?v=80"></script>
+<script src="js/charts.js?v=80"></script>
+<script src="js/app.js?v=80"></script>
 
 </body>
 </html>

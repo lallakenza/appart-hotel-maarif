@@ -1043,4 +1043,117 @@ function computeGestionDuel(scenario) {
   return { autoGere, societeGestion };
 }
 
+// ============================================================
+// STRESS TESTS — Cliff calendar, rate sensitivity, cash reserve
+// ============================================================
+function computeStressTests(scenario) {
+  const S = compute(scenario);
+  const p = S.projections;
+  const dp = S.debtProjections;
+  if (!p || !p.length) return null;
+
+  // ── 1. CLIFF CALENDAR — Identify year-over-year jumps in charges/debt ──
+  const cliffs = [];
+
+  // Year 3 (index 2): Debt cliff — TK amortization starts (differe 2 ans)
+  if (dp && dp.length >= 3) {
+    const debtY2 = dp[1].debtServiceTotal;
+    const debtY3 = dp[2].debtServiceTotal;
+    if (debtY3 > debtY2 * 1.5) {
+      cliffs.push({
+        year: 3, type: "debt", severity: "high",
+        label: "Fin différé Tamwilkom",
+        detail: "Service dette bondit de " + fmt(debtY2) + " → " + fmt(debtY3) + " MAD (+×" + (debtY3 / debtY2).toFixed(1) + ")",
+        delta: debtY3 - debtY2,
+      });
+    }
+  }
+
+  // Year 6 (index 5): Triple cliff — taxe pro + taxe habitation + fin exo devises
+  if (p.length >= 6) {
+    const taxePro = CHARGES.taxesPro || 0;
+    const taxeHab = CHARGES.taxeHabitation || 0;
+    const pctDevises = FISCALITE.caDevisesPct || 0.40;
+    const isTaux = FISCALITE.isTaux || 0.20;
+    // Estimate lost IS exemption at Y6
+    const benY5 = p[4].beneficeImposable || 0;
+    const isExtraDevises = benY5 * pctDevises * isTaux;
+    const totalY6Delta = taxePro + taxeHab + isExtraDevises;
+    if (totalY6Delta > 10_000) {
+      cliffs.push({
+        year: 6, type: "fiscal", severity: "medium",
+        label: "Triple cliff fiscal",
+        detail: "Taxe pro (" + fmt(taxePro) + ") + taxe habitation (" + fmt(taxeHab) + ") + fin exo devises IS (~" + fmt(isExtraDevises) + ") = +" + fmt(totalY6Delta) + " MAD charges",
+        delta: totalY6Delta,
+        breakdown: { taxePro, taxeHab, isExtraDevises },
+      });
+    }
+  }
+
+  // Year 8 (index 7): Mini-cliff — fin amortissement mobilier
+  const amortMobAns = FISCALITE.amortissementMobilierAns || 7;
+  if (p.length > amortMobAns) {
+    const amortMob = S.amortissement.mobilier || 0;
+    const isTaux = FISCALITE.isTaux || 0.20;
+    // Lost tax shield = amortissement mobilier × IS taux (times part not exempt)
+    const pctExoY8 = (amortMobAns < (FISCALITE.exoDevisesAns || 5)) ? (FISCALITE.caDevisesPct || 0.40) : 0;
+    const isImpact = amortMob * (1 - pctExoY8) * isTaux;
+    if (isImpact > 3_000) {
+      cliffs.push({
+        year: amortMobAns + 1, type: "amortissement", severity: "low",
+        label: "Fin amortissement mobilier",
+        detail: "Perte du bouclier fiscal mobilier → +" + fmt(isImpact) + " MAD IS supplémentaire /an",
+        delta: isImpact,
+      });
+    }
+  }
+
+  // ── 2. RATE SENSITIVITY — BQ rate from 4% to 8% ──
+  const rateSensitivity = [];
+  const savedRate = BANQUE_CLASSIQUE.tauxAnnuel;
+  const testRates = [0.04, 0.045, 0.05, savedRate, 0.055, 0.06, 0.065, 0.07, 0.075, 0.08];
+  for (const rate of testRates) {
+    BANQUE_CLASSIQUE.tauxAnnuel = rate;
+    const testResult = compute(scenario);
+    const y1 = testResult.projections[0];
+    const dscr = y1.debtServiceTotal > 0 ? y1.ebitda / y1.debtServiceTotal : Infinity;
+    rateSensitivity.push({
+      rate,
+      isCurrent: Math.abs(rate - savedRate) < 0.0001,
+      mensualiteBQ: testResult.financement.mensualiteBQ,
+      annuiteBQ: testResult.financement.mensualiteBQ * 12,
+      debtServiceTotal: y1.debtServiceTotal,
+      ebitda: y1.ebitda,
+      cashFlowNet: y1.cashFlowNet,
+      dscr,
+    });
+  }
+  BANQUE_CLASSIQUE.tauxAnnuel = savedRate;
+
+  // Find critical rate (DSCR < 1.0)
+  const criticalRate = rateSensitivity.find(r => r.dscr < 1.0);
+
+  // ── 3. CASH RESERVE — Pessimistic scenario CF analysis ──
+  const pessResult = compute("prudent");
+  const pessY1CF = pessResult.projections[0].cashFlowNet;
+  const pessY1CFMensuel = pessY1CF / 12;
+  // Reserve = cover negative months + safety margin
+  const reserveRecommandee = pessY1CF < 0 ? Math.ceil(Math.abs(pessY1CF) * 1.5 / 10_000) * 10_000 : 0;
+  // Also check worst single year across all projections for current scenario
+  const worstCFYear = p.reduce((worst, yr) => yr.cashFlowNet < worst.cashFlowNet ? yr : worst, p[0]);
+
+  return {
+    cliffs,
+    rateSensitivity,
+    criticalRate: criticalRate ? criticalRate.rate : null,
+    cashReserve: {
+      pessY1CF,
+      pessY1CFMensuel,
+      reserveRecommandee,
+      worstCFYear: { year: worstCFYear.year, cf: worstCFYear.cashFlowNet },
+    },
+    currentRate: savedRate,
+  };
+}
+
 function fmt(n) { return Math.round(n).toLocaleString("fr-FR"); }

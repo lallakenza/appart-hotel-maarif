@@ -72,6 +72,7 @@ function render(state) {
   renderMarche(state);
   renderFiscalite(state);
   renderRisques(state);
+  renderStressTests(state);
   renderSensibilite(state);
   renderSubventions(state);
   renderGoSiyaha(state);
@@ -2395,6 +2396,120 @@ function renderHypotheses() {
 
     <p style="margin-top:14px;font-style:italic;color:var(--text-sec)">Analyse réalisée les 27-30 mars 2026. Données vérifiées par recoupement multi-sources. Ne constitue pas un conseil en investissement.</p>
   `;
+}
+
+// ============================================================
+// STRESS TESTS — Cliff calendar, rate sensitivity, cash reserve
+// ============================================================
+function renderStressTests(S) {
+  const st = S.stressTests;
+  if (!st) return;
+
+  // --- 1. Cliff Timeline visual ---
+  const timeline = document.getElementById("stress-cliff-timeline");
+  if (timeline && st.cliffs.length > 0) {
+    // Visual timeline bar
+    const maxYear = 20;
+    let html = '<div style="position:relative;height:60px;background:linear-gradient(90deg,var(--green-light) 0%,var(--surface) 100%);border-radius:8px;overflow:visible;margin:8px 0">';
+    st.cliffs.forEach(c => {
+      const left = ((c.year - 1) / maxYear * 100).toFixed(1);
+      const clr = c.severity === "high" ? "var(--danger)" : c.severity === "medium" ? "var(--warning)" : "var(--amber)";
+      html += `<div style="position:absolute;left:${left}%;top:0;bottom:0;width:3px;background:${clr};border-radius:2px" title="An ${c.year}: ${c.label}"></div>`;
+      html += `<div style="position:absolute;left:${left}%;top:-4px;transform:translateX(-50%);font-size:.7rem;font-weight:700;color:${clr}">An ${c.year}</div>`;
+      html += `<div style="position:absolute;left:${left}%;bottom:-18px;transform:translateX(-50%);font-size:.65rem;color:var(--muted);white-space:nowrap">${c.label}</div>`;
+    });
+    html += '</div>';
+    timeline.innerHTML = html;
+    timeline.style.paddingTop = "12px";
+    timeline.style.paddingBottom = "24px";
+  } else if (timeline) {
+    timeline.innerHTML = '<div class="info-box">Aucun cliff majeur détecté.</div>';
+  }
+
+  // --- Cliff table ---
+  const cliffTb = document.getElementById("stress-cliff-tbody");
+  if (cliffTb) {
+    if (st.cliffs.length === 0) {
+      cliffTb.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--muted)">Aucun cliff détecté</td></tr>';
+    } else {
+      cliffTb.innerHTML = st.cliffs.map(c => {
+        const sevBadge = c.severity === "high" ? '<span class="badge badge-red">Élevé</span>'
+          : c.severity === "medium" ? '<span class="badge badge-amber">Moyen</span>'
+          : '<span class="badge badge-green">Faible</span>';
+        const typeBadge = c.type === "debt" ? "🏦 Dette"
+          : c.type === "fiscal" ? "📋 Fiscal"
+          : "📉 Amort.";
+        return `<tr>
+          <td class="num" style="font-weight:700;font-size:1.1rem">An ${c.year}</td>
+          <td>${typeBadge}</td>
+          <td>${sevBadge}</td>
+          <td style="font-weight:500">${c.label}</td>
+          <td style="font-size:.85rem">${c.detail}</td>
+        </tr>`;
+      }).join("");
+    }
+  }
+
+  // --- 2. Rate sensitivity table ---
+  const rateTb = document.getElementById("stress-rate-tbody");
+  if (rateTb && st.rateSensitivity) {
+    rateTb.innerHTML = st.rateSensitivity.map(r => {
+      const isCurrent = r.isCurrent;
+      const dscrStr = isFinite(r.dscr) ? r.dscr.toFixed(2) + "×" : "∞";
+      const status = r.dscr >= 1.5 ? "✅ Excellent" : r.dscr >= 1.2 ? "✅ Conforme" : r.dscr >= 1.0 ? "⚠️ Fragile" : "❌ Insuffisant";
+      const clr = r.dscr >= 1.2 ? "var(--green)" : r.dscr >= 1.0 ? "var(--warning)" : "var(--danger)";
+      const rowClass = isCurrent ? ' class="highlight-row"' : '';
+      return `<tr${rowClass}>
+        <td class="num" style="font-weight:${isCurrent ? '700' : '400'}">${(r.rate * 100).toFixed(2)}%${isCurrent ? ' <span class="badge badge-blue">Actuel</span>' : ''}</td>
+        <td class="num">${fmtMAD(r.mensualiteBQ)}</td>
+        <td class="num">${fmtMAD(r.debtServiceTotal)}</td>
+        <td class="num">${fmtMAD(r.ebitda)}</td>
+        <td class="num" style="color:${r.cashFlowNet >= 0 ? 'var(--green)' : 'var(--danger)'}; font-weight:600">${fmtMAD(r.cashFlowNet)}</td>
+        <td class="num" style="color:${clr};font-weight:600">${dscrStr}</td>
+        <td style="font-size:.82rem">${status}</td>
+      </tr>`;
+    }).join("");
+  }
+
+  // Rate warning
+  const rateWarn = document.getElementById("stress-rate-warning");
+  if (rateWarn) {
+    if (st.criticalRate) {
+      rateWarn.className = "warn-box";
+      rateWarn.style.borderLeftColor = "var(--danger)";
+      rateWarn.innerHTML = `<strong>⚠️ Seuil critique : ${(st.criticalRate * 100).toFixed(2)}%</strong> — Au-delà de ce taux BQ, le DSCR passe sous 1.0× et le projet ne couvre plus son service de dette en An 1. Le taux actuel (${(st.currentRate * 100).toFixed(2)}%) offre une marge de ${((st.criticalRate - st.currentRate) * 100).toFixed(2)} points de base.`;
+    } else {
+      rateWarn.className = "info-box";
+      rateWarn.style.borderLeftColor = "var(--green)";
+      rateWarn.innerHTML = '<strong>✅ Robuste</strong> — Le DSCR reste au-dessus de 1.0× même à 8% de taux BQ. Le projet est résilient face à une hausse des taux.';
+    }
+  }
+
+  // --- 3. Cash reserve ---
+  const reserveDetail = document.getElementById("stress-reserve-detail");
+  if (reserveDetail && st.cashReserve) {
+    const cr = st.cashReserve;
+    const cfColor = cr.pessY1CF >= 0 ? "var(--green)" : "var(--danger)";
+    reserveDetail.innerHTML = `
+      CF Net An 1 pessimiste : <strong style="color:${cfColor}">${fmtMAD(cr.pessY1CF)}</strong><br>
+      Soit <strong style="color:${cfColor}">${fmtMAD(cr.pessY1CFMensuel)} /mois</strong><br>
+      Pire année (scénario actuel) : An ${cr.worstCFYear.year} → <strong style="color:${cr.worstCFYear.cf >= 0 ? 'var(--green)' : 'var(--danger)'}">${fmtMAD(cr.worstCFYear.cf)}</strong>
+    `;
+  }
+
+  const recoDetail = document.getElementById("stress-reserve-reco-detail");
+  if (recoDetail && st.cashReserve) {
+    const cr = st.cashReserve;
+    if (cr.reserveRecommandee > 0) {
+      recoDetail.innerHTML = `
+        <span style="font-size:1.3rem;font-weight:700;color:var(--danger)">${fmtMAD(cr.reserveRecommandee)}</span><br>
+        <span style="font-size:.85rem">Prévoir une réserve de trésorerie de <strong>${fmtMAD(cr.reserveRecommandee)}</strong> pour couvrir les mois déficitaires du scénario pessimiste + marge de sécurité 50%.</span><br>
+        <span style="font-size:.8rem;color:var(--muted)">Cette réserve couvre ~${Math.ceil(cr.reserveRecommandee / Math.abs(cr.pessY1CFMensuel))} mois de déficit pessimiste.</span>
+      `;
+    } else {
+      recoDetail.innerHTML = '<span style="color:var(--green);font-weight:600">Aucune réserve nécessaire</span> — Même le scénario pessimiste génère un cash-flow positif dès An 1.';
+    }
+  }
 }
 
 // ============================================================
