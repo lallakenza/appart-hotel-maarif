@@ -40,7 +40,7 @@ function rebuildCharts(state) {
   chartOccupancy();
   chartSensitivity(state);
   chartIS(state);
-  chartTVA(state);
+  chartTVA(state, _tvaChartMode);
   chartAlternatives(state);
   chartRendementEvolution(state);
   chartCRD(state);
@@ -181,7 +181,7 @@ function chartRevenueEvolution(S) {
           enabled: false,
           external: (ctx) => externalTooltip(ctx, (idx) => {
             const p = S.projections[idx];
-            const sc = SCENARIOS[_currentState.scenario];
+            const sc = SCENARIOS[S.scenario];
             const growth = Math.pow(1 + REVENUE_ASSUMPTIONS.croissanceTarifs, idx);
             const pxS = Math.round(sc.prixNuitStudio * growth);
             const pxL = Math.round(sc.prixNuitLoft * growth);

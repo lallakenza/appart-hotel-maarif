@@ -2504,7 +2504,7 @@ function renderStressTests(S) {
       recoDetail.innerHTML = `
         <span style="font-size:1.3rem;font-weight:700;color:var(--danger)">${fmtMAD(cr.reserveRecommandee)}</span><br>
         <span style="font-size:.85rem">Prévoir une réserve de trésorerie de <strong>${fmtMAD(cr.reserveRecommandee)}</strong> pour couvrir les mois déficitaires du scénario pessimiste + marge de sécurité 50%.</span><br>
-        <span style="font-size:.8rem;color:var(--muted)">Cette réserve couvre ~${Math.ceil(cr.reserveRecommandee / Math.abs(cr.pessY1CFMensuel))} mois de déficit pessimiste.</span>
+        <span style="font-size:.8rem;color:var(--muted)">Cette réserve couvre ~${Math.abs(cr.pessY1CFMensuel) > 0 ? Math.ceil(cr.reserveRecommandee / Math.abs(cr.pessY1CFMensuel)) : '∞'} mois de déficit pessimiste.</span>
       `;
     } else {
       recoDetail.innerHTML = '<span style="color:var(--green);font-weight:600">Aucune réserve nécessaire</span> — Même le scénario pessimiste génère un cash-flow positif dès An 1.';
