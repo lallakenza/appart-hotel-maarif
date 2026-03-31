@@ -2165,6 +2165,7 @@ function _chargeDetailRows(y1) {
     ['Marketing lancement', cd.marketingLancement || 0],
     ['Frais création SARL', cd.fraisCreation || 0],
     ['Taxes professionnelles', cd.taxesPro || 0],
+    ['Taxe de séjour', cd.taxeSejour || 0],
   ].filter(([, v]) => v > 0);
   return items.map(([label, val]) =>
     `<tr><td>${label}</td><td class="num">${fmtMAD(val)}</td><td class="num">${(val / total * 100).toFixed(1)}%</td></tr>`
@@ -2222,6 +2223,7 @@ function renderHypotheses() {
     row('Divers & imprévus', fmtMAD(ch.divers) + '/an', 'Frais bancaires, fournitures, licences PMS, déplacements'),
     row('Marketing lancement', fmtMAD(ch.budgetMarketingLancement) + ' (An 1)', 'One-shot — photos pro, création listings, promotions Booking Genius'),
     row('Frais création SARL', fmtMAD(ch.fraisCreation) + ' (An 1)', 'One-shot — constitution SARL + autorisations touristiques'),
+    row('Taxe de séjour', fmtMAD(ch.taxeSejour || 0) + '/nuitée', 'Dahir n° 1-19-40 — taxe de promotion touristique, reversée à la commune'),
     row('Renouvellement mobilier', fmtMAD(ch.renouvellementMobilierParUnite) + '/unité / ' + ch.renouvellementMobilierCycle + ' ans', 'Cycle hôtelier 5-7 ans — benchmark opérateurs STR'),
     row('Syndic', fmtMAD(ch.syndic) + '/an', 'N/A — immeuble indivisible, monopropriété intégrale'),
   ].join('');

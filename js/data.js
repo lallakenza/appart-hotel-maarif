@@ -393,6 +393,13 @@ const CHARGES = {
   // Source : upsilon-consulting.com, fourchette 10-15K pour petit R+5
   taxeHabitation: 12_000,            // MAD / an (à partir An 6, exo nouvelle construction 5 ans)
 
+  // Taxe de séjour (taxe de promotion touristique)
+  // Instaurée par Dahir n° 1-19-40, Art. 4 : 2-25 MAD/nuit/personne selon classement
+  // Pour résidence de tourisme / appart-hôtel non classé : 2 MAD/nuit estimé
+  // Collectée auprès des touristes, reversée à la commune
+  // Source : upsilon-consulting.com, DGI, communes urbaines
+  taxeSejour: 2,                     // MAD / nuitée — taxe de promotion touristique
+
   // Budget marketing de lancement (An 1 uniquement)
   // Photos pro, config listings, promotions Booking Genius, Google Ads
   // Source : analyse qualitative mars 2026

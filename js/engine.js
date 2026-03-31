@@ -275,15 +275,19 @@ function compute(scenario) {
     // Syndic : indexé inflation (même si 0 actuellement — prêt si changement)
     const syndicInflated = syndic * inflGrowth;
 
+    // Taxe de séjour (taxe de promotion touristique) : MAD/nuitée, proportionnelle à l'occupation
+    const taxeSejour = (CHARGES.taxeSejour || 0) * nuiteesAn;
+
     const chargesTotal = gestion + consommables + comptable + utilities +
       assurance + entretien + salaires + taxesPro + divers +
-      provisionRenouv + taxeHabitation + marketingLancement + fraisCreation + syndicInflated;
+      provisionRenouv + taxeHabitation + marketingLancement + fraisCreation + syndicInflated + taxeSejour;
 
     const chargesDetail = {
       gestion, consommables, comptable, utilities, salaires,
       assurance,
       entretien,
       taxesPro,
+      taxeSejour,
       divers,
       economieEco: economieUtilitiesEco + economieConsommablesEco,
       provisionRenouv,
@@ -728,9 +732,13 @@ function compute(scenario) {
       testUtilities *= (1 - GO_SIYAHA_ECO.reductionUtilities);
       testConsommables *= (1 - GO_SIYAHA_ECO.reductionConsommables);
     }
-    const testSalaires = (nbEmployesSc >= 3
-      ? (CHARGES.salaireConcierge + CHARGES.salaireMenage * 2)
-      : (CHARGES.salaireConcierge + CHARGES.salaireMenage)) * 12 * (1 + CHARGES.chargesSociales);
+    // Break-even uses Y1 snapshot — check if Y1 is conciergerie or in-house
+    const beIsInHouse = 0 >= switchInHouseAn; // Y1 = year 0
+    const beEffectiveEmp = beIsInHouse ? Math.max(nbEmployesSc, 2) : nbEmployesSc;
+    const testSalaires = beEffectiveEmp === 0 ? 0 :
+      (beEffectiveEmp >= 3
+        ? (CHARGES.salaireConcierge + CHARGES.salaireMenage * 2)
+        : (CHARGES.salaireConcierge + CHARGES.salaireMenage)) * 12 * (1 + CHARGES.chargesSociales);
     // Charges manquantes identifiées par l'audit :
     const cycleRenouv = CHARGES.renouvellementMobilierCycle || 7;
     const testProvisionRenouv = (CHARGES.renouvellementMobilierParUnite * nbUnites) / cycleRenouv;
@@ -739,9 +747,11 @@ function compute(scenario) {
     const testSyndic = CHARGES.syndic || 0;
     // taxeHabitation = 0 en An 1 (exonération 5 ans)
 
-    return testRevH * CHARGES.tauxGestion + testConsommables + CHARGES.comptableAnnuel +
+    const testTaxeSejour = (CHARGES.taxeSejour || 0) * testNuitees;
+    const testGestionRate = beIsInHouse ? 0 : CHARGES.tauxGestion;
+    return testRevH * testGestionRate + testConsommables + CHARGES.comptableAnnuel +
            testUtilities + testSalaires + CHARGES.assurance + CHARGES.entretienBase + CHARGES.divers +
-           testProvisionRenouv + testMarketingLancement + testFraisCreation + testSyndic;
+           testProvisionRenouv + testMarketingLancement + testFraisCreation + testSyndic + testTaxeSejour;
   }
 
   // Répartition canaux hors boucle (pour break-even, sensibilité, debt projections)
