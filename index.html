@@ -582,6 +582,10 @@ tr:hover td{background:#f0f4f8}
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18"/><path d="M3 10h18"/><path d="M5 6l7-3 7 3"/><path d="M4 10v11"/><path d="M20 10v11"/><line x1="8" y1="14" x2="8" y2="17"/><line x1="12" y1="14" x2="12" y2="17"/><line x1="16" y1="14" x2="16" y2="17"/></svg>
       <span class="nav-label">Dossier Banque</span>
     </div>
+    <div class="nav-item" data-nav="cahier-rt">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><line x1="8" y1="7" x2="16" y2="7"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+      <span class="nav-label">Cahier RT</span>
+    </div>
     <div class="nav-item" data-nav="hypotheses">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
       <span class="nav-label">Hypotheses</span>
@@ -2282,6 +2286,102 @@ tr:hover td{background:#f0f4f8}
   </div>
 </div>
 
+<!-- ==================== CAHIER DES CHARGES RT ==================== -->
+<div data-view="cahier-rt" class="hidden">
+
+  <!-- En-tête -->
+  <div class="card" style="background:linear-gradient(135deg,#7c3aed 0%,#a855f7 100%);color:#fff;border:none">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+      <div>
+        <h2 style="margin:0;font-size:1.3rem;font-weight:700">Cahier des Charges — Résidence de Tourisme</h2>
+        <p style="margin:2px 0 0;opacity:.85;font-size:.85rem">Analyse détaillée des normes réglementaires marocaines (Décret 2-22-867 + Arrêté 985-24)</p>
+      </div>
+    </div>
+    <p style="margin:0;font-size:.8rem;opacity:.7;line-height:1.5">
+      Ce dossier synthétise les exigences réglementaires pour l'obtention du classement Résidence de Tourisme au Maroc, avec une analyse d'éligibilité spécifique au projet Maarif.
+    </p>
+  </div>
+
+  <!-- Stratégie -->
+  <div class="card" style="border-left:4px solid var(--green);background:#f0fdf4">
+    <div class="card-title" style="color:var(--green)">Stratégie : Pourquoi Résidence de Tourisme ?</div>
+    <div id="rt-strategie"></div>
+  </div>
+
+  <!-- 1. Textes réglementaires -->
+  <div class="card">
+    <div class="card-title">1. Textes Réglementaires Applicables</div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Texte</th><th>Bulletin Officiel</th><th>Date</th><th>Objet</th></tr></thead>
+        <tbody id="rt-textes-tbody"></tbody>
+      </table>
+    </div>
+    <div class="info-box" style="margin-top:12px" id="rt-notation-info"></div>
+  </div>
+
+  <!-- 2. Surfaces minimales par catégorie -->
+  <div class="card">
+    <div class="card-title">2. Surfaces Minimales par Catégorie RT</div>
+    <p style="font-size:.85rem;color:var(--text-sec);margin-bottom:12px">Source : Décret n° 2-22-867 (BO 7462 bis, 30/12/2023)</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Catégorie</th><th>Surface min. (m²)</th><th>Min. unités</th><th>Note</th></tr></thead>
+        <tbody id="rt-surfaces-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 3. RT vs Hôtel -->
+  <div class="card">
+    <div class="card-title">3. Résidence de Tourisme vs Hôtel — Différences Clés</div>
+    <p style="font-size:.85rem;color:var(--text-sec);margin-bottom:12px">Les principales différences qui rendent la RT plus adaptée au modèle Airbnb-style :</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Critère</th><th style="color:var(--green)">Résidence de Tourisme</th><th>Hôtel</th></tr></thead>
+        <tbody id="rt-vs-hotel-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 4. Éligibilité projet Maarif -->
+  <div class="card" style="border-left:4px solid var(--primary)">
+    <div class="card-title">4. Éligibilité du Projet Maarif</div>
+    <div id="rt-eligibilite-resume" style="margin-bottom:12px"></div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Unité</th><th>Surface (m²)</th><th>RT 2★ (≥25m²)</th><th>RT 1★ (≥20m²)</th><th>Analyse</th></tr></thead>
+        <tbody id="rt-eligibilite-tbody"></tbody>
+      </table>
+    </div>
+    <div id="rt-eligibilite-conclusion" style="margin-top:12px"></div>
+  </div>
+
+  <!-- 5. Normes RT 2★ détaillées -->
+  <div class="card">
+    <div class="card-title">5. Normes Détaillées RT 2★ (Arrêté 985-24, BO 1300-1318)</div>
+    <p style="font-size:.85rem;color:var(--text-sec);margin-bottom:8px">
+      <strong style="color:var(--green)">A = Obligatoire</strong> (conformité 100%) &nbsp;|&nbsp;
+      <strong style="color:var(--gold)">B = Complémentaire</strong> (score pondéré, min 70% agrégé)
+    </p>
+    <div id="rt-normes-detail"></div>
+  </div>
+
+  <!-- 6. Checklist conformité -->
+  <div class="card" style="border-left:4px solid var(--gold)">
+    <div class="card-title">6. Checklist de Conformité — Points Critiques pour le Projet</div>
+    <div id="rt-checklist"></div>
+  </div>
+
+  <!-- 7. Sources -->
+  <div class="card">
+    <div class="card-title">Sources Réglementaires</div>
+    <ul id="rt-sources" style="font-size:.85rem;line-height:1.8;list-style:none;padding:0"></ul>
+  </div>
+
+</div>
+
 <!-- ==================== DOSSIER BANQUE ==================== -->
 <div data-view="dossier-banque" class="hidden">
 
@@ -2490,11 +2590,11 @@ tr:hover td{background:#f0f4f8}
 </main>
 
 <!-- Scripts — strict order: data → engine → render → charts → app -->
-<script src="js/data.js?v=81"></script>
-<script src="js/engine.js?v=81"></script>
-<script src="js/render.js?v=81"></script>
-<script src="js/charts.js?v=81"></script>
-<script src="js/app.js?v=81"></script>
+<script src="js/data.js?v=82"></script>
+<script src="js/engine.js?v=82"></script>
+<script src="js/render.js?v=82"></script>
+<script src="js/charts.js?v=82"></script>
+<script src="js/app.js?v=82"></script>
 
 </body>
 </html>

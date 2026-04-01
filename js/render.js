@@ -79,6 +79,7 @@ function render(state) {
   renderMontages(state);
   renderCapexOpex(state);
   renderDossierBanque(state);
+  renderCahierRT();
 }
 
 // --- Header badge (dynamic total projet) ---
@@ -2796,6 +2797,152 @@ function renderDossierBanque(S) {
     if (typeof item === "string") return `<div style="font-weight:700;margin-top:12px;margin-bottom:4px;color:var(--primary)">${item}</div>`;
     return item.map(i => `<div style="padding:2px 0 2px 16px">☐ ${i}</div>`).join("");
   }).join("");
+}
+
+// ============================================================
+// CAHIER DES CHARGES RT — Render
+// ============================================================
+function renderCahierRT() {
+  const D = RT_CAHIER_CHARGES;
+
+  // --- Stratégie ---
+  const stratEl = document.getElementById("rt-strategie");
+  if (stratEl) stratEl.innerHTML = `
+    <p style="font-size:.88rem;margin:0 0 10px"><strong>Objectif :</strong> Classer l'établissement en <strong>Résidence de Tourisme</strong> plutôt qu'en Hôtel, pour trois raisons stratégiques :</p>
+    <div class="grid-3" style="gap:12px;margin-top:8px">
+      <div class="info-box" style="text-align:center">
+        <div style="font-size:1.5rem;margin-bottom:4px">💰</div>
+        <strong style="color:var(--green)">Récupération TVA</strong>
+        <p style="font-size:.82rem;margin:4px 0 0">~400-500K MAD de TVA sur construction récupérable grâce au statut d'hébergement touristique classé</p>
+      </div>
+      <div class="info-box" style="text-align:center">
+        <div style="font-size:1.5rem;margin-bottom:4px">🍳</div>
+        <strong style="color:var(--green)">100% Studios + Cuisine</strong>
+        <p style="font-size:.82rem;margin:4px 0 0">La RT <em>impose</em> une cuisine/kitchenette dans chaque unité — exactement le format Airbnb recherché</p>
+      </div>
+      <div class="info-box" style="text-align:center">
+        <div style="font-size:1.5rem;margin-bottom:4px">🏠</div>
+        <strong style="color:var(--green)">Pas de minimum d'unités</strong>
+        <p style="font-size:.82rem;margin:4px 0 0">Contrairement à l'hôtel (min. 10 chambres), la RT n'a aucun minimum (sauf Luxe : 11)</p>
+      </div>
+    </div>
+  `;
+
+  // --- Textes réglementaires ---
+  const textesTb = document.getElementById("rt-textes-tbody");
+  if (textesTb) textesTb.innerHTML = D.textes.map(t =>
+    `<tr><td style="font-weight:600">${t.nom}</td><td>${t.bo}</td><td>${t.date}</td><td style="font-size:.82rem">${t.objet}</td></tr>`
+  ).join("");
+
+  // --- Notation info ---
+  const notaEl = document.getElementById("rt-notation-info");
+  if (notaEl) notaEl.innerHTML = `
+    <strong>Système de notation :</strong><br>
+    <span style="display:inline-block;background:var(--green);color:#fff;padding:1px 8px;border-radius:4px;font-size:.75rem;font-weight:700;margin-right:6px">A</span> <strong>Obligatoire</strong> — Conformité 100% requise. Tout manquement bloque le classement.<br>
+    <span style="display:inline-block;background:var(--gold);color:#fff;padding:1px 8px;border-radius:4px;font-size:.75rem;font-weight:700;margin-right:6px;margin-top:4px">B</span> <strong>Complémentaire</strong> — Score pondéré (1 à 5 pts). L'ensemble des normes B doit atteindre un agrégat ≥ 70%.
+  `;
+
+  // --- Surfaces minimales ---
+  const surfTb = document.getElementById("rt-surfaces-tbody");
+  if (surfTb) surfTb.innerHTML = D.surfacesMinimales.map(s => {
+    const isTarget = (s.categorie === "RT 2★" || s.categorie === "RT 1★");
+    const style = isTarget ? ' style="background:#f0f4ff;font-weight:600"' : '';
+    const badge = isTarget ? ' <span style="background:var(--primary);color:#fff;padding:1px 6px;border-radius:4px;font-size:.7rem;margin-left:6px">CIBLE</span>' : '';
+    return `<tr${style}><td>${s.categorie}${badge}</td><td class="num">${s.surface} m²</td><td class="num">${s.minUnites || '—'}</td><td style="font-size:.82rem">${s.note}</td></tr>`;
+  }).join("");
+
+  // --- RT vs Hôtel ---
+  const vsTb = document.getElementById("rt-vs-hotel-tbody");
+  if (vsTb) vsTb.innerHTML = D.differenceRtHotel.map(d =>
+    `<tr><td style="font-weight:600">${d.critere}</td><td style="color:var(--green);font-size:.85rem">${d.rt}</td><td style="font-size:.85rem;color:var(--text-sec)">${d.hotel}</td></tr>`
+  ).join("");
+
+  // --- Éligibilité projet ---
+  const eligRes = document.getElementById("rt-eligibilite-resume");
+  if (eligRes) eligRes.innerHTML = `
+    <div class="info-box"><strong>${D.eligibilite.titre}</strong><br>
+    <span style="font-size:.88rem">${D.eligibilite.resume}</span></div>
+  `;
+
+  const eligTb = document.getElementById("rt-eligibilite-tbody");
+  if (eligTb) eligTb.innerHTML = D.eligibilite.analyses.map(a => {
+    const rt2 = a.rt2 ? '<span style="color:var(--green);font-weight:700">✅ Oui</span>' : '<span style="color:var(--red);font-weight:700">❌ Non</span>';
+    const rt1 = a.rt1 ? '<span style="color:var(--green);font-weight:700">✅ Oui</span>' : '<span style="color:var(--red);font-weight:700">❌ Non</span>';
+    const bg = !a.rt2 ? ' style="background:#fef2f2"' : '';
+    return `<tr${bg}><td style="font-weight:500">${a.unite}</td><td class="num">${a.surface.toFixed(2)}</td><td class="num">${rt2}</td><td class="num">${rt1}</td><td style="font-size:.82rem">${a.note}</td></tr>`;
+  }).join("");
+
+  const eligConc = document.getElementById("rt-eligibilite-conclusion");
+  if (eligConc) eligConc.innerHTML = `
+    <div class="warn-box" style="margin-bottom:12px"><strong>Conclusion :</strong> ${D.eligibilite.conclusion}</div>
+    <div class="info-box" style="border-left:4px solid var(--green)"><strong>Avantage fiscal :</strong> ${D.eligibilite.strategieTVA}</div>
+  `;
+
+  // --- Normes RT 2★ détaillées ---
+  const normesEl = document.getElementById("rt-normes-detail");
+  if (normesEl) {
+    let html = '';
+    D.normesRT2.sections.forEach(section => {
+      const isKitchen = section.titre.includes("Cuisine");
+      const headerStyle = isKitchen ? 'background:linear-gradient(135deg,#047857,#059669);color:#fff;padding:10px 14px;border-radius:8px 8px 0 0' : 'color:var(--primary);margin:0 0 8px';
+      const cardStyle = isKitchen ? 'border:2px solid var(--green)' : '';
+
+      html += `<div class="card" style="margin-bottom:8px;${cardStyle}">`;
+      html += `<h4 style="${headerStyle};font-size:.95rem">${isKitchen ? '🍳 ' : ''}${section.titre}</h4>`;
+      html += '<div class="table-wrap"><table style="font-size:.82rem"><thead><tr><th style="width:60%">Norme</th><th style="width:20%;text-align:center">Type</th><th style="width:20%;text-align:center">Score B</th></tr></thead><tbody>';
+
+      section.normes.forEach(n => {
+        const typeBadge = n.type === 'A'
+          ? '<span style="background:var(--green);color:#fff;padding:1px 8px;border-radius:4px;font-weight:700;font-size:.75rem">A</span>'
+          : '<span style="background:var(--gold);color:#fff;padding:1px 8px;border-radius:4px;font-weight:700;font-size:.75rem">B</span>';
+        const score = n.score ? n.score : (n.type === 'A' ? '—' : '—');
+        html += `<tr><td>${n.desc}</td><td style="text-align:center">${typeBadge}</td><td style="text-align:center">${score}</td></tr>`;
+      });
+
+      html += '</tbody></table></div></div>';
+    });
+    normesEl.innerHTML = html;
+  }
+
+  // --- Checklist conformité ---
+  const checkEl = document.getElementById("rt-checklist");
+  if (checkEl) {
+    const criticalItems = [
+      { item: "Cuisine/kitchenette complète dans chaque unité", status: "plan", detail: "Évier, plaques, four, réfrigérateur, plan de travail, vaisselle 6 couverts — Prévu dans les plans architecte" },
+      { item: "Surface min. 25 m² (RT 2★) pour toutes les unités", status: "warn", detail: "9 studios OK, loft Ét.4 OK (28,55 m²), loft Ét.5 à 22,63 m² — sous le seuil. Solution : intégrer 2,37 m² de la terrasse ou classer en RT 1★" },
+      { item: "Enseigne extérieure identifiant l'établissement", status: "todo", detail: "Norme A obligatoire — À prévoir lors des finitions" },
+      { item: "Portique sécurité + vidéosurveillance à l'entrée", status: "plan", detail: "Normes B mais apportent des points importants pour le score 70%" },
+      { item: "Comptoir/bureau d'accueil (check-in)", status: "plan", detail: "Norme A — Prévu dans le hall RDC" },
+      { item: "Accueil 24h/24 7j/7", status: "warn", detail: "Norme A — Nécessite un système : concierge + check-in autonome (boîte à clés / serrure connectée)" },
+      { item: "TV écran plat + 2 chaînes nationales + 3 étrangères", status: "plan", detail: "Norme A pour TV et chaînes nationales. Budget IPTV à prévoir." },
+      { item: "Lits 140×190 (doubles) ou 80×190 (twin), matelas 15 cm min.", status: "plan", detail: "Norme A — Budget ameublement 40K MAD/unité" },
+      { item: "Coffre-fort électronique dans chaque unité", status: "todo", detail: "Norme A obligatoire — À intégrer au budget mobilier" },
+      { item: "Salle de bain : douche + lavabo eau chaude/froide + point lumineux", status: "plan", detail: "Normes A multiples — Prévu dans les plans" },
+      { item: "Trousse de premiers secours", status: "todo", detail: "Norme A — Facile et peu coûteux" },
+      { item: "Locaux employés : réfectoire + vestiaires + WC + douches", status: "plan", detail: "Prévu au sous-sol (buanderie / vestiaires / réfectoire)" },
+      { item: "Température 18-26°C dans les unités", status: "plan", detail: "Norme A — Climatisation prévue" },
+    ];
+
+    checkEl.innerHTML = criticalItems.map(c => {
+      const icon = c.status === 'plan' ? '🟢' : (c.status === 'warn' ? '🟡' : '🔵');
+      const label = c.status === 'plan' ? 'Prévu' : (c.status === 'warn' ? 'Attention' : 'À prévoir');
+      const color = c.status === 'plan' ? 'var(--green)' : (c.status === 'warn' ? 'var(--gold)' : 'var(--primary-light)');
+      return `<div style="padding:8px 0;border-bottom:1px solid var(--border)">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span>${icon}</span>
+          <strong style="font-size:.88rem">${c.item}</strong>
+          <span style="background:${color}15;color:${color};padding:1px 8px;border-radius:4px;font-size:.72rem;font-weight:600;margin-left:auto;white-space:nowrap">${label}</span>
+        </div>
+        <p style="font-size:.82rem;color:var(--text-sec);margin:4px 0 0 28px">${c.detail}</p>
+      </div>`;
+    }).join("");
+  }
+
+  // --- Sources ---
+  const srcEl = document.getElementById("rt-sources");
+  if (srcEl) srcEl.innerHTML = D.sources.map(s =>
+    `<li style="padding:2px 0"><a href="${s.url}" target="_blank" rel="noopener" style="color:var(--primary-light);text-decoration:none">${s.label}</a></li>`
+  ).join("");
 }
 
 // --- Utility ---

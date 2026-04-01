@@ -1438,3 +1438,304 @@ const MONTAGES_EXPLOITATION = {
     { label: "Tamwilcom — MDM Invest", url: "https://www.ccg.ma/fr/votre-projet/mdm-invest" },
   ],
 };
+
+// ============================================================
+// CAHIER DES CHARGES — Résidence de Tourisme (RT)
+// Sources : Décret 2-22-867 (BO 7462 bis) + Arrêté 985-24 (BO 7407 bis)
+// ============================================================
+
+const RT_CAHIER_CHARGES = {
+  // --- Textes réglementaires ---
+  textes: [
+    { nom: "Décret n° 2-22-867", bo: "BO 7462 bis", date: "30/12/2023", objet: "Normes d'Équipement Dimensionnelles et Fonctionnelles (NEDF) — Construction, surfaces minimales, équipements obligatoires" },
+    { nom: "Arrêté n° 985-24", bo: "BO 7407 bis", date: "27/05/2025", objet: "Normes de Production et Qualité des Services (NPQS) — Classification par étoiles, services, équipements intérieurs" },
+    { nom: "Arrêté n° 836-24", bo: "BO 7407 bis", date: "27/05/2025", objet: "Normes spécifiques aux Résidences Immobilières Adossées (RIA)" },
+  ],
+
+  // --- Système de notation ---
+  systemeNotation: {
+    description: "Chaque norme est classée A (obligatoire) ou B (complémentaire). Les normes A doivent être respectées à 100%. Les normes B doivent atteindre un score agrégé minimal de 70%.",
+    normeA: "Obligatoire — 100% de conformité requise",
+    normeB: "Complémentaire — Score pondéré, min 70% de l'ensemble des normes B",
+  },
+
+  // --- Surfaces minimales par catégorie (Décret 2-22-867) ---
+  surfacesMinimales: [
+    { categorie: "RT Luxe", surface: 20, minUnites: 11, note: "Seule catégorie avec minimum d'unités" },
+    { categorie: "RT 5★", surface: 45, minUnites: null, note: "Pas de minimum d'unités explicite" },
+    { categorie: "RT 4★", surface: 40, minUnites: null, note: "" },
+    { categorie: "RT 3★", surface: 30, minUnites: null, note: "" },
+    { categorie: "RT 2★", surface: 25, minUnites: null, note: "" },
+    { categorie: "RT 1★", surface: 20, minUnites: null, note: "" },
+  ],
+
+  // --- Différence clé RT vs Hôtel ---
+  differenceRtHotel: [
+    { critere: "Cuisine/Kitchenette", rt: "OBLIGATOIRE dans chaque unité (norme A)", hotel: "Non requise (minibar suffit)" },
+    { critere: "Minimum d'unités", rt: "Aucun minimum sauf RT Luxe (11)", hotel: "10 chambres minimum (toutes catégories)" },
+    { critere: "Services de restauration", rt: "Non obligatoires (cuisine dans l'unité)", hotel: "Restaurant obligatoire dès 3★" },
+    { critere: "Surface minimale", rt: "20-45 m² selon catégorie", hotel: "12-30 m² selon catégorie" },
+    { critere: "Personnel d'accueil", rt: "24h/24 7j/7 (check-in)", hotel: "24h/24 7j/7 + concierge dès 4★" },
+    { critere: "Nettoyage", rt: "À la demande du client", hotel: "Quotidien obligatoire" },
+    { critere: "Changement draps/linge", rt: "À la demande du client", hotel: "Quotidien ou tous les 2 jours" },
+    { critere: "Type de clientèle cible", rt: "Séjours moyens/longs, autonomes", hotel: "Séjours courts, service complet" },
+  ],
+
+  // --- Normes RT 2★ détaillées (Arrêté 985-24, BO 1300-1318) ---
+  normesRT2: {
+    categorie: "RT 2★",
+    boPages: "1300-1318",
+    sections: [
+      {
+        titre: "Enseigne extérieure et façade",
+        normes: [
+          { desc: "Enseigne extérieure identifiant l'établissement", type: "A", score: null },
+          { desc: "Enseigne en bon état d'entretien et de propreté", type: "B", score: 3 },
+          { desc: "Éclairage nocturne de l'enseigne", type: "B", score: 2 },
+          { desc: "Éclairage de la porte et l'entrée", type: "B", score: 3 },
+          { desc: "Façades en bon état d'entretien et de propreté", type: "A", score: null },
+        ]
+      },
+      {
+        titre: "Entrée de l'établissement",
+        normes: [
+          { desc: "Portique de sécurité à l'entrée principale", type: "B", score: 3 },
+          { desc: "Vidéosurveillance conforme à la réglementation", type: "B", score: 3 },
+          { desc: "Détecteur de matériaux à l'entrée", type: "B", score: 3 },
+        ]
+      },
+      {
+        titre: "Espace et service d'accueil",
+        normes: [
+          { desc: "Comptoir ou bureau d'accueil pour enregistrement (check-in)", type: "A", score: null },
+          { desc: "Bonne aération naturelle ou artificielle", type: "B", score: 2 },
+          { desc: "Signalétique pour repérer l'espace d'accueil", type: "B", score: 2 },
+          { desc: "Espace d'accueil propre et bien rangé", type: "B", score: 3 },
+          { desc: "Personnel d'accueil présent 24h/24 et 7j/7", type: "A", score: null },
+          { desc: "Personnel en uniforme propre et soigné", type: "B", score: 2 },
+          { desc: "Tables basses, canapés ou fauteuils", type: "B", score: 3 },
+          { desc: "Affichage des prix en MAD (obligatoire)", type: "A", score: null },
+          { desc: "Prix des services facturés au client affichés", type: "A", score: null },
+          { desc: "Internet dans espaces communs (si zone couverte)", type: "B", score: 3 },
+        ]
+      },
+      {
+        titre: "Toilettes espaces communs",
+        normes: [
+          { desc: "Signalétique H/F", type: "B", score: 2 },
+          { desc: "Porte d'entrée avec fermeture automatique", type: "B", score: 2 },
+          { desc: "Extraction d'air (VMC) par fenêtre ou ventilation", type: "B", score: 3 },
+          { desc: "VMC dans l'ensemble des toilettes", type: "B", score: 3 },
+          { desc: "Lavabos eau froide et chaude avec point lumineux", type: "B", score: 5 },
+          { desc: "Mitigeur automatique avec contrôle température", type: "B", score: 3 },
+          { desc: "Économiseur d'eau sur robinetterie", type: "B", score: 3 },
+          { desc: "Distributeur de savon double volume, système stop", type: "A", score: null },
+          { desc: "Poubelle avec couvercle et ouverture à pied", type: "A", score: null },
+          { desc: "Cabines WC verrouillables avec point lumineux", type: "B", score: 3 },
+        ]
+      },
+      {
+        titre: "Couloirs, coursives et escaliers",
+        normes: [
+          { desc: "Éclairés jour et nuit, non encombrés", type: "A", score: null },
+          { desc: "Bonne aération naturelle ou artificielle", type: "B", score: 3 },
+          { desc: "Décoration (tableaux, fresques, peintures)", type: "B", score: 3 },
+        ]
+      },
+      {
+        titre: "Unités d'hébergement — Général",
+        normes: [
+          { desc: "Numéro ou appellation identifiant chaque unité", type: "A", score: null },
+          { desc: "Unité non-fumeurs avec affichette 'Interdit de fumer'", type: "A", score: null },
+          { desc: "Unités accessibles près des ascenseurs/escaliers", type: "B", score: 2 },
+          { desc: "Porte avec serrure électronique / fermeture auto.", type: "B", score: 2 },
+          { desc: "Entrebâilleur ou judas sur la porte", type: "B", score: 2 },
+          { desc: "Porte sécurisée de l'intérieur (sans possibilité ouverture ext.)", type: "B", score: 2 },
+          { desc: "Personnel en uniforme / bon état", type: "B", score: 2 },
+        ]
+      },
+      {
+        titre: "Température dans l'unité",
+        normes: [
+          { desc: "Climatisation possible (peut être installée)", type: "B", score: 2 },
+          { desc: "Température maintenue entre 18°C et 26°C", type: "A", score: null },
+        ]
+      },
+      {
+        titre: "Fenêtres et baies vitrées",
+        normes: [
+          { desc: "Brise-vue (voilages, moucharabieh) pour la lumière", type: "A", score: null },
+          { desc: "Fenêtres conformes normes de sécurité", type: "B", score: 3 },
+          { desc: "Système d'occultation (rideaux, volets ou stores)", type: "A", score: null },
+          { desc: "Rideaux/volets faciles à ouvrir et fermer", type: "B", score: 2 },
+          { desc: "Poignées et cadres en bon état", type: "B", score: 3 },
+          { desc: "Système de brise-vue et occultation en bon état", type: "A", score: null },
+        ]
+      },
+      {
+        titre: "Téléphone - Téléviseur",
+        normes: [
+          { desc: "Téléphone permettant appels intérieur/extérieur", type: "B", score: 2 },
+          { desc: "Téléphone (clavier, écouteur, micros) en bon état", type: "B", score: 3 },
+          { desc: "Wi-Fi (si couverture zone — non applicable sinon)", type: "B", score: 3 },
+          { desc: "TV écran plat, en état de marche, 2 chaînes nationales min.", type: "A", score: null },
+          { desc: "TV installée dans toutes les unités", type: "B", score: 3 },
+          { desc: "TV sur support ou accroché au mur", type: "B", score: 3 },
+          { desc: "Accès min. 3 chaînes étrangères", type: "B", score: 2 },
+          { desc: "Télécommande, câbles invisibles, image nette", type: "B", score: 3 },
+        ]
+      },
+      {
+        titre: "Lits, literie et éclairage de chevet",
+        normes: [
+          { desc: "Lits aux dimensions min. : doubles 140×190 cm ou twin 80×190 cm", type: "A", score: null },
+          { desc: "Tête de lit prévue", type: "A", score: null },
+          { desc: "Lit supplémentaire adulte + alèse disponible sur demande", type: "B", score: 2 },
+          { desc: "Lit supplémentaire bébé + alèse disponible sur demande", type: "B", score: 2 },
+          { desc: "Lits supplémentaires protégés lors du stockage", type: "B", score: null },
+          { desc: "Matelas d'épaisseur minimale 15 cm", type: "A", score: null },
+          { desc: "Oreiller propre sans traversin (ou traversin optionnel)", type: "A", score: null },
+          { desc: "Housse de protection + sommier au moins de la taille du matelas", type: "A", score: null },
+          { desc: "Protège matelas en coton (alèse) lavable", type: "B", score: 2 },
+          { desc: "Draps plats par lit couvrant suffisamment", type: "A", score: null },
+        ]
+      },
+      {
+        titre: "Équipement minimal dans l'unité",
+        normes: [
+          { desc: "1 point lumineux minimum par pièce", type: "A", score: null },
+          { desc: "Spot encastré compté comme point lumineux", type: "B", score: null },
+          { desc: "Lampes des abat-jours en bon état", type: "B", score: 3 },
+          { desc: "Toutes les lampes en état de fonctionnement", type: "B", score: 3 },
+          { desc: "Points lumineux éclairant sans zones sombres", type: "B", score: 2 },
+          { desc: "1 table de chevet / table servant de bureau", type: "B", score: 3 },
+          { desc: "1 miroir (bureau, coiffeuse ou porte intérieure)", type: "B", score: 2 },
+          { desc: "1 prise de courant électrique libre, proche table", type: "B", score: 3 },
+          { desc: "Équipements électriques en bon état", type: "B", score: 3 },
+          { desc: "1 porte-bagages fixe ou pliable", type: "A", score: null },
+          { desc: "Penderie : profondeur min. 50 cm, hauteur 140 cm", type: "B", score: 3 },
+          { desc: "Min. 2 cintres à barres et 1 cintre à pinces par personne", type: "B", score: 3 },
+          { desc: "Penderie avec tiroirs et/ou étagères", type: "B", score: 4 },
+        ]
+      },
+      {
+        titre: "Petit équipement dans l'unité",
+        normes: [
+          { desc: "Corbeille : 1) matériaux différents, 2) intérieur métallique, 3) ignifuge", type: "B", score: 2 },
+          { desc: "Panneau 'Ne pas déranger' électronique", type: "B", score: 3 },
+          { desc: "Brochures et documentation client", type: "B", score: 2 },
+          { desc: "Coffre-fort électronique", type: "A", score: null },
+        ]
+      },
+      {
+        titre: "Cuisine / Kitchenette (OBLIGATOIRE RT)",
+        normes: [
+          { desc: "Évier + robinet mitigeur eau chaude/froide 24h/24", type: "A", score: null },
+          { desc: "Économiseur d'eau sur la robinetterie", type: "A", score: null },
+          { desc: "Plan de travail", type: "A", score: null },
+          { desc: "Plaques de cuisson électriques", type: "A", score: null },
+          { desc: "Hotte avec filtres installée", type: "B", score: 3 },
+          { desc: "Prise de courant électrique dédiée cuisine", type: "A", score: null },
+          { desc: "Armoire à étagères et/ou armoire murale", type: "A", score: null },
+          { desc: "Vaisselle de table : 6 couverts complets (verres, assiettes, bols, tasses, cuillères, couteaux, fourchettes)", type: "B", score: 4 },
+          { desc: "Théière avec 6 verres au minimum", type: "A", score: null },
+          { desc: "Équipement cuisine : 1 saladier, 1 plat allant au four, 2 casseroles, 1 poêle, 1 couteau, 1 passoire", type: "B", score: 4 },
+          { desc: "Four", type: "A", score: null },
+          { desc: "Réfrigérateur", type: "A", score: null },
+          { desc: "Machine à café", type: "B", score: 4 },
+          { desc: "Bouilloire", type: "A", score: null },
+          { desc: "Sacs poubelle", type: "A", score: null },
+          { desc: "Poubelle munie d'un couvercle", type: "A", score: null },
+        ]
+      },
+      {
+        titre: "Sanitaires de l'unité",
+        normes: [
+          { desc: "Porte de salle de bain en bon état", type: "B", score: 3 },
+          { desc: "VMC ou aération adéquate (fenêtre donnant sur extérieur)", type: "B", score: 3 },
+          { desc: "WC : rouleau de papier toilette + dérouleur", type: "A", score: null },
+          { desc: "WC : rouleau supplémentaire sur support", type: "B", score: 3 },
+          { desc: "Distributeur sacs récupération serviettes hygiéniques", type: "B", score: 2 },
+          { desc: "Cuvettes WC avec sièges et couvercles en bon état", type: "A", score: null },
+          { desc: "Balayette WC en récipient isolant et fermé", type: "B", score: 2 },
+          { desc: "Robinetterie, tuyauterie sans odeurs désagréables", type: "A", score: null },
+          { desc: "Miroirs et vitres en bon état", type: "A", score: null },
+          { desc: "Sols, plafonds, murs en bon état", type: "A", score: null },
+          { desc: "Lavabo alimenté eau chaude et froide", type: "A", score: null },
+          { desc: "Plomberie non apparente, design d'ensemble", type: "B", score: 3 },
+          { desc: "Étagères pour affaires de toilette", type: "B", score: 2 },
+          { desc: "2 verres retournés sur set à usage unique", type: "B", score: 2 },
+          { desc: "Économiseur d'eau installé sur robinetterie", type: "B", score: 2 },
+          { desc: "Chauffe-eau non apparent", type: "B", score: 3 },
+          { desc: "Économiseur d'eau installé sur robinetterie (mousseur/réducteur)", type: "B", score: 3 },
+          { desc: "Douche ou cabine de douche en bon état", type: "A", score: null },
+          { desc: "Poignée de sécurité dans la douche", type: "A", score: null },
+          { desc: "Produits d'accueil : shampoing + savon", type: "A", score: null },
+          { desc: "Linge de toilette en coton (min. 1 drap 140×70, 1 serviette 70×50)", type: "A", score: null },
+          { desc: "Faïence murale salle de bain / douche en bon état", type: "B", score: 3 },
+          { desc: "Porte-serviette, étagère, porte-serviettes proximité douche", type: "A", score: null },
+          { desc: "1 point lumineux minimum + miroir au-dessus du lavabo", type: "A", score: null },
+        ]
+      },
+      {
+        titre: "Services hôteliers",
+        normes: [
+          { desc: "Nettoyage des unités à la demande du client", type: "B", score: 2 },
+          { desc: "Changement du linge et éponges à la demande", type: "B", score: 2 },
+          { desc: "Changement des draps à la demande", type: "B", score: 2 },
+          { desc: "Collecte des ordures et poubelles quotidienne", type: "B", score: null },
+        ]
+      },
+      {
+        titre: "Assistance médicale",
+        normes: [
+          { desc: "Trousse ou armoire de premiers secours", type: "A", score: null },
+        ]
+      },
+      {
+        titre: "Locaux des employés",
+        normes: [
+          { desc: "Réfectoire équipé (tables, chaises, fauteuils)", type: "B", score: 3 },
+          { desc: "Bonne aération, température 18-26°C", type: "B", score: 3 },
+          { desc: "Mobilier en bon état, vaisselle propre", type: "B", score: 2 },
+          { desc: "Distributeurs eau potable / bouteilles", type: "B", score: 2 },
+          { desc: "Lavabo au minimum (eau chaude/froide), réfectoire éloigné vestiaires", type: "B", score: 3 },
+          { desc: "Vestiaires avec casiers individuels verrouillables", type: "B", score: 2 },
+          { desc: "Casiers individuels verrouillables pour stagiaires", type: "B", score: 3 },
+          { desc: "WC avec porte fermée, système chasse d'eau", type: "A", score: null },
+          { desc: "Toilettes H/F séparées avec portes fermées", type: "B", score: 4 },
+          { desc: "Douche avec porte fermée de l'intérieur", type: "A", score: null },
+          { desc: "Rideaux de douche non acceptés", type: "B", score: null },
+          { desc: "Lavabo eau chaude/froide + miroir + point lumineux", type: "A", score: null },
+          { desc: "Économiseur d'eau (mousseur/réducteur)", type: "B", score: 3 },
+          { desc: "Distributeur savon, sèche-mains, serviettes papier", type: "A", score: null },
+          { desc: "Poubelle avec couvercle", type: "A", score: null },
+          { desc: "Matériel locaux employés en bon état", type: "B", score: 3 },
+          { desc: "Sols, plafonds, murs locaux employés en bon état", type: "A", score: null },
+        ]
+      },
+    ],
+  },
+
+  // --- Éligibilité du projet Maarif ---
+  eligibilite: {
+    titre: "Éligibilité du projet Maarif",
+    resume: "Le projet est éligible RT 2★ (tous les studios passent le seuil de 25 m²). Les lofts de 22,63 et 28,55 m² sont en dessous du seuil RT 2★ (25 m²) mais passent le RT 1★ (20 m²). Option : classer les lofts en catégorie inférieure ou les agrandir.",
+    analyses: [
+      { unite: "Studios A (×3)", surface: 37.41, rt2: true, rt1: true, note: "Largement au-dessus du seuil 2★ (25 m²)" },
+      { unite: "Studios B (×4) + RDC", surface: 32.75, rt2: true, rt1: true, note: "Au-dessus du seuil 2★ (25 m²)" },
+      { unite: "Studio RDC", surface: 46.10, rt2: true, rt1: true, note: "Le plus grand — passe même RT 3★ (30 m²)" },
+      { unite: "Loft Étage 4", surface: 28.55, rt2: true, rt1: true, note: "Passe RT 2★ (25 m²) ✓" },
+      { unite: "Loft Étage 5", surface: 22.63, rt2: false, rt1: true, note: "⚠ Sous le seuil RT 2★ (25 m²) mais passe RT 1★ (20 m²)" },
+    ],
+    conclusion: "9 studios sur 9 + 1 loft sur 2 passent RT 2★. Le loft de 22,63 m² (Étage 5) nécessite soit un classement mixte, soit un réaménagement (+2,37 m² en intégrant une partie de la terrasse de 15,77 m²).",
+    strategieTVA: "En classant l'établissement en Résidence de Tourisme, la SARL peut récupérer la TVA sur la construction (~400-500K MAD), appliquer la TVA réduite de 10% sur l'hébergement, et bénéficier de l'exonération IS sur les devises pendant 5 ans. La cuisine/kitchenette obligatoire dans chaque unité permet de concurrencer frontalement les studios Airbnb existants à Maarif.",
+  },
+
+  // --- Sources ---
+  sources: [
+    { label: "Décret n° 2-22-867 — NEDF Résidences de tourisme", url: "https://www.sgg.gov.ma/BO/FR/2023/BO_7462-bis_Fr.pdf" },
+    { label: "Arrêté n° 985-24 — NPQS Classification hôtelière", url: "https://www.sgg.gov.ma/BO/FR/2025/BO_7407-bis_Fr.pdf" },
+    { label: "Arrêté n° 836-24 — Normes RIA", url: "https://www.sgg.gov.ma/BO/FR/2025/BO_7407-bis_Fr.pdf" },
+  ],
+};
