@@ -4,6 +4,18 @@
 // ============================================================
 //
 // CHANGELOG:
+// 01/04/2026 (v85) — AUDIT GESTION DUEL — Cohérence charges par scénario :
+//   - PMS/Channel Manager : nouveau poste de charge (pmsLogiciel) dans compute()
+//   - computeGestionDuel() : sauvegarde/restauration blanchisserie, consommables, PMS
+//   - Mode conciergerie : blanchisserie=0, consommables×50%, PMS=0 (couvert par 20%)
+//   - Mode auto-géré : blanchisserie 100%, consommables 100%, PMS=15K/an
+// 01/04/2026 (v84) — AUDIT RT 2★ — Corrections modèle financier :
+//   - Gardien nuit : en mode conciergerie (nbEmployes=0), ajout salaire gardien nuit
+//     si CHARGES.gardienNuitEnabled (norme A RT 2★ : accueil 24h/24 7j/7)
+//   - Blanchisserie : nouvelle charge variable (CHARGES.blanchisserieParNuitee × nuitées × inflation)
+//   - Renouvellement linge : nouvelle charge fixe annuelle (CHARGES.renouvellementLingeAnnuel × inflation)
+//   - Deux nouveaux champs dans chargesDetail : blanchisserie, renouvLinge
+//   - Impact : chargesTotal augmenté d'environ +109K MAD/an en scénario réaliste
 // 28/03/2026 (v58) — TVA sur intérêts bancaires :
 //   - Ajout TVA 10% sur intérêts (Art. 99-2° CGI) dans TVA déductible
 //   - Les taux data.js sont HT ; la banque facture TVA 10% sur intérêts
@@ -229,12 +241,15 @@ function compute(scenario) {
     utilities -= economieUtilitiesEco;
 
     // Salaires : dépend du mode de gestion pour cette année
-    // En mode conciergerie : 0 salaires (la conciergerie gère tout)
-    // En mode in-house : 2 employés au SMIG (ou nbEmployesSc si > 0)
+    // En mode conciergerie : gardien de nuit seulement (norme A RT 2★)
+    // En mode in-house : 2+ employés au SMIG (ou nbEmployesSc si > 0)
     let masseSalariale;
     const effectiveEmployees = isInHouse ? Math.max(nbEmployesSc, 2) : nbEmployesSc;
     if (effectiveEmployees === 0) {
-      masseSalariale = 0; // conciergerie gère tout
+      // Mode conciergerie : gardien de nuit pour norme A "24h/24 7j/7"
+      const gardienNuit = (CHARGES.gardienNuitEnabled && CHARGES.salaireGardienNuit)
+        ? CHARGES.salaireGardienNuit * 12 : 0;
+      masseSalariale = gardienNuit;
     } else if (effectiveEmployees >= 3) {
       masseSalariale = (CHARGES.salaireConcierge + CHARGES.salaireMenage * 2) * 12;
     } else {
@@ -278,9 +293,20 @@ function compute(scenario) {
     // Taxe de séjour (taxe de promotion touristique) : MAD/nuitée, proportionnelle à l'occupation
     const taxeSejour = (CHARGES.taxeSejour || 0) * nuiteesAn;
 
+    // --- Charges ajoutées AUDIT RT 2★ (avril 2026) ---
+    // Blanchisserie : lavage linge entre séjours (draps, serviettes)
+    const blanchisserie = (CHARGES.blanchisserieParNuitee || 0) * nuiteesAn * inflGrowth;
+    // Renouvellement linge annuel (usure intensive STR)
+    const renouvLinge = (CHARGES.renouvellementLingeAnnuel || 0) * inflGrowth;
+
+    // --- PMS / Channel Manager (AUDIT GESTION DUEL v85) ---
+    // Uniquement en mode auto-géré (si pmsChannelManager > 0, activé par computeGestionDuel)
+    const pmsLogiciel = (CHARGES.pmsChannelManager || 0) * inflGrowth;
+
     const chargesTotal = gestion + consommables + comptable + utilities +
       assurance + entretien + salaires + taxesPro + divers +
-      provisionRenouv + taxeHabitation + marketingLancement + fraisCreation + syndicInflated + taxeSejour;
+      provisionRenouv + taxeHabitation + marketingLancement + fraisCreation + syndicInflated + taxeSejour +
+      blanchisserie + renouvLinge + pmsLogiciel;
 
     const chargesDetail = {
       gestion, consommables, comptable, utilities, salaires,
@@ -296,6 +322,9 @@ function compute(scenario) {
       fraisCreation,
       syndic: syndicInflated,
       renouvMobilier,  // dépense réelle (0 sauf année de remplacement)
+      blanchisserie,   // AUDIT RT — lavage linge entre séjours
+      renouvLinge,     // AUDIT RT — renouvellement linge annuel
+      pmsLogiciel,     // AUDIT GESTION DUEL — PMS/channel manager (auto-géré uniquement)
     };
 
     // EBITDA
@@ -1008,16 +1037,24 @@ function computeGestionDuel(scenario) {
     salaireConcierge: CHARGES.salaireConcierge,
     salaireMenage: CHARGES.salaireMenage,
     chargesSociales: CHARGES.chargesSociales,
+    blanchisserieParNuitee: CHARGES.blanchisserieParNuitee,
+    consommablesParNuitee: CHARGES.consommablesParNuitee,
+    pmsChannelManager: CHARGES.pmsChannelManager,
   };
   const savedScNbEmp = sc.nbEmployes;
 
   // ── MODE A : Conciergerie (outsourcing) ──
   // Commission 20% du CA — la conciergerie gère TOUT :
   // ménage, draps, accueil, check-in/out, listings, pricing
-  // Pas d'employés directs (0 salaires)
+  // ⚠ AUDIT v85 : blanchisserie = 0 (inclus dans les 20%)
+  // Consommables réduits de 50% (amenities/linge couverts par société)
   CHARGES.tauxGestion = 0.20;
   CHARGES.nbEmployes = 0;
   CHARGES.chargesSociales = 0;
+  CHARGES.blanchisserieParNuitee = 0;  // Inclus dans commission 20%
+  CHARGES.consommablesParNuitee = savedCharges.consommablesParNuitee
+    * (1 - (CHARGES.consommablesReductionConciergerie || 0));  // 50% réduit
+  CHARGES.pmsChannelManager = 0;       // Société utilise ses propres outils
   sc.nbEmployes = 0;
   const societeGestion = compute(scenario);
 
@@ -1025,6 +1062,8 @@ function computeGestionDuel(scenario) {
   // Pas de commission conciergerie (0%)
   // 2 employés au SMIG (3,400 MAD), non déclarés CNSS
   // Investisseur gère pricing/OTA depuis UAE + logiciel PMS
+  // ⚠ AUDIT v85 : ajout PMS/channel manager (15K/an)
+  // Blanchisserie et consommables à 100% (gestion directe)
   CHARGES.tauxGestion = 0;
   CHARGES.nbEmployes = 2;
   CHARGES.salaireConcierge = 3_400;
@@ -1033,6 +1072,9 @@ function computeGestionDuel(scenario) {
   CHARGES.assurance = 13_000;        // Négociation bâtiment neuf
   CHARGES.internetTv = 833;          // ~10K/an, IPTV économique
   CHARGES.divers = 10_000;           // Optimisation divers
+  CHARGES.blanchisserieParNuitee = savedCharges.blanchisserieParNuitee;  // 100% (buanderie propre)
+  CHARGES.consommablesParNuitee = savedCharges.consommablesParNuitee;    // 100% (gestion directe)
+  CHARGES.pmsChannelManager = CHARGES.pmsChannelManagerAutoGere || 15_000;  // PMS obligatoire
   sc.nbEmployes = 2;                 // Override scenario (nullish coalescing needs non-0)
   const autoGere = compute(scenario);
 

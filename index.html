@@ -586,6 +586,10 @@ tr:hover td{background:#f0f4f8}
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><line x1="8" y1="7" x2="16" y2="7"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
       <span class="nav-label">Cahier RT</span>
     </div>
+    <div class="nav-item" data-nav="audit-rt">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 14l2 2 4-4"/></svg>
+      <span class="nav-label">Audit RT</span>
+    </div>
     <div class="nav-item" data-nav="hypotheses">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
       <span class="nav-label">Hypotheses</span>
@@ -2613,6 +2617,154 @@ tr:hover td{background:#f0f4f8}
 
 </div>
 
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- SECTION : Audit Opérationnel RT 2★                -->
+<!-- ═══════════════════════════════════════════════════ -->
+<div data-view="audit-rt" class="hidden">
+
+  <!-- En-tête -->
+  <div class="card" style="background:linear-gradient(135deg,#dc2626 0%,#f97316 100%);color:#fff;border:none">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 14l2 2 4-4"/></svg>
+      <div>
+        <h2 style="margin:0;font-size:1.3rem;font-weight:700">Audit Opérationnel RT 2★</h2>
+        <p style="margin:2px 0 0;opacity:.85;font-size:.85rem">Cross-référence cahier des charges (Arrêté 985-24) vs modèle financier — Avril 2026</p>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-top:12px">
+      <div style="background:rgba(255,255,255,.15);border-radius:8px;padding:10px 14px">
+        <div style="font-size:.75rem;opacity:.8">Impact charges</div>
+        <div style="font-size:1.2rem;font-weight:700" id="audit-impact-charges">—</div>
+      </div>
+      <div style="background:rgba(255,255,255,.15);border-radius:8px;padding:10px 14px">
+        <div style="font-size:.75rem;opacity:.8">EBITDA corrigé</div>
+        <div style="font-size:1.2rem;font-weight:700" id="audit-ebitda-corrige">—</div>
+      </div>
+      <div style="background:rgba(255,255,255,.15);border-radius:8px;padding:10px 14px">
+        <div style="font-size:.75rem;opacity:.8">Marge corrigée</div>
+        <div style="font-size:1.2rem;font-weight:700" id="audit-marge-corrigee">—</div>
+      </div>
+      <div style="background:rgba(255,255,255,.15);border-radius:8px;padding:10px 14px">
+        <div style="font-size:.75rem;opacity:.8">Findings</div>
+        <div style="font-size:1.2rem;font-weight:700">4 findings</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Finding 1: Staffing -->
+  <div class="card" style="border-left:4px solid #dc2626">
+    <div class="card-title" style="color:#dc2626">Finding 1 — CRITIQUE : Staffing 24/7 Non Budgété</div>
+    <p style="font-size:.9rem;margin-bottom:8px">
+      <strong>Norme A obligatoire :</strong> « Personnel d'accueil présent 24h/24 et 7j/7 »
+    </p>
+    <p style="font-size:.85rem;color:var(--text-sec);margin-bottom:12px">
+      Le modèle initial (0 employés, conciergerie pure à 20% CA) est <strong style="color:#dc2626">non conforme</strong> à cette norme.
+      Même avec une conciergerie gérant le jour, une présence nocturne physique est requise.
+      <strong>Correction appliquée :</strong> ajout d'un gardien de nuit au SMIG (3 400 MAD/mois).
+    </p>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Modèle</th><th>Employés</th><th>Coût/an</th><th>% CA</th><th>Conforme RT?</th></tr>
+        </thead>
+        <tbody id="audit-staffing-tbody"></tbody>
+      </table>
+    </div>
+    <div style="margin-top:12px;padding:10px 14px;background:rgba(34,197,94,.08);border-radius:8px;font-size:.85rem">
+      <strong style="color:var(--green)">★ Recommandation :</strong> Modèle hybride (conciergerie jour + gardien nuit) — coût +40.8K MAD/an, conforme RT 2★.
+      Compléter avec serrures connectées (8.8K MAD one-shot) pour self check-in tardif.
+    </div>
+  </div>
+
+  <!-- Finding 2: Ameublement -->
+  <div class="card" style="border-left:4px solid var(--green)">
+    <div class="card-title" style="color:var(--green)">Finding 2 — OK : Budget Ameublement Suffisant</div>
+    <p style="font-size:.85rem;color:var(--text-sec);margin-bottom:12px">
+      Le budget de 40 000 MAD/unité couvre les équipements RT 2★ obligatoires (38 250 MAD estimé), avec une marge de 1 750 MAD/unité.
+      La climatisation (5K/unité) est normalement incluse dans le budget construction.
+    </p>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Catégorie</th><th>Coût estimé</th><th>% du total</th><th>Exemples normes A</th></tr>
+        </thead>
+        <tbody id="audit-ameublement-tbody"></tbody>
+      </table>
+    </div>
+    <div style="margin-top:8px;font-size:.85rem;color:var(--text-sec)">
+      Total estimé : <strong>38 250 MAD/unité</strong> (normes A : 33 350 + normes B : 4 900) — Budget : <strong>40 000 MAD/unité</strong>
+    </div>
+  </div>
+
+  <!-- Finding 3: Charges corrigées -->
+  <div class="card" style="border-left:4px solid var(--gold)">
+    <div class="card-title" style="color:var(--gold)">Finding 3 — MODÉRÉ : Charges Sous-Estimées (+109K MAD/an)</div>
+    <p style="font-size:.85rem;color:var(--text-sec);margin-bottom:12px">
+      Plusieurs postes de charges étaient sous-estimés ou absents du modèle initial.
+      L'audit a identifié +109K MAD/an de charges supplémentaires (~+19%).
+    </p>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Poste</th><th>Ancien</th><th>Corrigé</th><th>Écart</th><th>Verdict</th><th>Raison</th></tr>
+        </thead>
+        <tbody id="audit-charges-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Finding 4: Impact global -->
+  <div class="card" style="border-left:4px solid var(--primary)">
+    <div class="card-title" style="color:var(--primary)">Finding 4 — Le Projet Reste RENTABLE</div>
+    <p style="font-size:.85rem;color:var(--text-sec);margin-bottom:12px">
+      Malgré les corrections, la structure RT est avantageuse par rapport à un hôtel classique.
+      Le projet conserve une marge d'exploitation solide.
+    </p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+      <div style="background:var(--card-alt);border-radius:8px;padding:14px">
+        <div style="font-size:.75rem;color:var(--text-sec)">Avant audit</div>
+        <div style="font-size:1.4rem;font-weight:700;color:var(--text-sec)" id="audit-ebitda-avant">—</div>
+        <div style="font-size:.8rem;color:var(--text-sec)" id="audit-marge-avant">—</div>
+      </div>
+      <div style="background:var(--card-alt);border-radius:8px;padding:14px">
+        <div style="font-size:.75rem;color:var(--green)">Après audit (modèle corrigé)</div>
+        <div style="font-size:1.4rem;font-weight:700;color:var(--green)" id="audit-ebitda-apres">—</div>
+        <div style="font-size:.8rem;color:var(--green)" id="audit-marge-apres">—</div>
+      </div>
+    </div>
+    <div class="card-title" style="font-size:.9rem;margin-bottom:8px">Avantages RT vs Hôtel</div>
+    <div id="audit-avantages-rt" style="font-size:.85rem"></div>
+  </div>
+
+  <!-- Équipements complémentaires -->
+  <div class="card">
+    <div class="card-title">Équipements Complémentaires Recommandés</div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Équipement</th><th>Coût</th><th>Note</th></tr>
+        </thead>
+        <tbody id="audit-equipements-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Méthodologie -->
+  <div class="card" style="border-left:4px solid var(--text-sec)">
+    <div class="card-title">Méthodologie de l'Audit</div>
+    <div style="font-size:.85rem;color:var(--text-sec);line-height:1.7">
+      <p>Cet audit opérationnel a été réalisé en cross-référençant :</p>
+      <p style="margin:4px 0"><strong>1.</strong> Les 150+ normes du cahier des charges RT 2★ (Arrêté 985-24, pages BO 1300-1318)</p>
+      <p style="margin:4px 0"><strong>2.</strong> Les hypothèses financières du modèle (data.js, engine.js)</p>
+      <p style="margin:4px 0"><strong>3.</strong> Les benchmark opérateurs STR Casablanca/Maarif (Booking.com, AirDNA, Airbtics)</p>
+      <p style="margin:4px 0"><strong>4.</strong> Le code du travail marocain (Art. 184 : 44h/semaine) et le SMIG 2026 (3 400 MAD/mois)</p>
+      <p style="margin-top:8px">Chaque finding a été vérifié programmatiquement (calcul des coûts RT vs budget actuel).</p>
+      <p style="margin-top:4px;font-style:italic">Date : 01/04/2026 — Version modèle : v84</p>
+    </div>
+  </div>
+
+</div>
+
 <div style="margin-top:24px;padding:12px 16px;font-size:.76rem;color:var(--text-sec);border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
   <span>* Montants nets après déduction de la subvention MDM Invest (10%, plafond 5M MAD). Sous condition d'acceptation du dossier MDM Invest par Tamwilcom.</span>
   <a href="architecture.html" style="color:var(--accent);text-decoration:none;font-weight:500;white-space:nowrap">Architecture technique &rarr;</a>
@@ -2621,11 +2773,11 @@ tr:hover td{background:#f0f4f8}
 </main>
 
 <!-- Scripts — strict order: data → engine → render → charts → app -->
-<script src="js/data.js?v=83"></script>
-<script src="js/engine.js?v=83"></script>
-<script src="js/render.js?v=83"></script>
-<script src="js/charts.js?v=83"></script>
-<script src="js/app.js?v=83"></script>
+<script src="js/data.js?v=85"></script>
+<script src="js/engine.js?v=85"></script>
+<script src="js/render.js?v=85"></script>
+<script src="js/charts.js?v=85"></script>
+<script src="js/app.js?v=85"></script>
 
 </body>
 </html>

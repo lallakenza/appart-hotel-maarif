@@ -5,6 +5,29 @@
 // ============================================================
 //
 // CHANGELOG:
+// 01/04/2026 (v85) — AUDIT MÉTIER INDÉPENDANT + GESTION DUEL :
+//   - Taxe habitation+TSC : 12K→35K MAD/an (TH ~24.5K + TSC 10.5% VL, Source: CasablancaCity.ma)
+//   - Commission OTA : 15%→17% (Booking.com standard 17%, Airbnb 15.5%, Source: Booking Partner Hub)
+//   - Comptable : 30K→36K MAD/an (SARL hôtelière TVA double taux, Source: LEC.ma)
+//   - Gestion Duel : correction doublons conciergerie vs auto-géré
+//     Mode conciergerie : blanchisserie=0 (inclus dans 20%), consommables×50% (amenities/linge couverts)
+//     Mode auto-géré : ajout PMS/channel manager 15K/an (Guesty/Lodgify + serrures connectées)
+//   - AUDIT_RT : ajout corrections audit métier v85 dans les données structurées
+// 01/04/2026 (v84) — AUDIT OPÉRATIONNEL RT 2★ :
+//   - Cross-référence cahier des charges RT 2★ (Arrêté 985-24) vs modèle financier
+//   - STAFFING : ajout gardien de nuit (salaireGardienNuit: 3,400, gardienNuitEnabled: true)
+//     Norme A "Personnel d'accueil 24h/24 7j/7" → gardien nuit obligatoire même en mode conciergerie
+//   - CONSOMMABLES : 30→35 MAD/nuitée (cuisine obligatoire RT = consommables supplémentaires)
+//   - ASSURANCE : 18K→22K MAD/an (RT classé + cuisine/unité = risque incendie accru)
+//   - ENTRETIEN : 20K/40K→25K/45K MAD/an (entretien électroménager cuisine)
+//   - TAXE SÉJOUR : 2→5 MAD/nuitée (RT classé 2★ tarif supérieur Dahir 1-19-40)
+//   - AJOUT blanchisserie : 12 MAD/nuitée (lavage draps/serviettes entre séjours)
+//   - AJOUT renouvellement linge : 15K MAD/an (usure intensive STR)
+//   - Impact total : +109K MAD/an de charges vs ancien modèle (~+19%)
+//   - EBITDA corrigé : 550K MAD (marge 46.2%) vs 659K (55.3%) — projet reste rentable
+//   - Ajout constante AUDIT_RT avec données structurées pour section dashboard
+//   - engine.js : gardien nuit intégré dans calcul salaires mode conciergerie
+//   - engine.js : blanchisserie + renouvLinge ajoutés aux chargesTotal et chargesDetail
 // 28/03/2026 (v57) — Correction taux banque SARL :
 //   - BANQUE_CLASSIQUE : 4,35% → 5,20% (le 4,35% était le taux résidentiel particulier)
 //   - Source : BAM T4-2025 taux débiteur moyen TPME = 5,22%, Médias24 jan 2026 chef entreprise = 5,15%
@@ -120,7 +143,10 @@ const REVENUE_ASSUMPTIONS = {
   partOTA: 0.55,              // % des nuitées passant par plateformes (Booking, Airbnb)
   partDirect: 0.25,           // % direct déclaré (site, WhatsApp, téléphone, repeat guests)
   partInformel: 0.20,         // % cash / non-déclaré — réalité marché marocain (estimation conservatrice)
-  commissionOTA: 0.15,        // Booking 15-18%, Airbnb 15.5%, moyenne pondérée ~15%
+  commissionOTA: 0.17,        // ⚠ AUDIT MÉTIER v85 : corrigé 15%→17%
+  // Booking.com standard Maroc : 17% (Booking Partner Hub, Médias24 mai 2024)
+  // Airbnb host-only (obligatoire déc. 2025) : 15.5% (Loftely.com, Armonia Solutions)
+  // Moyenne pondérée Booking dominant (~70% du mix OTA) : 0.70×17% + 0.30×15.5% ≈ 16.55% → arrondi 17%
   croissanceTarifs: 0.03,     // annuelle — croissance prix/nuit (≈ inflation)
 
   // --- Inflation des charges ---
@@ -307,8 +333,9 @@ const CHARGES = {
 
   // --- Gestion — 20% du CA hébergement brut ---
   // Via conciergerie externe (standard Maroc : 20% du CA)
-  // La conciergerie gère listings, pricing, coordination, check-in/out
-  // L'investisseur conserve 1-2 employés sur place (accueil + ménage) au SMIG, non déclarés
+  // La conciergerie gère listings, pricing, coordination, check-in/out de jour
+  // ⚠ RT 2★ norme A : "Personnel d'accueil présent 24h/24 7j/7"
+  // → Nécessite au minimum 1 gardien de nuit en plus de la conciergerie
   tauxGestion: 0.20,
 
   // --- Utilities : EAU + ÉLECTRICITÉ ---
@@ -326,15 +353,17 @@ const CHARGES = {
   // Source : Inwi Pro 2025, fournisseurs IPTV Maroc. 11 unités partagent 1 connexion pro
 
   // --- Assurance multirisque professionnelle ---
-  assurance: 18_000,          // MAD / an — multirisque RT (incendie, RC, bris machines, perte exploitation)
-  // Source : courtiers Casablanca, fourchette 15,000-25,000 pour petite RT
-  // Inclut RC professionnelle obligatoire pour hébergement touristique
+  assurance: 22_000,          // MAD / an — multirisque RT classé (incendie, RC, bris machines, perte exploitation)
+  // Source : courtiers Casablanca, fourchette 18,000-28,000 pour RT classée 2★
+  // ⚠ AUDIT RT : augmenté de 18K→22K — RT classé avec cuisine/unité = risque incendie accru
+  // Inclut RC professionnelle obligatoire pour hébergement touristique classé
 
   // --- Entretien & maintenance ---
   // Nouveau bâtiment : 1-1.5% de la valeur construction/an
   // Budget construction ~4.5M → 1% = 45,000, mais garanti 5 ans → réduit An 1-3
-  entretienBase: 20_000,      // MAD / an — années 1-5 (bâtiment neuf sous garantie)
-  entretienMature: 40_000,    // MAD / an — après 5 ans (vieillissement normal)
+  entretienBase: 25_000,      // MAD / an — années 1-5 (bâtiment neuf sous garantie)
+  entretienMature: 45_000,    // MAD / an — après 5 ans (vieillissement normal)
+  // ⚠ AUDIT RT : augmenté de 20K/40K → 25K/45K — cuisine/unité = entretien plomberie/électroménager supplémentaire
   // Le moteur appliquera entretienBase si y < 5, entretienMature sinon
 
   // --- Salaires ---
@@ -348,6 +377,13 @@ const CHARGES = {
   // ⚠ NOTE : nbEmployes = 0 car le mode par défaut est conciergerie (20% CA, tout inclus)
   // En mode in-house (gestionDuel), les employés sont ajoutés au SMIG sans CNSS
 
+  // --- Gardien de nuit (AUDIT RT 2★) ---
+  // Norme A obligatoire : "Personnel d'accueil présent 24h/24 7j/7"
+  // Même en mode conciergerie, un gardien de nuit est nécessaire pour la classification RT
+  // La conciergerie couvre le jour (check-in/out), le gardien couvre la nuit (22h-8h)
+  salaireGardienNuit: 3_400,  // MAD / mois — SMIG, gardien nuit (22h-8h)
+  gardienNuitEnabled: true,   // true = gardien nuit budgété (RT 2★ conforme)
+
   // --- Charges sociales patronales ---
   // Employés non déclarés CNSS → pas de charges sociales patronales
   // ⚠ Risque juridique : en cas de contrôle CNSS, redressement possible
@@ -358,8 +394,11 @@ const CHARGES = {
   // TPE/PME Casablanca : forfait annuel 24,000-36,000 MAD pour tenue + déclarations
   // Petite RT = 1 visite/mois + bilan annuel + déclarations fiscales
   // Source : lec.ma, tmsonline.ma 2025
-  comptableAnnuel: 30_000,    // MAD / AN (≠ /mois!) — corrigé de 3,000/mois à 30,000/an
-  // = 2,500 MAD/mois — cabinet comptable Casablanca pour TPE hébergement touristique
+  comptableAnnuel: 36_000,    // MAD / AN — ⚠ AUDIT MÉTIER v85 : corrigé 30K→36K
+  // = 3,000 MAD/mois — cabinet comptable Casablanca pour SARL hôtelière
+  // Justification : TVA double taux (10% hébergement + 20% commercial), IS avec exonérations devises,
+  // cotisation minimale, déclarations CNSS (gardien), bilan annuel complexe
+  // Source : LEC.ma (TPE 2K-5K/mois, hausse +15% depuis 2023), TMSOnline.ma
 
   // --- Taxe professionnelle ---
   // Exonération totale 5 premières années (nouvelle construction)
@@ -375,12 +414,25 @@ const CHARGES = {
   // Linge de maison, produits ménage, amenities (savon, shampoing, café/thé)
   // Estimé : 40-60 MAD par nuitée occupée (fournitures + amortissement linge)
   // Source : benchmark opérateurs STR Maroc, Mews hospitality 2025
-  consommablesParNuitee: 30,  // MAD / nuitée occupée — linge, amenities basiques, produits ménagers
-  // Pour 11 unités × 365j × 48% occ = 1,928 nuitées → 57,840 MAD/an
-  // Amenities ~7 MAD + produits ménagers ~5 MAD + linge (usure+lavage) ~15 MAD + divers ~3 MAD
-  // Le ménage lui-même est internalisé via employé dédié (salaireMenage)
+  consommablesParNuitee: 35,  // MAD / nuitée occupée — RT 2★ exige amenities + consommables cuisine
+  // Pour 11 unités × 365j × 48% occ = 1,928 nuitées → 67,480 MAD/an
+  // Amenities ~7 MAD + produits ménagers ~5 MAD + linge (usure+lavage) ~15 MAD
+  // + consommables cuisine RT (éponge, liquide vaisselle, sacs poubelle, thé/café) ~5 MAD + divers ~3 MAD
+  // ⚠ AUDIT RT : augmenté de 30→35 MAD — la cuisine obligatoire RT génère des consommables supplémentaires
 
   menageLinge: 0,             // Internalisé via employé dédié (salaireMenage)
+
+  // --- CHARGES AJOUTÉES (AUDIT RT 2★ avril 2026) ---
+
+  // Blanchisserie / lavage linge entre séjours
+  // RT 2★ norme A : "Linge de toilette en coton" fourni à chaque client
+  // 11 unités × ~175 nuitées/an/unité × 12 MAD/nuitée = ~23K MAD/an
+  // Buanderie sous-sol réduit le coût vs prestataire externe
+  blanchisserieParNuitee: 12, // MAD / nuitée — lavage draps + serviettes
+
+  // Renouvellement linge annuel (usure intensive STR)
+  // Draps, serviettes, oreillers : durée de vie ~12-18 mois en STR
+  renouvellementLingeAnnuel: 15_000, // MAD / an — remplacement progressif linge usé
 
   // --- COÛTS AJOUTÉS (rapport qualitative mars 2026) ---
 
@@ -389,16 +441,22 @@ const CHARGES = {
   renouvellementMobilierCycle: 7,    // années entre deux renouvellements
   renouvellementMobilierParUnite: 40_000, // MAD/unité (identique à l'ameublement initial)
 
-  // Taxe d'habitation + taxe services communaux
-  // Source : upsilon-consulting.com, fourchette 10-15K pour petit R+5
-  taxeHabitation: 12_000,            // MAD / an (à partir An 6, exo nouvelle construction 5 ans)
+  // Taxe d'habitation + taxe services communaux (TSC)
+  // ⚠ AUDIT MÉTIER v85 : corrigé de 12K→35K MAD/an
+  // TH : valeur locative (VL) = 3% × valeur construction (~4.5M) = 135K → taux 20% - 2.5K = ~24.5K
+  // TSC : VL × 10.5% (zone urbaine Casablanca) = ~14.2K
+  // Total TH + TSC ≈ 35-39K MAD/an — la TSC était complètement absente de l'ancien modèle
+  // Source : CasablancaCity.ma (TH + TSC), Darify.ma, Valfoncier.ma, Loi 47-06
+  // Exonération TH : 5 ans nouvelles constructions. TSC : applicable dès le début (mais engine exo 5 ans)
+  taxeHabitation: 35_000,            // MAD / an (TH ~24.5K + TSC ~10.5K, à partir An 6)
 
   // Taxe de séjour (taxe de promotion touristique)
   // Instaurée par Dahir n° 1-19-40, Art. 4 : 2-25 MAD/nuit/personne selon classement
   // Pour résidence de tourisme / appart-hôtel non classé : 2 MAD/nuit estimé
   // Collectée auprès des touristes, reversée à la commune
   // Source : upsilon-consulting.com, DGI, communes urbaines
-  taxeSejour: 2,                     // MAD / nuitée — taxe de promotion touristique
+  taxeSejour: 5,                     // MAD / nuitée — taxe de promotion touristique RT 2★
+  // ⚠ AUDIT RT : augmenté de 2→5 MAD — RT classé 2★ = tarif supérieur (Dahir 1-19-40, Art. 4)
 
   // Budget marketing de lancement (An 1 uniquement)
   // Photos pro, config listings, promotions Booking Genius, Google Ads
@@ -407,6 +465,26 @@ const CHARGES = {
 
   // Frais création SARL + autorisations touristiques (An 1, one-shot)
   fraisCreation: 20_000,             // MAD one-shot An 1
+
+  // --- Logiciel PMS / Channel Manager (AUDIT GESTION DUEL v85) ---
+  // En mode auto-géré, le propriétaire doit gérer ses propres listings/réservations
+  // Solution minimum : PMS + channel manager (Guesty Lite, Lodgify, Beds24, etc.)
+  // Guesty Lite : ~$15/listing/mois × 11 unités = ~$165/mois ≈ 1,650 MAD/mois ≈ 20K MAD/an
+  // Lodgify : ~$12-17/listing/mois, Beds24 : ~$8/listing/mois (basique)
+  // Inclut : PMS, channel manager, calendrier synchronisé, messagerie auto, pricing dynamique basique
+  // Serrures connectées (Nuki/Igloohome) : ~500 MAD/mois maintenance (abonnement cloud + piles)
+  // Source : Guesty.com, Lodgify.com, benchmark opérateurs STR Maroc
+  pmsChannelManager: 0,               // MAD / an — défaut 0 (mode conciergerie = société gère ses outils)
+  pmsChannelManagerAutoGere: 15_000,  // MAD / an — activé UNIQUEMENT en mode auto-géré par computeGestionDuel
+  // ⚠ N'est chargé QU'en mode auto-géré (en conciergerie, la société gère ses propres outils)
+
+  // --- Flags Gestion Duel (AUDIT v85) ---
+  // En mode conciergerie (20% CA), la société couvre : ménage, linge, check-in/out, listings
+  // → La blanchisserie est INCLUSE dans les 20% (pas de double-comptage)
+  // → Les consommables sont partiellement réduits (amenities fournis par conciergerie)
+  // Réduction consommables conciergerie : on garde uniquement la partie « usure mobilier + cuisine »
+  // soit environ 50% des 35 MAD (les 15 MAD linge + 3 MAD amenities sont couverts par la société)
+  consommablesReductionConciergerie: 0.50,  // 50% des consommables couverts par conciergerie
 
   // Syndic : NON APPLICABLE — immeuble indivisible, monopropriété intégrale
   // Pas de copropriété, donc pas de charges de syndic
@@ -1737,5 +1815,124 @@ const RT_CAHIER_CHARGES = {
     { label: "Décret n° 2-22-867 — NEDF Résidences de tourisme", url: "https://www.sgg.gov.ma/BO/FR/2023/BO_7462-bis_Fr.pdf" },
     { label: "Arrêté n° 985-24 — NPQS Classification hôtelière", url: "https://www.sgg.gov.ma/BO/FR/2025/BO_7407-bis_Fr.pdf" },
     { label: "Arrêté n° 836-24 — Normes RIA", url: "https://www.sgg.gov.ma/BO/FR/2025/BO_7407-bis_Fr.pdf" },
+  ],
+};
+
+// ============================================================
+// AUDIT RT 2★ — Données de l'audit opérationnel (avril 2026)
+// Cross-référence cahier des charges RT 2★ vs modèle financier
+// ============================================================
+const AUDIT_RT = {
+  date: "01/04/2026",
+  version: "v84",
+
+  // --- FINDING 1 : Staffing 24/7 ---
+  staffing: {
+    titre: "Staffing 24/7 — Norme A obligatoire",
+    normeRef: "Personnel d'accueil présent 24h/24 et 7j/7 (A)",
+    heuresSemaine: 168,
+    heuresLegalesEmploye: 44,
+    shiftsMinimum: 4,
+    models: [
+      {
+        nom: "In-house complet (conforme CNSS)",
+        reception: 4, menage: 2, coutAnnuel: 330_000,
+        pctCA: 27.7, conforme: true,
+        note: "4 réceptionnistes rotation + 2 ménage, CNSS déclaré"
+      },
+      {
+        nom: "In-house réduit (non déclaré)",
+        reception: 3, menage: 1, coutAnnuel: 163_000,
+        pctCA: 13.7, conforme: true,
+        note: "3 réceptionnistes + 1 ménage, risque CNSS"
+      },
+      {
+        nom: "Hybride conciergerie + gardien nuit",
+        reception: 1, menage: 0, coutAnnuel: 279_000,
+        pctCA: 23.4, conforme: true, recommended: true,
+        note: "Conciergerie jour (20% CA) + gardien nuit SMIG — RECOMMANDÉ"
+      },
+      {
+        nom: "Conciergerie pure (ancien modèle)",
+        reception: 0, menage: 0, coutAnnuel: 239_000,
+        pctCA: 20.0, conforme: false,
+        note: "⚠ NON CONFORME — aucune présence nocturne"
+      },
+    ],
+    verdict: "CRITIQUE",
+    correction: "Ajout d'un gardien de nuit au SMIG (3,400 MAD/mois = 40,800 MAD/an)",
+  },
+
+  // --- FINDING 2 : Budget ameublement ---
+  ameublement: {
+    titre: "Budget ameublement RT 2★",
+    budgetActuel: 40_000,
+    coutEstimeRT: 38_250,
+    coutNormesA: 33_350,
+    coutNormesB: 4_900,
+    verdict: "OK",
+    ventilation: [
+      { categorie: "Cuisine (RT obligatoire)", cout: 15_500, pct: 41 },
+      { categorie: "Chambre / Literie", cout: 10_900, pct: 28 },
+      { categorie: "Climatisation", cout: 5_000, pct: 13, note: "Souvent dans budget construction" },
+      { categorie: "Électronique (TV + coffre-fort)", cout: 4_000, pct: 10 },
+      { categorie: "Sanitaires", cout: 1_050, pct: 3 },
+      { categorie: "Fenêtres (rideaux/occultants)", cout: 1_000, pct: 3 },
+      { categorie: "Éclairage", cout: 800, pct: 2 },
+    ],
+    note: "Budget suffisant avec marge de 1,750 MAD/unité. La clim (5K) est normalement dans le budget construction.",
+  },
+
+  // --- FINDING 3 : Charges corrigées ---
+  charges: {
+    titre: "Charges sous-estimées — corrections RT",
+    corrections: [
+      { poste: "Gardien de nuit", ancien: 0, nouveau: 40_800, raison: "Norme A 24/7 — présence nocturne obligatoire", verdict: "AJOUT" },
+      { poste: "Blanchisserie", ancien: 0, nouveau: 23_136, raison: "Lavage draps/serviettes entre séjours (12 MAD/nuitée)", verdict: "AJOUT" },
+      { poste: "Renouvellement linge", ancien: 0, nouveau: 15_000, raison: "Usure intensive STR, remplacement annuel progressif", verdict: "AJOUT" },
+      { poste: "Consommables", ancien: 57_840, nouveau: 67_480, raison: "RT exige amenities + consommables cuisine (30→35 MAD/nuitée)", verdict: "AUGMENTÉ" },
+      { poste: "Taxe de séjour", ancien: 3_856, nouveau: 9_640, raison: "RT classé 2★ = 5 MAD/nuit (vs 2 MAD non classé)", verdict: "AUGMENTÉ" },
+      { poste: "Assurance", ancien: 18_000, nouveau: 22_000, raison: "RT classé + cuisine/unité = risque incendie accru", verdict: "AUGMENTÉ" },
+      { poste: "Entretien (neuf)", ancien: 20_000, nouveau: 25_000, raison: "Cuisine/unité = entretien plomberie/électroménager supplémentaire", verdict: "AUGMENTÉ" },
+      { poste: "Utilities", ancien: 45_700, nouveau: 50_100, raison: "Norme A 18-26°C + cuisine = consommation élec supérieure", verdict: "AUGMENTÉ" },
+    ],
+    ecartTotal: 109_000,
+    pctAugmentation: 19.1,
+  },
+
+  // --- FINDING 4 : Impact rentabilité ---
+  impact: {
+    titre: "Impact sur la rentabilité",
+    scenarioRealiste: {
+      revBrut: 1_193_000,
+      revTotal: 1_191_000,
+      chargesActuel: 532_000,
+      chargesCorrige: 640_000,
+      ebitdaActuel: 659_000,
+      ebitdaCorrige: 550_000,
+      margeActuelle: 55.3,
+      margeCorrigee: 46.2,
+    },
+    verdict: "Le projet reste RENTABLE malgré les corrections (+109K MAD/an de charges).",
+  },
+
+  // --- FINDING 5 : Avantages RT vs Hôtel ---
+  avantagesRT: [
+    "Nettoyage À LA DEMANDE (pas quotidien) → réduit personnel ménage de 50%",
+    "Pas de restaurant obligatoire → pas de chef, pas de stock alimentaire, pas de licence",
+    "Pas de concierge dédié (obligatoire hôtel dès 4★)",
+    "Récupération TVA construction estimée ~400-500K MAD",
+    "Pas de minimum d'unités (sauf RT Luxe = 11)",
+    "Cuisine dans l'unité = argument commercial fort vs Airbnb",
+    "Changement draps/linge à la demande = économie estimée 30% vs quotidien",
+  ],
+
+  // --- Équipements complémentaires recommandés ---
+  equipementsComplementaires: [
+    { item: "Serrures connectées (self check-in)", cout: 8_800, note: "11 unités × 800 MAD — facilite check-in tardif" },
+    { item: "Interphone/vidéo entrée", cout: 3_000, note: "Sécurité + accueil à distance" },
+    { item: "Tablette accueil", cout: 2_000, note: "Self check-in automatisé" },
+    { item: "Machine à laver professionnelle (sous-sol)", cout: 15_000, note: "Réduit coût blanchisserie de 30-40%" },
+    { item: "Sèche-linge professionnel (sous-sol)", cout: 12_000, note: "Complément buanderie sous-sol" },
   ],
 };

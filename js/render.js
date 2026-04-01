@@ -4,6 +4,15 @@
 // ============================================================
 //
 // CHANGELOG:
+// 01/04/2026 (v84) — AUDIT RT 2★ section :
+//   - Ajout renderAuditRT(state) — section complète avec 4 findings
+//   - Finding 1 : Staffing 24/7 (4 modèles comparés, recommandation hybride)
+//   - Finding 2 : Budget ameublement (ventilation RT par catégorie)
+//   - Finding 3 : Charges corrigées (8 postes avec ancien/nouveau/écart)
+//   - Finding 4 : Impact global (EBITDA avant/après, avantages RT vs hôtel)
+//   - Table équipements complémentaires recommandés
+//   - KPIs dynamiques dans header (impact charges, EBITDA corrigé, marge)
+//   - Nouveaux champs chargesDetail rendus : blanchisserie, renouvLinge
 // 29/03/2026 — Insights dynamiques sur les 8 KPI cards Cash-Flow :
 //   - CF Net An 1 : mensuel + multiplicateur Y1→Y10
 //   - TRI : comparaison vs S&P 500, MASI, épargne UAE
@@ -80,6 +89,7 @@ function render(state) {
   renderCapexOpex(state);
   renderDossierBanque(state);
   renderCahierRT();
+  renderAuditRT(state);
 }
 
 // --- Header badge (dynamic total projet) ---
@@ -1900,8 +1910,10 @@ function renderCapexOpex(S) {
   if (analyseEl) {
     const opexAn1 = p[0].chargesTotal + p[0].debtServiceTotal + p[0].is;
     const chargeFixe = p[0].chargesDetail.salaires + p[0].chargesDetail.comptable +
-      p[0].chargesDetail.assurance + p[0].chargesDetail.entretien + p[0].chargesDetail.divers;
-    const chargeVar = p[0].chargesDetail.gestion + p[0].chargesDetail.consommables;
+      p[0].chargesDetail.assurance + p[0].chargesDetail.entretien + p[0].chargesDetail.divers +
+      (p[0].chargesDetail.renouvLinge || 0);
+    const chargeVar = p[0].chargesDetail.gestion + p[0].chargesDetail.consommables +
+      (p[0].chargesDetail.blanchisserie || 0);
     analyseEl.innerHTML =
       `<strong>Structure des coûts An 1 :</strong> ` +
       `Charges fixes : <strong>${fmtMAD(chargeFixe)}</strong> (${(chargeFixe / p[0].chargesTotal * 100).toFixed(0)}%) — ` +
@@ -1943,21 +1955,25 @@ function renderGestionDuel(S) {
         <strong style="color:#065f46">Auto-géré (depuis UAE)</strong>
         <ul style="margin:8px 0 0 18px;font-size:.85rem;line-height:1.8">
           <li>Commission gestion : <strong>0%</strong></li>
-          <li>Concierge (4 500 MAD) + ménage (3 500 MAD) = 2 employés</li>
+          <li>Concierge + ménage = <strong>2 employés SMIG</strong> (3 400 MAD chacun)</li>
+          <li>Blanchisserie : <strong>100%</strong> (buanderie propre, 12 MAD/nuitée)</li>
+          <li>Consommables : <strong>100%</strong> (35 MAD/nuitée, gestion directe)</li>
+          <li>PMS / Channel Manager : <strong>${fmtNum(CHARGES.pmsChannelManagerAutoGere || 15000)} MAD/an</strong> (Guesty/Lodgify + serrures)</li>
           <li>Assurance : <strong>13 000 MAD/an</strong> (négociation bâtiment neuf)</li>
-          <li>Internet/TV : <strong>833 MAD/mois</strong> (~10K/an, IPTV éco)</li>
           <li>Divers : <strong>10 000 MAD/an</strong></li>
           <li>L'investisseur gère pricing, OTA, coordination à distance</li>
           <li>Temps personnel non chiffré (coût d'opportunité)</li>
         </ul>
       </div>
       <div style="padding:12px;background:#eff6ff;border-radius:8px;border:1px solid #bfdbfe">
-        <strong style="color:#1e40af">Société de gestion</strong>
+        <strong style="color:#1e40af">Société de gestion (conciergerie)</strong>
         <ul style="margin:8px 0 0 18px;font-size:.85rem;line-height:1.8">
           <li>Commission gestion : <strong>20% du CA hébergement brut</strong></li>
-          <li>Concierge + ménage = 2 employés (supervisés par la société)</li>
+          <li>Salaires : <strong>gardien nuit uniquement</strong> (3 400 MAD, norme RT 2★)</li>
+          <li>Blanchisserie : <strong>incluse dans 20%</strong> (0 MAD en charge directe)</li>
+          <li>Consommables : <strong>−50%</strong> (amenities/linge couverts par société)</li>
+          <li>PMS / Channel Manager : <strong>inclus dans 20%</strong> (0 MAD)</li>
           <li>Assurance : <strong>${fmtNum(CHARGES.assurance)} MAD/an</strong></li>
-          <li>Internet/TV : <strong>${fmtNum(CHARGES.internetTv)} MAD/mois</strong></li>
           <li>Divers : <strong>${fmtNum(CHARGES.divers)} MAD/an</strong></li>
           <li>Propriétaire 100% passif — zéro implication opérationnelle</li>
           <li>Expertise pricing dynamique, revenue management incluse</li>
@@ -1973,6 +1989,9 @@ function renderGestionDuel(S) {
       { label: "Gestion (commission)", a: aY1.chargesDetail.gestion, g: gY1.chargesDetail.gestion },
       { label: "Salaires", a: aY1.chargesDetail.salaires, g: gY1.chargesDetail.salaires },
       { label: "Consommables", a: aY1.chargesDetail.consommables, g: gY1.chargesDetail.consommables },
+      { label: "Blanchisserie (linge)", a: aY1.chargesDetail.blanchisserie || 0, g: gY1.chargesDetail.blanchisserie || 0 },
+      { label: "Renouvellement linge", a: aY1.chargesDetail.renouvLinge || 0, g: gY1.chargesDetail.renouvLinge || 0 },
+      { label: "PMS / Channel Manager", a: aY1.chargesDetail.pmsLogiciel || 0, g: gY1.chargesDetail.pmsLogiciel || 0 },
       { label: "Utilities (eau/élec/internet)", a: aY1.chargesDetail.utilities, g: gY1.chargesDetail.utilities },
       { label: "Comptable", a: aY1.chargesDetail.comptable, g: gY1.chargesDetail.comptable },
       { label: "Assurance", a: aY1.chargesDetail.assurance, g: gY1.chargesDetail.assurance },
@@ -2209,8 +2228,9 @@ function renderHypotheses() {
   const ch = CHARGES;
   const el2 = document.getElementById('hyp-charges');
   if (el2) el2.innerHTML = [
-    row('Conciergerie (outsourcing)', fmtPct(ch.tauxGestion) + ' du CA', 'Conciergerie externe tout inclus : ménage, draps, accueil, check-in/out, listings, pricing'),
-    row('Mode par défaut', ch.nbEmployes === 0 ? 'Outsourcing' : 'In-house (' + ch.nbEmployes + ' emp.)', ch.nbEmployes === 0 ? 'Conciergerie gère tout → 0 employés directs' : 'Employés au SMIG, non déclarés CNSS'),
+    row('Conciergerie (outsourcing)', fmtPct(ch.tauxGestion) + ' du CA', 'Conciergerie externe : ménage, draps, accueil jour, check-in/out, listings, pricing'),
+    row('Gardien de nuit (RT 2★)', fmtMAD(ch.salaireGardienNuit || 0) + '/mois', 'Norme A obligatoire : "Personnel d\'accueil 24h/24 7j/7" — gardien nuit SMIG'),
+    row('Mode par défaut', ch.nbEmployes === 0 ? 'Hybride (conciergerie + gardien nuit)' : 'In-house (' + ch.nbEmployes + ' emp.)', ch.nbEmployes === 0 ? 'Conciergerie gère le jour, gardien nuit pour norme A RT' : 'Employés au SMIG, non déclarés CNSS'),
     row('Salaire SMIG (si in-house)', fmtMAD(ch.salaireConcierge) + '/mois', 'SMIG 2026 : 3 400 MAD/mois — utilisé uniquement en mode in-house'),
     row('CNSS', ch.chargesSociales > 0 ? fmtPct(ch.chargesSociales) : '0%', 'Employés non déclarés — taux légal si déclaration : 20.71%'),
     row('Utilities fixe', fmtMAD(ch.utilitiesFixe) + '/mois', 'Parties communes LED + ascenseur — bâtiment neuf R+5'),
@@ -2220,7 +2240,9 @@ function renderHypotheses() {
     row('Entretien (neuf)', fmtMAD(ch.entretienBase) + '/an', 'Années 1-5, bâtiment sous garantie — ~0.4% valeur construction'),
     row('Entretien (mature)', fmtMAD(ch.entretienMature) + '/an', 'Après 5 ans, vieillissement normal — ~1% valeur construction'),
     row('Comptable', fmtMAD(ch.comptableAnnuel) + '/an', 'Forfait TPE hébergement touristique — tenue + déclarations — lec.ma, tmsonline.ma 2025'),
-    row('Consommables', fmtMAD(ch.consommablesParNuitee) + '/nuitée', 'Linge ~15 MAD + amenities ~7 MAD + produits ~5 MAD + divers ~3 MAD'),
+    row('Consommables', fmtMAD(ch.consommablesParNuitee) + '/nuitée', 'Linge ~15 MAD + amenities ~7 MAD + produits ~5 MAD + cuisine RT ~5 MAD + divers ~3 MAD'),
+    row('Blanchisserie (RT 2★)', fmtMAD(ch.blanchisserieParNuitee || 0) + '/nuitée', 'Lavage draps + serviettes entre séjours — buanderie sous-sol'),
+    row('Renouvellement linge', fmtMAD(ch.renouvellementLingeAnnuel || 0) + '/an', 'Usure intensive STR — remplacement progressif draps, serviettes, oreillers'),
     row('Taxe professionnelle', fmtMAD(ch.taxesPro) + '/an', 'Après 5 ans exo (nouvelle construction) — CGI Art. 6-I-A'),
     row('Taxe habitation', fmtMAD(ch.taxeHabitation) + '/an', 'À partir An 6 — exo 5 ans nouvelle construction — upsilon-consulting.com'),
     row('Divers & imprévus', fmtMAD(ch.divers) + '/an', 'Frais bancaires, fournitures, licences PMS, déplacements'),
@@ -2943,6 +2965,90 @@ function renderCahierRT() {
   if (srcEl) srcEl.innerHTML = D.sources.map(s =>
     `<li style="padding:2px 0"><a href="${s.url}" target="_blank" rel="noopener" style="color:var(--primary-light);text-decoration:none">${s.label}</a></li>`
   ).join("");
+}
+
+// ============================================================
+// AUDIT RT 2★ — Section audit opérationnel
+// ============================================================
+function renderAuditRT(state) {
+  if (!state || !state.projections || !state.projections[0]) return;
+  const A = typeof AUDIT_RT !== 'undefined' ? AUDIT_RT : null;
+  if (!A) return;
+
+  const S = state;
+  const y1 = S.projections[0];
+
+  // --- Header KPIs ---
+  // Impact charges = écart entre modèle actuel et corrigé
+  // On utilise directement les données de l'audit
+  setText("audit-impact-charges", "+" + fmtMAD(A.charges.ecartTotal) + "/an");
+  setText("audit-ebitda-corrige", fmtMAD(y1.ebitda));
+  setText("audit-marge-corrigee", (y1.margeExploitation * 100).toFixed(1) + "%");
+
+  // --- Staffing table ---
+  const staffTb = document.getElementById("audit-staffing-tbody");
+  if (staffTb) {
+    staffTb.innerHTML = A.staffing.models.map(m => {
+      const conformeBadge = m.conforme
+        ? '<span style="color:var(--green);font-weight:700">✅ Oui</span>'
+        : '<span style="color:#dc2626;font-weight:700">❌ Non</span>';
+      const rowStyle = m.recommended ? ' style="background:#f0fdf4;font-weight:600"' : (!m.conforme ? ' style="background:#fef2f2"' : '');
+      const nameExtra = m.recommended ? ' <span style="background:var(--green);color:#fff;padding:1px 6px;border-radius:4px;font-size:.7rem">RECOMMANDÉ</span>' : '';
+      return `<tr${rowStyle}><td>${m.nom}${nameExtra}</td><td class="num">${m.reception + m.menage}</td><td class="num">${fmtMAD(m.coutAnnuel)}</td><td class="num">${m.pctCA.toFixed(1)}%</td><td class="num">${conformeBadge}</td></tr>`;
+    }).join("");
+  }
+
+  // --- Ameublement table ---
+  const ameubTb = document.getElementById("audit-ameublement-tbody");
+  if (ameubTb) {
+    const exemples = {
+      "Cuisine (RT obligatoire)": "Évier, plaques, four, réfrigérateur, bouilloire, théière, armoire",
+      "Chambre / Literie": "Lit 140×190, matelas ≥15cm, draps, oreillers, penderie, porte-bagages",
+      "Climatisation": "Split réversible (norme A : 18-26°C)",
+      "Électronique (TV + coffre-fort)": "TV écran plat + coffre-fort électronique (normes A)",
+      "Sanitaires": "Linge toilette coton, produits accueil, poignée sécurité douche",
+      "Fenêtres (rideaux/occultants)": "Rideaux occultants + voilages (norme A)",
+      "Éclairage": "1 point lumineux minimum par pièce (norme A)",
+    };
+    ameubTb.innerHTML = A.ameublement.ventilation.map(v => {
+      return `<tr><td style="font-weight:500">${v.categorie}</td><td class="num">${fmtMAD(v.cout)}</td><td class="num">${v.pct}%</td><td style="font-size:.8rem;color:var(--text-sec)">${exemples[v.categorie] || v.note || ''}</td></tr>`;
+    }).join("") + `<tr style="font-weight:700;border-top:2px solid var(--border)"><td>TOTAL</td><td class="num">${fmtMAD(A.ameublement.coutEstimeRT)}</td><td class="num">100%</td><td style="font-size:.8rem;color:var(--green)">Budget: ${fmtMAD(A.ameublement.budgetActuel)} → Marge +${fmtMAD(A.ameublement.budgetActuel - A.ameublement.coutEstimeRT)}/unité</td></tr>`;
+  }
+
+  // --- Charges corrections table ---
+  const chargeTb = document.getElementById("audit-charges-tbody");
+  if (chargeTb) {
+    chargeTb.innerHTML = A.charges.corrections.map(c => {
+      const ecart = c.nouveau - c.ancien;
+      const ecartStr = ecart > 0 ? `+${fmtMAD(ecart)}` : fmtMAD(ecart);
+      const verdictColor = c.verdict === 'AJOUT' ? '#dc2626' : 'var(--gold)';
+      const verdictBadge = `<span style="background:${verdictColor}15;color:${verdictColor};padding:1px 8px;border-radius:4px;font-size:.72rem;font-weight:600">${c.verdict}</span>`;
+      return `<tr><td style="font-weight:500">${c.poste}</td><td class="num">${fmtMAD(c.ancien)}</td><td class="num">${fmtMAD(c.nouveau)}</td><td class="num" style="color:${ecart > 0 ? '#dc2626' : 'var(--green)'}">${ecartStr}</td><td>${verdictBadge}</td><td style="font-size:.8rem;color:var(--text-sec)">${c.raison}</td></tr>`;
+    }).join("") + `<tr style="font-weight:700;border-top:2px solid var(--border)"><td>TOTAL ÉCART</td><td></td><td></td><td class="num" style="color:#dc2626">+${fmtMAD(A.charges.ecartTotal)}/an</td><td><span style="background:#dc262615;color:#dc2626;padding:1px 8px;border-radius:4px;font-size:.72rem;font-weight:600">+${A.charges.pctAugmentation}%</span></td><td></td></tr>`;
+  }
+
+  // --- Impact global ---
+  const imp = A.impact.scenarioRealiste;
+  setText("audit-ebitda-avant", fmtMAD(imp.ebitdaActuel));
+  setText("audit-marge-avant", "Marge " + imp.margeActuelle.toFixed(1) + "%");
+  setText("audit-ebitda-apres", fmtMAD(imp.ebitdaCorrige));
+  setText("audit-marge-apres", "Marge " + imp.margeCorrigee.toFixed(1) + "%");
+
+  // --- Avantages RT ---
+  const avEl = document.getElementById("audit-avantages-rt");
+  if (avEl) {
+    avEl.innerHTML = A.avantagesRT.map(a =>
+      `<div style="padding:6px 0;border-bottom:1px solid var(--border);display:flex;gap:8px"><span style="color:var(--green);flex-shrink:0">✓</span><span>${a}</span></div>`
+    ).join("");
+  }
+
+  // --- Équipements complémentaires ---
+  const eqTb = document.getElementById("audit-equipements-tbody");
+  if (eqTb) {
+    eqTb.innerHTML = A.equipementsComplementaires.map(e =>
+      `<tr><td style="font-weight:500">${e.item}</td><td class="num">${fmtMAD(e.cout)}</td><td style="font-size:.82rem;color:var(--text-sec)">${e.note}</td></tr>`
+    ).join("") + `<tr style="font-weight:700;border-top:2px solid var(--border)"><td>TOTAL</td><td class="num">${fmtMAD(A.equipementsComplementaires.reduce((s,e)=>s+e.cout,0))}</td><td style="font-size:.82rem;color:var(--text-sec)">Investissements one-shot recommandés</td></tr>`;
+  }
 }
 
 // --- Utility ---
