@@ -326,8 +326,8 @@ const CHARGES = {
   // Source : Inwi Pro 2025, fournisseurs IPTV Maroc. 11 unités partagent 1 connexion pro
 
   // --- Assurance multirisque professionnelle ---
-  assurance: 18_000,          // MAD / an — multirisque hôtelier (incendie, RC, bris machines, perte exploitation)
-  // Source : courtiers Casablanca, fourchette 15,000-25,000 pour petit hôtel
+  assurance: 18_000,          // MAD / an — multirisque RT (incendie, RC, bris machines, perte exploitation)
+  // Source : courtiers Casablanca, fourchette 15,000-25,000 pour petite RT
   // Inclut RC professionnelle obligatoire pour hébergement touristique
 
   // --- Entretien & maintenance ---
@@ -356,10 +356,10 @@ const CHARGES = {
 
   // --- Comptable / Expert-comptable ---
   // TPE/PME Casablanca : forfait annuel 24,000-36,000 MAD pour tenue + déclarations
-  // Petit appart-hôtel = 1 visite/mois + bilan annuel + déclarations fiscales
+  // Petite RT = 1 visite/mois + bilan annuel + déclarations fiscales
   // Source : lec.ma, tmsonline.ma 2025
   comptableAnnuel: 30_000,    // MAD / AN (≠ /mois!) — corrigé de 3,000/mois à 30,000/an
-  // = 2,500 MAD/mois — cabinet comptable Casablanca pour TPE hôtelière
+  // = 2,500 MAD/mois — cabinet comptable Casablanca pour TPE hébergement touristique
 
   // --- Taxe professionnelle ---
   // Exonération totale 5 premières années (nouvelle construction)
@@ -682,15 +682,15 @@ const MARKET_DATA = {
 
   // Concurrence directe Maarif
   concurrence: [
-    { nom: "StayHere Maarif Lifestyle",    type: "Appart-hôtel pro",    prix: "770 MAD/n", rating: 8.5, reviews: 1927, surface: "35m²", gamme: "Premium" },
-    { nom: "AS Premium By Soho Hotels",    type: "Appart-hôtel pro",    prix: "745 MAD/n", rating: 8.8, reviews: 1523, surface: "Suite", gamme: "Premium" },
-    { nom: "unocapital",                   type: "Appart-hôtel pro",    prix: "750 MAD/n", rating: 8.5, reviews: 200,  surface: "45m²", gamme: "Premium" },
-    { nom: "StayHere Palmier City Living",  type: "Appart-hôtel pro",    prix: "600 MAD/n", rating: 8.1, reviews: 922,  surface: "30m²", gamme: "Milieu+" },
-    { nom: "Faya Nova Central Stay",        type: "Appart-hôtel pro",    prix: "615 MAD/n", rating: 8.2, reviews: 260,  surface: "42m²", gamme: "Milieu+" },
-    { nom: "StayHere Oasis Residential",    type: "Appart-hôtel pro",    prix: "910 MAD/n", rating: 8.6, reviews: 250,  surface: "50m²", gamme: "Premium" },
+    { nom: "StayHere Maarif Lifestyle",    type: "RT / Appart pro",    prix: "770 MAD/n", rating: 8.5, reviews: 1927, surface: "35m²", gamme: "Premium" },
+    { nom: "AS Premium By Soho Hotels",    type: "RT / Appart pro",    prix: "745 MAD/n", rating: 8.8, reviews: 1523, surface: "Suite", gamme: "Premium" },
+    { nom: "unocapital",                   type: "RT / Appart pro",    prix: "750 MAD/n", rating: 8.5, reviews: 200,  surface: "45m²", gamme: "Premium" },
+    { nom: "StayHere Palmier City Living",  type: "RT / Appart pro",    prix: "600 MAD/n", rating: 8.1, reviews: 922,  surface: "30m²", gamme: "Milieu+" },
+    { nom: "Faya Nova Central Stay",        type: "RT / Appart pro",    prix: "615 MAD/n", rating: 8.2, reviews: 260,  surface: "42m²", gamme: "Milieu+" },
+    { nom: "StayHere Oasis Residential",    type: "RT / Appart pro",    prix: "910 MAD/n", rating: 8.6, reviews: 250,  surface: "50m²", gamme: "Premium" },
     { nom: "maarif elite suite",            type: "Particulier premium", prix: "965 MAD/n", rating: 8.2, reviews: 99,   surface: "Suite", gamme: "Luxe" },
     { nom: "Chic & Cozy 1BR Oasis",        type: "Particulier premium", prix: "735 MAD/n", rating: 8.8, reviews: 59,   surface: "90m²", gamme: "Premium" },
-    { nom: "W-Aldorf",                      type: "Appart-hôtel pro",    prix: "1175 MAD/n", rating: 8.0, reviews: 423,  surface: "85m²", gamme: "Luxe" },
+    { nom: "W-Aldorf",                      type: "RT / Appart pro",    prix: "1175 MAD/n", rating: 8.0, reviews: 423,  surface: "85m²", gamme: "Luxe" },
     { nom: "Dynasty Luxury Palmiers",       type: "Particulier",         prix: "650 MAD/n", rating: null, reviews: null, surface: "45m²", gamme: "Milieu+" },
     { nom: "Élégant Studio Centre",         type: "Particulier premium", prix: "755 MAD/n", rating: 9.2, reviews: 4,    surface: "47m²", gamme: "Premium" },
     { nom: "Studio Palmiers Maarif",        type: "Particulier",         prix: "525 MAD/n", rating: 7.3, reviews: 4,    surface: "30m²", gamme: "Économique" },
@@ -739,7 +739,7 @@ const BENCHMARK = {
     "StayHere domine avec 3 propriétés (Maarif, Palmier, Oasis) — marque forte, volumes élevés",
     "AS Premium By Soho (8.8/10) = meilleur rapport qualité/volume — modèle à suivre",
     "Écart de prix x2 entre particuliers basiques (525 MAD) et pros premium (770 MAD)",
-    "Les propriétés avec services hôteliers (petit-déj, conciergerie) justifient +15-25% de premium",
+    "Les propriétés avec services structurés (conciergerie, ménage) justifient +15-25% de premium",
     "Segment ultra-luxe (piscine/jacuzzi privé) atteint 1490 MAD/n mais niche très restreinte",
   ],
   // ═══ ANALYSE TAUX D'OCCUPATION — CONCLUSION ═══
@@ -752,7 +752,7 @@ const BENCHMARK = {
   // FOURCHETTE BIEN PRO GÉRÉ (note 4.5+/5, multi-canal) : 55-72%
   //   → AirBoo Maarif pro : 72%, AirROI top 25% : 58%
   //   → Mid-scale segment (Airbtics) : 65-70%
-  //   → C'EST NOTRE CIBLE avec un appart-hôtel structuré
+  //   → C'EST NOTRE CIBLE avec une RT structurée
   //
   // TOP 10% (marketing, review 4.8+, brand, volume) : 76%+
   //   → AirROI top 10% : 76%+, Anfa pro : 78%
@@ -775,7 +775,7 @@ const BENCHMARK = {
 // ======= RISQUES =======
 const RISKS = [
   { name: "Taux d'occupation < prévisions",     prob: 0.5, impact: 0.8, mitigation: "Diversifier canaux (Booking, Airbnb, direct), offres long séjour, corporate" },
-  { name: "Saturation offre Maarif (+50%/an)",   prob: 0.6, impact: 0.6, mitigation: "Différenciation qualité, service appart-hôtel vs Airbnb indépendant" },
+  { name: "Saturation offre Maarif (+50%/an)",   prob: 0.6, impact: 0.6, mitigation: "Différenciation qualité, RT classée vs Airbnb indépendant" },
   { name: "Retard de construction",              prob: 0.5, impact: 0.5, mitigation: "Contrat clé en main, pénalités retard, suivi hebdomadaire" },
   { name: "Dépassement budget construction",     prob: 0.5, impact: 0.6, mitigation: "Marge 10-15%, devis fermés, maîtrise d'oeuvre rigoureuse" },
   { name: "Vacance local commercial",            prob: 0.3, impact: 0.2, mitigation: "Emplacement Maarif très attractif, bail long terme" },
@@ -923,7 +923,7 @@ const SUBVENTIONS = [
     offer: "Exonération TVA 20% sur biens d'équipement acquis pendant 36 mois",
     montantEstime: 88_000,
     eligible: true,
-    eligibilityNote: "Nécessite convention d'investissement. Couvre ameublement et équipements hôteliers. 36 mois.",
+    eligibilityNote: "Nécessite convention d'investissement. Couvre ameublement et équipements RT. 36 mois.",
     process: "Convention investissement → attestation exonération → achat HT",
     source: "Code Général des Impôts, art. 92-I-6°",
     conditions: [
@@ -931,7 +931,7 @@ const SUBVENTIONS = [
       { label: "Biens d'équipement identifiés", requis: true, projet: true, detail: "Ameublement 11 unités = 440K MAD HT" },
       { label: "Acquisition dans les 36 mois", requis: true, projet: true, detail: "Achat prévu pendant phase construction" },
     ],
-    whyEligible: "Convention d'investissement accessible pour tout projet > 1 MDH. L'ameublement hôtelier est clairement un bien d'équipement éligible. Économie : 88K MAD de TVA.",
+    whyEligible: "Convention d'investissement accessible pour tout projet > 1 MDH. L'ameublement d'une RT est clairement un bien d'équipement éligible. Économie : 88K MAD de TVA.",
   },
   {
     name: "IS Exonéré sur CA Devises",
@@ -1133,14 +1133,14 @@ const GO_SIYAHA_PROGRAMME = {
   // --- Taux de subvention par type ---
   subventions: [
     { type: "Animation touristique",       taux: 0.35, plafondInvest: 10_000_000, detail: "Activités touristiques, loisirs, sport" },
-    { type: "Hébergement",                 taux: 0.30, plafondInvest: 10_000_000, detail: "Hôtels, riads, maisons d'hôtes avec activités d'animation" },
+    { type: "Hébergement",                 taux: 0.30, plafondInvest: 10_000_000, detail: "RT, hôtels, riads, maisons d'hôtes avec activités d'animation" },
     { type: "Croissance verte / Éco",      taux: 0.40, plafondInvest: 10_000_000, detail: "Équipements éco-responsables, photovoltaïque, isolation" },
     { type: "Assistance technique",        taux: 0.90, plafondInvest: null,        detail: "Consulting, digital, stratégie financière — entreprise ne paie que 10%" },
   ],
 
   // --- Secteurs éligibles ---
   secteursEligibles: [
-    "Hébergement (hôtels, riads, résidences de tourisme, maisons d'hôtes)",
+    "Hébergement (résidences de tourisme, hôtels, riads, maisons d'hôtes)",
     "Agences de voyages",
     "Transport touristique",
     "Restauration touristique",
@@ -1247,7 +1247,7 @@ const GO_SIYAHA_PROGRAMME = {
 
 // ═══════════════════════════════════════════════════════════════════════
 // MONTAGES D'EXPLOITATION — Analyse comparative
-// Contexte : MRE, appart-hôtel Casablanca, MDM Invest, Go Siyaha
+// Contexte : MRE, résidence de tourisme Casablanca, MDM Invest, Go Siyaha
 // Sources : CGI Maroc (LF 2026), Upsilon Consulting, Tax-News,
 //           LesEco, Valfoncier, Armonia Solutions, AMDE
 // Dernière vérification : mars 2026
@@ -1273,7 +1273,7 @@ const MONTAGES_EXPLOITATION = {
       attention: "Seule la quote-part devises est exonérée. Le CA en MAD (clients locaux) est taxé normalement dès le départ."
     },
     taxeProfessionnelle: "Exonération 5 ans pour toute nouvelle activité",
-    droitsEnregistrement: "Exonération sur terrain nu si construction hôtelière achevée sous 6 ans, hypothèque légale État, conservation 10 ans",
+    droitsEnregistrement: "Exonération sur terrain nu si construction touristique achevée sous 6 ans, hypothèque légale État, conservation 10 ans",
     dividendes: {
       retenueSurce: 0.1125,
       retenueSurceNote: "11,25% en 2026 (LF 2023 : 15%→13,75%→12,5%→11,25%→10% en 2027)",
@@ -1283,7 +1283,7 @@ const MONTAGES_EXPLOITATION = {
   },
 
   contrainteMDM: {
-    note: "MDM Invest ne prohibe pas formellement la détention en nom propre, mais en pratique il finance des projets d'entreprise (SARL/SA). Un appart-hôtel nécessite une structure sociétaire pour : la responsabilité limitée, l'éligibilité aux subventions Go Siyaha, la récupération TVA, l'exonération IS 5 ans devises, et la crédibilité bancaire. Les banques partenaires exigent généralement une structure société.",
+    note: "MDM Invest ne prohibe pas formellement la détention en nom propre, mais en pratique il finance des projets d'entreprise (SARL/SA). Une résidence de tourisme nécessite une structure sociétaire pour : la responsabilité limitée, l'éligibilité aux subventions Go Siyaha, la récupération TVA, l'exonération IS 5 ans devises, et la crédibilité bancaire. Les banques partenaires exigent généralement une structure société.",
     apportMinMRE: 0.25,
     contributionMDM: 0.10,
   },
@@ -1293,15 +1293,15 @@ const MONTAGES_EXPLOITATION = {
       id: "sarl-unique",
       rang: 1,
       nom: "SARL Unique",
-      sousTitre: "Une seule société détient les murs ET exploite l'hôtel",
+      sousTitre: "Une seule société détient les murs ET exploite la résidence",
       recommandation: "Recommandé",
       schema: "Vous (PP) → SARL (murs + exploitation)",
-      description: "Structure la plus simple et la plus courante au Maroc pour les petits projets hôteliers. La SARL détient l'immeuble, gère l'exploitation, emploie le personnel, et encaisse les revenus.",
+      description: "Structure la plus simple et la plus courante au Maroc pour les résidences de tourisme. La SARL détient l'immeuble, gère l'exploitation, emploie le personnel, et encaisse les revenus.",
       avantages: [
         { point: "Simplicité maximale", detail: "Un seul jeu de comptabilité, une seule liasse fiscale, un seul commissaire aux comptes si CA > 50M MAD (sinon facultatif)." },
         { point: "Coûts de création et de gestion minimaux", detail: "~5 000–8 000 MAD de frais de création. Pas de conventions réglementées inter-sociétés." },
         { point: "Éligible Go Siyaha + MDM Invest", detail: "SARL = forme juridique standard acceptée par Maroc PME et Tamwilcom." },
-        { point: "Exonération IS 5 ans sur CA devises", detail: "La SARL exploitante bénéficie directement de l'exonération hôtelière (art. 6-I-B-3 CGI)." },
+        { point: "Exonération IS 5 ans sur CA devises", detail: "La SARL exploitante bénéficie directement de l'exonération hébergement touristique (art. 6-I-B-3 CGI). S'applique aux RT classées." },
         { point: "TVA 10% récupérable", detail: "TVA sur achats de construction et équipements récupérable. TVA hébergement à 10%." },
         { point: "Amortissement du bâtiment", detail: "L'immeuble s'amortit sur 20-25 ans, réduisant la base imposable chaque année." },
         { point: "Pas de problème de prix de transfert", detail: "Pas de loyer inter-sociétés à justifier auprès de l'administration fiscale." },
@@ -1325,10 +1325,10 @@ const MONTAGES_EXPLOITATION = {
       id: "sci-sarl",
       rang: 2,
       nom: "SCI + SARL Exploitation",
-      sousTitre: "SCI détient les murs, SARL exploite l'hôtel",
+      sousTitre: "SCI détient les murs, SARL exploite la RT",
       recommandation: "Possible mais attention",
       schema: "Vous (PP) → SCI (murs) ← loyer → SARL (exploitation)",
-      description: "La SCI détient l'immeuble et le loue NUE à la SARL d'exploitation. Au Maroc, la SCI est une société CIVILE interdite d'activité commerciale. Si elle perçoit des loyers meublés ou exploite un hôtel → requalification en activité commerciale → IS automatique. Seule la location nue (sans meubles/services) est permise pour garder le statut civil.",
+      description: "La SCI détient l'immeuble et le loue NUE à la SARL d'exploitation. Au Maroc, la SCI est une société CIVILE interdite d'activité commerciale. Si elle perçoit des loyers meublés ou exploite un hébergement touristique → requalification en activité commerciale → IS automatique. Seule la location nue (sans meubles/services) est permise pour garder le statut civil.",
       avantages: [
         { point: "Protection patrimoniale", detail: "L'immeuble dans la SCI est protégé des créanciers de la SARL d'exploitation." },
         { point: "Flexibilité successorale", detail: "Transmission progressive des parts de la SCI aux héritiers sans toucher à l'exploitation." },
@@ -1340,7 +1340,7 @@ const MONTAGES_EXPLOITATION = {
         { point: "Coût doublé", detail: "~10 000–15 000 MAD pour les deux structures." },
         { point: "Risque requalification fiscale", detail: "Le loyer SCI→SARL doit être au prix de marché, sinon abus de droit." },
         { point: "SCI à l'IS si meublé", detail: "Location meublée = activité commerciale → SCI bascule à l'IS automatiquement." },
-        { point: "Pas d'exonération 5 ans pour la SCI", detail: "La SCI en location nue n'est pas un établissement hôtelier." },
+        { point: "Pas d'exonération 5 ans pour la SCI", detail: "La SCI en location nue n'est pas un établissement d'hébergement touristique." },
         { point: "Pas d'amortissement si IR", detail: "SCI à l'IR = revenus fonciers sans amortissement." },
         { point: "MDM Invest = flou pour SCI", detail: "La SCI est civile. L'apport MDM irait sur la SARL, pas la SCI." },
       ],
@@ -1359,8 +1359,8 @@ const MONTAGES_EXPLOITATION = {
       nom: "SARL Murs + SARL Exploitation",
       sousTitre: "Deux SARL séparées : immobilier + gestion",
       recommandation: "Surdimensionné",
-      schema: "Vous (PP) → SARL Immo (murs) ← loyer → SARL Hôtel (exploitation)",
-      description: "Même logique de séparation mais avec deux SARL commerciales. La SARL Immo détient l'immeuble et loue à la SARL Hôtel.",
+      schema: "Vous (PP) → SARL Immo (murs) ← loyer → SARL RT (exploitation)",
+      description: "Même logique de séparation mais avec deux SARL commerciales. La SARL Immo détient l'immeuble et loue à la SARL RT.",
       avantages: [
         { point: "Protection patrimoniale forte", detail: "L'immeuble est protégé des créanciers de l'exploitation." },
         { point: "Amortissement dans SARL Immo", detail: "Contrairement à la SCI à l'IR, l'immeuble est amorti sur 20-25 ans." },
@@ -1368,15 +1368,15 @@ const MONTAGES_EXPLOITATION = {
         { point: "Loyer déductible", detail: "Même avantage que SCI + SARL." },
       ],
       inconvenients: [
-        { point: "Double imposition structurelle", detail: "SARL Immo paie IS sur loyers + SARL Hôtel paie IS sur bénéfice + 11,25% retenue sur chaque distribution PP. Triple couche." },
+        { point: "Double imposition structurelle", detail: "SARL Immo paie IS sur loyers + SARL RT paie IS sur bénéfice + 11,25% retenue sur chaque distribution PP. Triple couche." },
         { point: "Complexité et coûts x2", detail: "Deux comptabilités, conventions réglementées, etc." },
-        { point: "Pas d'exonération devises pour SARL Immo", detail: "Location ≠ hôtellerie." },
+        { point: "Pas d'exonération devises pour SARL Immo", detail: "Location ≠ hébergement touristique." },
         { point: "Surdimensionné pour 11 unités", detail: "Se justifie pour un parc de 5+ immeubles ou CA > 10M MAD." },
       ],
       fiscalite: {
         IS_Immo: "20% sur loyers nets (après amortissement). Pas d'exonération devises.",
-        IS_Hotel: "20% sur bénéfice net. Exonération 5 ans CA devises.",
-        TVA: "SARL Immo : TVA 20% sur loyers commerciaux. SARL Hôtel : 10%.",
+        IS_RT: "20% sur bénéfice net. Exonération 5 ans CA devises.",
+        TVA: "SARL Immo : TVA 20% sur loyers commerciaux. SARL RT : 10%.",
         dividendes: "11,25% retenue source (2026) × 2 sociétés.",
       },
       scoreSimplicite: 1, scoreProtection: 4, scoreFiscal: 2, scoreFlexibilite: 3, scoreGlobal: 2,
@@ -1387,7 +1387,7 @@ const MONTAGES_EXPLOITATION = {
       nom: "Holding + 2 SARL",
       sousTitre: "Holding chapeaute SARL Immo et SARL Exploitation",
       recommandation: "Prématuré — si expansion",
-      schema: "Vous (PP) → Holding SARL → SARL Immo + SARL Hôtel",
+      schema: "Vous (PP) → Holding SARL → SARL Immo + SARL RT",
       description: "La holding détient les parts des deux SARL. Dividendes filiales→holding exonérés IS 100%. Structure de groupe pour investisseurs multi-projets.",
       avantages: [
         { point: "Exonération dividendes 100%", detail: "Dividendes filiales→holding exonérés d'IS (art. 6-I-C-1 CGI). L'argent circule dans le groupe sans fiscalité." },
@@ -1406,7 +1406,7 @@ const MONTAGES_EXPLOITATION = {
       fiscalite: {
         IS_Holding: "20% sur bénéfice propre. Dividendes reçus exonérés 100%.",
         IS_Immo: "20% sur loyers nets.",
-        IS_Hotel: "20% sur bénéfice net. Exonération 5 ans devises.",
+        IS_RT: "20% sur bénéfice net. Exonération 5 ans devises.",
         dividendes: "Filiales→Holding : 0%. Holding→PP : 15%.",
       },
       scoreSimplicite: 1, scoreProtection: 5, scoreFiscal: 3, scoreFlexibilite: 5, scoreGlobal: 2,
@@ -1422,15 +1422,15 @@ const MONTAGES_EXPLOITATION = {
 
   recommandation: {
     montageRecommande: "sarl-unique",
-    justification: "Pour un appart-hôtel de 11 unités à Casablanca avec un budget de ~6M MAD et un CA prévisionnel < 3M MAD, la SARL unique offre le meilleur rapport simplicité/avantage fiscal. L'exonération IS 5 ans sur le CA devises + la TVA 10% récupérable + l'amortissement du bâtiment couvrent l'essentiel de l'optimisation.",
+    justification: "Pour une résidence de tourisme de 11 unités à Casablanca avec un budget de ~6M MAD et un CA prévisionnel < 3M MAD, la SARL unique offre le meilleur rapport simplicité/avantage fiscal. L'exonération IS 5 ans sur le CA devises + la TVA 10% récupérable + l'amortissement du bâtiment couvrent l'essentiel de l'optimisation.",
     evolutionPossible: "Si expansion prévue, vous pourrez créer une holding a posteriori et y loger la SARL existante par apport de parts.",
-    attention: "⚠️ Analyse indicative. Consulter un expert-comptable marocain spécialisé hôtellerie avant de valider.",
+    attention: "⚠️ Analyse indicative. Consulter un expert-comptable marocain spécialisé hébergement touristique avant de valider.",
   },
 
   sources: [
-    { label: "CGI Maroc — Exonération hôtelière art. 6-I-B-3", url: "https://www.finances.gov.ma/fr/vous-orientez/Pages/vos-impots-en-bref.aspx" },
+    { label: "CGI Maroc — Exonération hébergement touristique art. 6-I-B-3", url: "https://www.finances.gov.ma/fr/vous-orientez/Pages/vos-impots-en-bref.aspx" },
     { label: "LesEco — Règles fiscales tourisme 2026", url: "https://leseco.ma/business/investissement-touristique-les-regles-fiscales-incontournables-de-2026.html" },
-    { label: "Upsilon — Fiscalité des hôtels au Maroc", url: "https://www.upsilon-consulting.com/quelle-fiscalite-des-hotels/" },
+    { label: "Upsilon — Fiscalité hébergement touristique Maroc", url: "https://www.upsilon-consulting.com/quelle-fiscalite-des-hotels/" },
     { label: "Valfoncier — SCI au Maroc", url: "https://valfoncier.ma/sci-societe-civile-immobiliere-maroc/" },
     { label: "Armonia — Holding au Maroc 2025", url: "https://armonia-solutions.com/creation-societe/creer-holding-maroc/" },
     { label: "Tax-News — Holding au Maroc", url: "https://tax-news.ma/pourquoi-creer-une-societe-holding-au-maroc-a-partir-du-1er-janvier-2020/" },

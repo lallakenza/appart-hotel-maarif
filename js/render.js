@@ -585,7 +585,7 @@ function renderSurfaceUtile(S) {
       `<strong>② Prix de revient nu à nu — vs vente neuf Maarif :</strong><br>` +
       `<span style="color:var(--text-sec)">Votre prix nu :</span> <strong>${fmtNum(Math.round(nuUtile))} MAD/m²</strong> utile (terrain + construction, sans ameublement)<br>` +
       `<span style="color:var(--text-sec)">Vente studio neuf standing :</span> <strong>~${fmtNum(benchAppart.studioNeuf)} MAD/m²</strong> <span style="font-size:.78rem;color:var(--text-sec)">(Nuroa.ma, prix vente nu)</span><br>` +
-      `→ Prix nu ${fmtDiff(diffNu)} du marché neuf standing — et votre projet inclut en plus l'ameublement hôtelier complet (+${fmtNum(ameublement)} MAD)` +
+      `→ Prix nu ${fmtDiff(diffNu)} du marché neuf standing — et votre projet inclut en plus l'ameublement RT complet (+${fmtNum(ameublement)} MAD)` +
       `<br><span style="font-size:.78rem;color:var(--text-sec);margin-top:6px;display:inline-block">Sources : Marocgest, Nuroa.ma, Agenz.ma, Yakeey.com, Mubawab (annonces actives mars 2026)</span>`;
   }
 
@@ -1752,7 +1752,7 @@ function renderCapexOpex(S) {
     capexRows.push({ poste: "Éco-investissement Go Siyaha (net)", montant: ecoNet, detail: "Après subvention 40%" });
   }
   capexRows.push(
-    { poste: "Ameublement hôtelier", montant: ameub, detail: S.units.nbUnites + " unités × " + fmtNum(Math.round(ameub / S.units.nbUnites)) + " MAD" },
+    { poste: "Ameublement RT", montant: ameub, detail: S.units.nbUnites + " unités × " + fmtNum(Math.round(ameub / S.units.nbUnites)) + " MAD" },
     { poste: "TOTAL CAPEX BRUT", montant: total, detail: "", total: true, grand: true }
   );
 
@@ -2216,10 +2216,10 @@ function renderHypotheses() {
     row('Utilities fixe', fmtMAD(ch.utilitiesFixe) + '/mois', 'Parties communes LED + ascenseur — bâtiment neuf R+5'),
     row('Utilities variable', fmtMAD(ch.utilitiesVarParUnite) + '/unité/mois', 'Eau + élec + clim par unité occupée — tarif commercial Lydec Casa'),
     row('Internet + TV', fmtMAD(ch.internetTv) + '/mois', 'Fibre pro Inwi/MT 100Mbps + IPTV 11 unités — Inwi Pro 2025'),
-    row('Assurance', fmtMAD(ch.assurance) + '/an', 'Multirisque hôtelier (incendie, RC, bris, perte exploitation) — courtiers Casa'),
+    row('Assurance', fmtMAD(ch.assurance) + '/an', 'Multirisque RT (incendie, RC, bris, perte exploitation) — courtiers Casa'),
     row('Entretien (neuf)', fmtMAD(ch.entretienBase) + '/an', 'Années 1-5, bâtiment sous garantie — ~0.4% valeur construction'),
     row('Entretien (mature)', fmtMAD(ch.entretienMature) + '/an', 'Après 5 ans, vieillissement normal — ~1% valeur construction'),
-    row('Comptable', fmtMAD(ch.comptableAnnuel) + '/an', 'Forfait TPE hôtelière — tenue + déclarations — lec.ma, tmsonline.ma 2025'),
+    row('Comptable', fmtMAD(ch.comptableAnnuel) + '/an', 'Forfait TPE hébergement touristique — tenue + déclarations — lec.ma, tmsonline.ma 2025'),
     row('Consommables', fmtMAD(ch.consommablesParNuitee) + '/nuitée', 'Linge ~15 MAD + amenities ~7 MAD + produits ~5 MAD + divers ~3 MAD'),
     row('Taxe professionnelle', fmtMAD(ch.taxesPro) + '/an', 'Après 5 ans exo (nouvelle construction) — CGI Art. 6-I-A'),
     row('Taxe habitation', fmtMAD(ch.taxeHabitation) + '/an', 'À partir An 6 — exo 5 ans nouvelle construction — upsilon-consulting.com'),
@@ -2227,7 +2227,7 @@ function renderHypotheses() {
     row('Marketing lancement', fmtMAD(ch.budgetMarketingLancement) + ' (An 1)', 'One-shot — photos pro, création listings, promotions Booking Genius'),
     row('Frais création SARL', fmtMAD(ch.fraisCreation) + ' (An 1)', 'One-shot — constitution SARL + autorisations touristiques'),
     row('Taxe de séjour', fmtMAD(ch.taxeSejour || 0) + '/nuitée', 'Dahir n° 1-19-40 — taxe de promotion touristique, reversée à la commune'),
-    row('Renouvellement mobilier', fmtMAD(ch.renouvellementMobilierParUnite) + '/unité / ' + ch.renouvellementMobilierCycle + ' ans', 'Cycle hôtelier 5-7 ans — benchmark opérateurs STR'),
+    row('Renouvellement mobilier', fmtMAD(ch.renouvellementMobilierParUnite) + '/unité / ' + ch.renouvellementMobilierCycle + ' ans', 'Cycle RT 5-7 ans — benchmark opérateurs STR'),
     row('Syndic', fmtMAD(ch.syndic) + '/an', 'N/A — immeuble indivisible, monopropriété intégrale'),
   ].join('');
 
@@ -2534,7 +2534,7 @@ function renderDossierBanque(S) {
   // --- 1. Résumé Exécutif ---
   const resumeTb = document.getElementById("db-resume-tbody");
   if (resumeTb) resumeTb.innerHTML = [
-    ["Nature du projet", "Construction et exploitation d'un appart-hôtel meublé de tourisme"],
+    ["Nature du projet", "Construction et exploitation d'une résidence de tourisme classée 2★"],
     ["Localisation", "Quartier Maarif, Casablanca — zone touristique et d'affaires"],
     ["Surface terrain", TERRAIN.surface + " m²"],
     ["Surface construite", BUDGET.surfacePlancher + " m² (R+4)"],
@@ -2698,7 +2698,7 @@ function renderDossierBanque(S) {
     const valeurBien = totalProjet;
     garTb.innerHTML = [
       ["Hypothèque 1er rang", "Bien immobilier construit", fmtMAD(valeurBien), "Immeuble R+4 — Maarif, Casablanca"],
-      ["Nantissement fonds de commerce", "Fonds de commerce hôtelier", "–", "Si exploitation en nom propre ou SCI"],
+      ["Nantissement fonds de commerce", "Fonds de commerce RT", "–", "Si exploitation en nom propre ou SCI"],
       ["Garantie Tamwilcom", "Garantie institutionnelle", fmtMAD(montantTK * 0.70), "Couvre ~70% du prêt Tamwilkom"],
       ["Domiciliation revenus", "Compte professionnel", "–", "Revenus locatifs domiciliés à la banque prêteuse"],
       ["Assurance décès/invalidité", "Assurance emprunteur", fmtMAD(montantTotal), "Couvre la totalité du crédit"],
