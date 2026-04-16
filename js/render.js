@@ -3049,6 +3049,17 @@ function renderAuditRT(state) {
       `<tr><td style="font-weight:500">${e.item}</td><td class="num">${fmtMAD(e.cout)}</td><td style="font-size:.82rem;color:var(--text-sec)">${e.note}</td></tr>`
     ).join("") + `<tr style="font-weight:700;border-top:2px solid var(--border)"><td>TOTAL</td><td class="num">${fmtMAD(A.equipementsComplementaires.reduce((s,e)=>s+e.cout,0))}</td><td style="font-size:.82rem;color:var(--text-sec)">Investissements one-shot recommandés</td></tr>`;
   }
+
+  // --- Finding 6: Gestion Duel KPIs (v85) ---
+  if (S.gestionDuel) {
+    const gD = S.gestionDuel;
+    const gY1 = gD.societeGestion.projections[0];
+    const aY1gd = gD.autoGere.projections[0];
+    setText("audit-duel-cf-conci", fmtMAD(gY1.cashFlowNet));
+    setText("audit-duel-charges-conci", "Charges: " + fmtMAD(gY1.chargesTotal));
+    setText("audit-duel-cf-auto", fmtMAD(aY1gd.cashFlowNet));
+    setText("audit-duel-charges-auto", "Charges: " + fmtMAD(aY1gd.chargesTotal));
+  }
 }
 
 // --- Utility ---

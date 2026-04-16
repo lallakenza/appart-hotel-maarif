@@ -1,7 +1,7 @@
 # Documentation Tableau de Bord Financier — Appart'Hôtel Maarif
 
-**Version:** 2.11 (v81)
-**Date:** 31 Mars 2026
+**Version:** 3.0 (v85)
+**Date:** 16 Avril 2026
 **Langue:** Français
 **Public Cible:** Analystes financiers, investisseurs, auditeurs
 **Format:** Optimisé pour lecture par IA (Claude, GPT-4)
@@ -143,7 +143,7 @@ Juin:      0.80  | Décembre:  1.30
 
 | Canal | Commission | Part scénario réaliste | Paramètre |
 |-------|-----------|------------------------|-----------|
-| **OTA (Airbnb, Booking)** | 15% | 40% | partOTA_realiste |
+| **OTA (Airbnb, Booking)** | 17% | 55% | partOTA_realiste (v85: 15%→17%) |
 | **Direct (site web)** | 0% | 40% | partDirect_realiste |
 | **Informel/Autres** | 3% | 20% | partInformel_realiste |
 
@@ -154,7 +154,7 @@ Juin:      0.80  | Décembre:  1.30
 | Paramètre | Valeur Y1 | Escalade | Modifiable | Détail |
 |-----------|-----------|----------|-----------|--------|
 | **Loyer commercial** | 15 000 MAD/an | +3%/an | Oui (simple) | Espace rez-de-chaussée ~50m² |
-| **Commission OTA** | ~29 000 MAD/an | Variable | — | 15% sur CA OTA |
+| **Commission OTA** | ~80 000 MAD/an | Variable | — | 17% sur CA OTA (v85 corrigé) |
 | **Bénéfice marginal** | +44 000 MAD/an | — | — | Total CA accessoire |
 
 ---
@@ -165,19 +165,18 @@ Juin:      0.80  | Décembre:  1.30
 
 | Charge | Montant Y1 | Escalade | Justification | Modifiable |
 |--------|-----------|----------|---------------|-----------|
-| **Gestion (% CA)** | 15% | Proportionnel CA | Standard appart-hôtel | Oui |
-| **Concierge/Accueil** | 4 500 MAD/mois | +2%/an | Salaire base + primes | Oui |
-| **Ménage** | 3 500 MAD/mois | +2%/an | Personnel + fournitures | Oui |
-| **Charges sociales** | 20.71% | Constant | CNSS 9.93% + autres | Non |
-| **Total salaires + charges** | ~108 000 MAD/an | — | Basé 2 ETP |  Oui |
+| **Gestion conciergerie (% CA)** | 20% | Proportionnel CA | Standard conciergerie Maroc (v85) | Oui |
+| **Gardien nuit (norme A RT)** | 3 400 MAD/mois | +2%/an | SMIG 2026, 24h/24 obligatoire (v84) | Oui |
+| **Concierge (in-house)** | 3 400 MAD/mois | +2%/an | SMIG 2026, mode auto-géré uniquement | Oui |
+| **Ménage (in-house)** | 3 400 MAD/mois | +2%/an | SMIG 2026, mode auto-géré uniquement | Oui |
+| **Charges sociales** | 0% | — | Non déclarés CNSS (risque juridique noté) | Oui |
 
-**Nombre d'employés par scénario:**
+**Mode de gestion (Gestion Duel v85):**
 
-| Scénario | Effectif | Y1 | Réaliste |
-|----------|----------|----|----|
-| Pessimiste/Prudent | 2 ETP | Année 1-3 | Concierge + Ménage |
-| Réaliste/Favorable | 2.5 ETP | Année 2+ | + Cuisinier partie |
-| Optimiste | 3 ETP | Année 3+ | + Assistant gestion |
+| Mode | Commission | Employés | Blanchisserie | Consommables | PMS |
+|------|-----------|----------|---------------|-------------|-----|
+| Conciergerie (défaut) | 20% CA | Gardien nuit seul | Incluse (0 MAD) | 50% (17.5 MAD/nuit) | Inclus (0 MAD) |
+| Auto-géré | 0% | Concierge + ménage | 12 MAD/nuit | 100% (35 MAD/nuit) | 15 000 MAD/an |
 
 ### Charges Utilities et Entretien
 
@@ -186,21 +185,24 @@ Juin:      0.80  | Décembre:  1.30
 | **Électricité** | ~25 000 MAD | 4 000 | 1.5 MAD/nuit/unité | Chauffage, ECS, général | Oui |
 | **Eau/Assainissement** | ~18 000 MAD | 2 000 | 1.0 MAD/nuit/unité | Douches, entretien | Oui |
 | **Internet/Téléphonie** | 1 200 MAD/mois | 1 200 | — | Fibre + téléphone | Oui |
-| **Assurance multirisque** | 18 000 MAD/an | 18 000 | — | Bâtiment + Responsabilité | Oui |
-| **Entretien courant** | 20 000→40 000 MAD | Croissance | — | Années 1-5: 20K, Années 6-10: 30K, Années 11+: 40K | Oui |
-| **Comptabilité/Audit** | 30 000 MAD/an | 30 000 | — | Tenue comptes + déclarations | Oui |
-| **Fournitures (consommables)** | ~54 000 MAD/an | — | 30 MAD/nuit | Savon, serviettes, produits | Oui |
+| **Assurance multirisque** | 22 000 MAD/an | 22 000 | — | RC pro + incendie cuisine RT (v84) | Oui |
+| **Entretien courant** | 25 000→45 000 MAD | Croissance | — | Années 1-5: 25K, Après: 45K (v84) | Oui |
+| **Comptabilité/Audit** | 36 000 MAD/an | 36 000 | — | SARL hôtelière TVA double taux (v85) | Oui |
+| **Fournitures (consommables)** | ~44K MAD/an | — | 35 MAD/nuit | Amenities + cuisine RT (v84) | Oui |
+| **Blanchisserie** | ~15K MAD/an | — | 12 MAD/nuit | Lavage draps/serviettes (v84) | Oui |
+| **Renouvellement linge** | 15 000 MAD/an | 15 000 | — | Usure intensive STR (v84) | Oui |
+| **PMS/Channel Manager** | 0 ou 15K MAD/an | — | — | 0 en conciergerie, 15K en auto-géré (v85) | Oui |
 | **Divers/Contingence** | 15 000 MAD/an | 15 000 | — | Maintenance imprévue | Oui |
 | **Provision mobilier** | 62 800 MAD/an | 62 800 | — | Renouvellement ameublement 7 ans | Non (amorti) |
 
-**Total charges d'exploitation Y1:** ~250 000 MAD (avant amortissements et fiscalité).
+**Total charges d'exploitation Y1 (conciergerie):** ~491K MAD (incluant commission 20%, gardien nuit, toutes corrections v84/v85).
 
 ### Charges Fiscales et Administratives
 
 | Charge | Y1 | Détail | Exonération | Modifiable |
 |--------|----|----|----------|-----------|
 | **Taxe professionnelle** | 25 000 MAD | Valeur locative immeuble | 5 ans Art. 6-I-D° CGI | Non |
-| **Taxe d'habitation** | 12 000 MAD | Valeur locative immeuble | 5 ans Art. 6-I-D° CGI | Non |
+| **Taxe habitation + TSC** | 35 000 MAD | TH ~24.5K + TSC 10.5% VL (v85) | 5 ans Art. 6-I-D° CGI | Non |
 | **Marketing/Communication** | 20 000 MAD/an | Y1 uniquement | — | Oui |
 | **Frais création/Formalités** | 20 000 MAD | Y1 uniquement (enregistrement, immatriculation) | — | Non |
 
@@ -893,7 +895,86 @@ Après application de tous corrections (bugs 1-4):
 
 ---
 
-## 3.5 Changelog Versions v60–v64 (29/03/2026)
+## 3.5 Changelog Versions v84–v85 — Audit RT 2★ + Audit Métier (Avril 2026)
+
+### v85 — Audit Métier Indépendant + Correction Gestion Duel
+**Date:** 16/04/2026
+**Fichiers modifiés:** `data.js`, `engine.js`, `render.js`, `index.html`
+
+**Phase 1 — Audit métier indépendant (recherche web):**
+
+Estimation indépendante de CHAQUE poste de dépense à partir de données marché marocaines réelles (SMIG 2026, CNSS, tarifs LYDEC/ONEE, commissions OTA, barèmes fiscaux). 6 agents de recherche parallèles ont croisé les sources suivantes : CasablancaCity.ma, Darify.ma, Valfoncier.ma, Booking Partner Hub, LEC.ma, TMSOnline.ma, Neoexpertise.net.
+
+| Poste | Ancien | Corrigé | Écart | Source |
+|-------|--------|---------|-------|--------|
+| Taxe habitation + TSC | 12 000 MAD/an | 35 000 MAD/an | +23 000 | CasablancaCity.ma, Loi 47-06, Darify.ma |
+| Commission OTA | 15% | 17% | +2 pts | Booking Partner Hub (17%), Airbnb host-only (15.5%) |
+| Comptable | 30 000 MAD/an | 36 000 MAD/an | +6 000 | LEC.ma, TMSOnline.ma (SARL hôtelière TVA double taux) |
+
+**Impact:** +23K taxe hab. + ~14K commissions (sur CA OTA) + 6K comptable ≈ +43K MAD/an de charges supplémentaires identifiées.
+
+**Phase 2 — Correction Gestion Duel (cohérence charges par scénario):**
+
+Analyse approfondie des doublons et charges manquantes dans la section Gestion Duel (conciergerie vs auto-géré).
+
+**Mode conciergerie (20% CA) — 3 doublons supprimés:**
+- Blanchisserie : était 12 MAD/nuitée (~15K/an) en plus des 20% → **0** (inclus dans commission)
+- Consommables : 35 MAD/nuitée → **17.5 MAD** (50% couverts par société : amenities, linge)
+- PMS/channel manager : **0** (la société utilise ses propres outils)
+
+**Mode auto-géré — 1 charge manquante ajoutée:**
+- PMS/channel manager : **+15 000 MAD/an** (Guesty Lite/Lodgify + serrures connectées)
+
+**Impact sur Gestion Duel (scénario réaliste An 1):**
+
+| Métrique | Conciergerie | Auto-géré | Delta |
+|----------|-------------|-----------|-------|
+| Charges totales An 1 | 454K MAD | 396K MAD | -58K |
+| EBITDA An 1 | 222K MAD | 280K MAD | +58K |
+| CF net An 1 | +22K MAD | +80K MAD | +58K |
+
+**Nouveaux paramètres data.js:**
+- `pmsChannelManager: 0` (défaut conciergerie)
+- `pmsChannelManagerAutoGere: 15_000`
+- `consommablesReductionConciergerie: 0.50`
+
+**Modifications engine.js:**
+- `compute()` : ajout `pmsLogiciel` dans chargesTotal et chargesDetail
+- `computeGestionDuel()` : sauvegarde/restauration de blanchisserieParNuitee, consommablesParNuitee, pmsChannelManager. Override différencié par mode.
+
+### v84 — Audit Opérationnel RT 2★ (Cahier des Charges)
+**Date:** 01/04/2026
+**Fichiers modifiés:** `data.js`, `engine.js`, `render.js`, `index.html`
+
+Cross-référence du cahier des charges RT 2★ (Arrêté 985-24 NPQS + Décret 2-22-867 NEDF) avec le modèle financier. 4 findings identifiés :
+
+**Finding 1 — CRITIQUE : Staffing 24/7 Non Budgété**
+- Norme A obligatoire : « Personnel d'accueil présent 24h/24 et 7j/7 »
+- Ancien modèle : 0 employés (conciergerie pure)
+- Correction : gardien de nuit au SMIG (3 400 MAD/mois = +40.8K/an)
+- Paramètres ajoutés : `salaireGardienNuit: 3_400`, `gardienNuitEnabled: true`
+
+**Finding 2 — OK : Budget Ameublement Suffisant**
+- Équipements RT 2★ estimés : 38 250 MAD/unité vs budget 40 000 MAD/unité
+- Marge : +1 750 MAD/unité
+
+**Finding 3 — MODÉRÉ : Charges Sous-Estimées (+109K MAD/an)**
+- Consommables : 30 → 35 MAD/nuitée (cuisine RT obligatoire)
+- Assurance : 18K → 22K MAD/an (RC pro + risque incendie cuisine)
+- Entretien : 20K/40K → 25K/45K (plomberie/électroménager)
+- Taxe séjour : 2 → 5 MAD/nuitée (RT classé 2★)
+- Blanchisserie : +12 MAD/nuitée (nouveau poste)
+- Renouvellement linge : +15K/an (nouveau poste)
+
+**Finding 4 — Projet Reste Rentable**
+- Malgré +109K/an de charges, la structure RT offre des avantages fiscaux nets
+- TVA récupérable, exonérations IS devises, classification touristique
+
+**Nouvelle section UI:** Page Audit RT 2★ avec findings détaillés, tableaux comparatifs staffing/ameublement/charges, et KPIs corrigés.
+
+---
+
+## 3.6 Changelog Versions v60–v64 (29/03/2026)
 
 ### v60 — Wealth Building KPI
 **Fichiers modifiés:** `engine.js`, `render.js`, `index.html`

@@ -2646,7 +2646,7 @@ tr:hover td{background:#f0f4f8}
       </div>
       <div style="background:rgba(255,255,255,.15);border-radius:8px;padding:10px 14px">
         <div style="font-size:.75rem;opacity:.8">Findings</div>
-        <div style="font-size:1.2rem;font-weight:700">4 findings</div>
+        <div style="font-size:1.2rem;font-weight:700">6 findings</div>
       </div>
     </div>
   </div>
@@ -2749,17 +2749,115 @@ tr:hover td{background:#f0f4f8}
     </div>
   </div>
 
+  <!-- Finding 5: Audit Métier v85 -->
+  <div class="card" style="border-left:4px solid #7c3aed">
+    <div class="card-title" style="color:#7c3aed">Finding 5 — AUDIT MÉTIER : Corrections Indépendantes (v85)</div>
+    <p style="font-size:.85rem;color:var(--text-sec);margin-bottom:12px">
+      Estimation indépendante de chaque poste de dépense à partir de données marché marocaines réelles.
+      6 agents de recherche web parallèles ont croisé les sources : CasablancaCity.ma, Darify.ma, Booking Partner Hub, LEC.ma, TMSOnline.ma, Neoexpertise.net.
+    </p>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Poste</th><th>Ancien</th><th>Corrigé</th><th>Écart</th><th>Source</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Taxe habitation + TSC</strong></td>
+            <td>12 000 MAD/an</td>
+            <td style="color:var(--red);font-weight:700">35 000 MAD/an</td>
+            <td style="color:var(--red)">+23 000</td>
+            <td style="font-size:.78rem">CasablancaCity.ma, Loi 47-06, Darify.ma — TSC 10.5% VL manquait totalement</td>
+          </tr>
+          <tr>
+            <td><strong>Commission OTA</strong></td>
+            <td>15%</td>
+            <td style="color:var(--red);font-weight:700">17%</td>
+            <td style="color:var(--red)">+2 pts</td>
+            <td style="font-size:.78rem">Booking Partner Hub 17%, Airbnb host-only 15.5%</td>
+          </tr>
+          <tr>
+            <td><strong>Comptable</strong></td>
+            <td>30 000 MAD/an</td>
+            <td style="color:var(--red);font-weight:700">36 000 MAD/an</td>
+            <td style="color:var(--red)">+6 000</td>
+            <td style="font-size:.78rem">LEC.ma — SARL hôtelière TVA double taux, IS complexe</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div style="margin-top:12px;padding:10px 14px;background:rgba(124,58,237,.08);border-radius:8px;font-size:.85rem">
+      <strong style="color:#7c3aed">Impact cumulé :</strong> +43K MAD/an de charges supplémentaires identifiées par l'audit métier indépendant.
+    </div>
+  </div>
+
+  <!-- Finding 6: Gestion Duel Cohérence v85 -->
+  <div class="card" style="border-left:4px solid #0891b2">
+    <div class="card-title" style="color:#0891b2">Finding 6 — GESTION DUEL : Correction Doublons & Charges Manquantes (v85)</div>
+    <p style="font-size:.85rem;color:var(--text-sec);margin-bottom:12px">
+      Analyse de cohérence des charges entre les deux modes de gestion. Identification de double-comptages en mode conciergerie et de charges manquantes en mode auto-géré.
+    </p>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Correction</th><th>Mode</th><th>Avant</th><th>Après</th><th>Raison</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Blanchisserie</strong></td>
+            <td>Conciergerie</td>
+            <td>12 MAD/nuit (~15K/an)</td>
+            <td style="color:var(--green);font-weight:700">0 MAD</td>
+            <td style="font-size:.78rem">Incluse dans commission 20%</td>
+          </tr>
+          <tr>
+            <td><strong>Consommables</strong></td>
+            <td>Conciergerie</td>
+            <td>35 MAD/nuit (100%)</td>
+            <td style="color:var(--green);font-weight:700">17.5 MAD/nuit (50%)</td>
+            <td style="font-size:.78rem">Amenities/linge couverts par société</td>
+          </tr>
+          <tr>
+            <td><strong>PMS / Channel Manager</strong></td>
+            <td>Conciergerie</td>
+            <td>—</td>
+            <td style="color:var(--green);font-weight:700">0 MAD</td>
+            <td style="font-size:.78rem">Société utilise ses propres outils</td>
+          </tr>
+          <tr>
+            <td><strong>PMS / Channel Manager</strong></td>
+            <td>Auto-géré</td>
+            <td style="color:var(--red)">0 MAD (manquant)</td>
+            <td style="font-weight:700">15 000 MAD/an</td>
+            <td style="font-size:.78rem">Guesty/Lodgify + serrures connectées</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px">
+      <div style="background:var(--card-alt);border-radius:8px;padding:14px">
+        <div style="font-size:.75rem;color:var(--text-sec)">Conciergerie — CF net An 1</div>
+        <div style="font-size:1.4rem;font-weight:700" id="audit-duel-cf-conci">—</div>
+        <div style="font-size:.8rem;color:var(--text-sec)" id="audit-duel-charges-conci">—</div>
+      </div>
+      <div style="background:var(--card-alt);border-radius:8px;padding:14px">
+        <div style="font-size:.75rem;color:var(--green)">Auto-géré — CF net An 1</div>
+        <div style="font-size:1.4rem;font-weight:700;color:var(--green)" id="audit-duel-cf-auto">—</div>
+        <div style="font-size:.8rem;color:var(--green)" id="audit-duel-charges-auto">—</div>
+      </div>
+    </div>
+  </div>
+
   <!-- Méthodologie -->
   <div class="card" style="border-left:4px solid var(--text-sec)">
     <div class="card-title">Méthodologie de l'Audit</div>
     <div style="font-size:.85rem;color:var(--text-sec);line-height:1.7">
-      <p>Cet audit opérationnel a été réalisé en cross-référençant :</p>
-      <p style="margin:4px 0"><strong>1.</strong> Les 150+ normes du cahier des charges RT 2★ (Arrêté 985-24, pages BO 1300-1318)</p>
-      <p style="margin:4px 0"><strong>2.</strong> Les hypothèses financières du modèle (data.js, engine.js)</p>
-      <p style="margin:4px 0"><strong>3.</strong> Les benchmark opérateurs STR Casablanca/Maarif (Booking.com, AirDNA, Airbtics)</p>
-      <p style="margin:4px 0"><strong>4.</strong> Le code du travail marocain (Art. 184 : 44h/semaine) et le SMIG 2026 (3 400 MAD/mois)</p>
-      <p style="margin-top:8px">Chaque finding a été vérifié programmatiquement (calcul des coûts RT vs budget actuel).</p>
-      <p style="margin-top:4px;font-style:italic">Date : 01/04/2026 — Version modèle : v84</p>
+      <p>Cet audit a été réalisé en deux phases :</p>
+      <p style="margin:4px 0"><strong>Phase 1 (v84) — Audit opérationnel RT 2★ :</strong> Cross-référence des 150+ normes du cahier des charges (Arrêté 985-24, pages BO 1300-1318) avec les hypothèses financières du modèle.</p>
+      <p style="margin:4px 0"><strong>Phase 2 (v85) — Audit métier indépendant :</strong> Estimation indépendante de chaque poste de dépense via recherche web (6 agents parallèles). Sources : CNSS 2025, SMIG 2026, tarifs LYDEC/ONEE, Booking Partner Hub, CasablancaCity.ma, LEC.ma, TMSOnline.ma.</p>
+      <p style="margin:4px 0"><strong>Phase 3 (v85) — Cohérence Gestion Duel :</strong> Analyse des doublons et charges manquantes entre mode conciergerie et auto-géré.</p>
+      <p style="margin-top:8px">Chaque finding a été vérifié programmatiquement (Node.js) puis déployé après validation.</p>
+      <p style="margin-top:4px;font-style:italic">Dates : 01/04/2026 (v84) — 16/04/2026 (v85)</p>
     </div>
   </div>
 
